@@ -3,6 +3,10 @@
 // Retry safety: every change carries a request ID. While an action is pending its button is disabled. If the
 // request fails without a definite answer (network loss, server error), the same ID is kept so pressing the button
 // again cannot apply the change twice; a definite refusal (a 4xx with a code) drops it.
+//
+// Module map: this file holds the shared core (store, request tracking, commands, navigation) and the world, settings
+// and backup actions. Residents, pairs and pictures live in resident-actions.ts; 주민 등록 in register-actions.ts.
+// Both receive the core and add their actions to the controller.
 import { gameApi } from "./api";
 import { previewBackup, type BackupSummary } from "./backup-preview";
 import { lockedMessage, type LockedFeature } from "./features";
@@ -10,9 +14,30 @@ import { clampFontSize, readFontSize, writeFontSize } from "./preferences";
 import type { Loadable } from "./dom";
 import { errorCode, errorMessage, newRequestId, newWorldId } from "./host-api";
 import { createStore, type Store } from "./store";
-import type { GameContent, StorageUsage, WorldState, WorldSummary, WorldView } from "./types";
+import { createRegisterActions, type RegisterState } from "./register-actions";
+import { createResidentActions, type ResidentsView, type ResidentSheet } from "./resident-actions";
+import type {
+  CommandResponse,
+  GameContent,
+  Placement,
+  StorageUsage,
+  WorldState,
+  WorldSummary,
+  WorldView,
+} from "./types";
 
-export type Route = "worlds" | "home" | "work" | "facilities" | "settings" | "backup" | "diagnostics";
+export type Route =
+  | "worlds"
+  | "home"
+  | "work"
+  | "facilities"
+  | "settings"
+  | "backup"
+  | "diagnostics"
+  | "residents"
+  | "relations"
+  | "register"
+  | "resident-image";
 
 /** A backup file picked for restore, shown as a preview until the player confirms (mockup 05 · 복원 미리보기). */
 export interface RestoreSelection {
@@ -44,6 +69,34 @@ export interface AppState {
   storage: Loadable<StorageUsage> | null;
   /** The welcome-package sheet was put off for this session ("나중에"). */
   starterSheetHidden: boolean;
+  /** 주민 (board 03-1): tab, search, filter and the selected resident. */
+  residentsView: ResidentsView;
+  /** The resident 관계 and 주민 그림 are about. */
+  focusResidentId: string | null;
+  /** 관계 → 변경 · 보관 mode. */
+  relationsEditing: boolean;
+  /** A sheet over the current screen (프로필, 페어 추가, 이전 그림, 그림 이력 정리). */
+  sheet: ResidentSheet | null;
+  /** 주민 그림: slider values not yet applied. */
+  placementDraft: Placement | null;
+  /** 주민 등록 (board 05-3) while it is open. */
+  register: RegisterState | null;
+}
+
+/** What the action modules share. */
+export interface ControllerCore {
+  store: Store<AppState>;
+  track<T>(actionKey: string, work: () => Promise<T>, fallback: string): Promise<T | null>;
+  runCommand(actionKey: string, type: string, payload?: Record<string, unknown>): Promise<CommandResponse | null>;
+  currentWorld(): WorldView | null;
+  requestIdFor(actionKey: string, signature: string, make?: () => string): string;
+  /** Forgets a retry ID, once its action is finished for good. */
+  forgetRequest(actionKey: string): void;
+  showWorld(view: WorldView, content?: GameContent): void;
+  navigate(route: Route): void;
+  /** Reloads 저장 공간 사용량 (after pictures change). */
+  refreshStorage(): Promise<void>;
+  notify(text: string, kind?: Notice["kind"]): void;
 }
 
 const LAST_WORLD_KEY = "forest-workshop:last-world";
@@ -89,8 +142,30 @@ export function createController() {
     facilitiesTab: "facilities",
     storage: null,
     starterSheetHidden: false,
+    residentsView: { tab: "all", query: "", filter: "all", selectedId: null },
+    focusResidentId: null,
+    relationsEditing: false,
+    sheet: null,
+    placementDraft: null,
+    register: null,
   });
   const pending = new Map<string, PendingRequest>();
+
+  // An info toast goes away by itself after a few seconds; an error stays until it is closed.
+  const INFO_NOTICE_MS = 4000;
+  let shownNotice: Notice | null = null;
+  let noticeTimer: ReturnType<typeof setTimeout> | undefined;
+  store.subscribe((state) => {
+    if (state.notice === shownNotice) return;
+    shownNotice = state.notice;
+    clearTimeout(noticeTimer);
+    if (shownNotice?.kind === "info") {
+      const notice = shownNotice;
+      noticeTimer = setTimeout(() => {
+        if (store.get().notice === notice) store.set({ notice: null });
+      }, INFO_NOTICE_MS);
+    }
+  });
 
   /** The request ID for this action: reused while the same request is being retried. */
   function requestIdFor(actionKey: string, signature: string, make: () => string = newRequestId): string {
@@ -179,8 +254,50 @@ export function createController() {
     return world?.state === "ready" ? world.value : null;
   }
 
+  function navigate(route: Route) {
+    store.set({ route, notice: null, restore: null, sheet: null, relationsEditing: false });
+    if (route === "worlds") void loadWorlds();
+    if (route === "backup") void loadStorage();
+  }
+
+  /** Sends a game command; the server decides every amount. */
+  async function runCommand(actionKey: string, type: string, payload: Record<string, unknown> = {}) {
+    const world = currentWorld();
+    if (!world) return null;
+    const signature = JSON.stringify([world.worldId, type, payload]);
+    const commandId = requestIdFor(actionKey, signature);
+    const response = await track(
+      actionKey,
+      () => gameApi.sendCommand({ worldId: world.worldId, commandId, expectedRevision: world.revision, type, payload }),
+      "요청을 처리하지 못했습니다. 다시 시도해 주세요.",
+    );
+    if (!response) return null;
+    showWorld({
+      worldId: world.worldId,
+      revision: response.revision,
+      updatedAt: new Date().toISOString(),
+      state: response.state as WorldState,
+    });
+    return response;
+  }
+
+  const core: ControllerCore = {
+    store,
+    track,
+    runCommand,
+    currentWorld,
+    requestIdFor,
+    forgetRequest: (actionKey) => pending.delete(actionKey),
+    showWorld,
+    navigate,
+    refreshStorage: loadStorage,
+    notify: (text, kind = "info") => store.set({ notice: { kind, text } }),
+  };
+
   return {
     store,
+    ...createResidentActions(core),
+    ...createRegisterActions(core),
 
     async start() {
       const worlds = await loadWorlds();
@@ -192,11 +309,8 @@ export function createController() {
     openWorld,
     reloadWorld,
 
-    navigate(route: Route) {
-      store.set({ route, notice: null, restore: null });
-      if (route === "worlds") void loadWorlds();
-      if (route === "backup") void loadStorage();
-    },
+    navigate,
+    notify: core.notify,
 
     /** A locked mockup element was tapped: say which phase opens it. */
     notifyLocked(feature: LockedFeature) {
@@ -236,27 +350,7 @@ export function createController() {
       if (created) showWorld(created, created.content);
     },
 
-    /** Sends a game command; the server decides every amount. */
-    async runCommand(actionKey: string, type: string, payload: Record<string, unknown> = {}) {
-      const world = currentWorld();
-      if (!world) return null;
-      const signature = JSON.stringify([world.worldId, type, payload]);
-      const commandId = requestIdFor(actionKey, signature);
-      const response = await track(
-        actionKey,
-        () =>
-          gameApi.sendCommand({ worldId: world.worldId, commandId, expectedRevision: world.revision, type, payload }),
-        "요청을 처리하지 못했습니다. 다시 시도해 주세요.",
-      );
-      if (!response) return null;
-      showWorld({
-        worldId: world.worldId,
-        revision: response.revision,
-        updatedAt: new Date().toISOString(),
-        state: response.state as WorldState,
-      });
-      return response;
-    },
+    runCommand,
 
     async downloadBackup() {
       const world = currentWorld();

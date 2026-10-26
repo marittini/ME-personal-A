@@ -5,18 +5,24 @@
 //   app/              host API client, typed routes, store, controller (all state changes and requests), DOM helpers,
 //                     locked-feature registry, per-viewer preferences
 //   screens/chrome/   the parts every board shares: frame, top bar, bottom bar, icons, locked elements
-//   screens/<area>/   one folder per mockup area (home, work, settings), one render function per screen
-//   styles.ts         scoped portrait styles, sized in em from the player's text size
+//   screens/<area>/   one folder per mockup area (home, work, residents, settings), one render function per screen
+//   styles*.ts        scoped portrait styles (styles-residents.ts for the resident boards), sized from the player's
+//                     text size
 import { createController, type AppState, type Controller } from "./app/controller";
 import { renderFrame } from "./screens/chrome/frame";
 import { DiagnosticsPanel } from "./screens/diagnostics-panel";
 import { renderHomeScreen } from "./screens/home/home-screen";
+import { renderRegisterScreen } from "./screens/residents/register-screen";
+import { renderRelationsScreen } from "./screens/residents/relations-screen";
+import { renderResidentImageScreen } from "./screens/residents/resident-image-screen";
+import { renderResidentsScreen } from "./screens/residents/residents-screen";
 import { renderBackupScreen } from "./screens/settings/backup-screen";
 import { renderSettingsScreen } from "./screens/settings/settings-screen";
 import { renderFacilitiesScreen } from "./screens/work/facilities-screen";
 import { renderWorkScreen } from "./screens/work/work-screen";
 import { renderWorldsScreen } from "./screens/worlds-screen";
 import { STYLES } from "./styles";
+import { RESIDENT_STYLES } from "./styles-residents";
 
 const TAG = "marinara-capability-forest-workshop";
 
@@ -31,7 +37,7 @@ class ForestWorkshopElement extends HTMLElement {
   constructor() {
     super();
     this.root = this.attachShadow({ mode: "open" });
-    this.styleNode.textContent = STYLES;
+    this.styleNode.textContent = STYLES + RESIDENT_STYLES;
   }
 
   connectedCallback() {
@@ -62,6 +68,14 @@ class ForestWorkshopElement extends HTMLElement {
         return renderSettingsScreen(state, controller);
       case "backup":
         return renderBackupScreen(state, controller);
+      case "residents":
+        return renderResidentsScreen(state, controller);
+      case "relations":
+        return renderRelationsScreen(state, controller);
+      case "register":
+        return renderRegisterScreen(state, controller);
+      case "resident-image":
+        return renderResidentImageScreen(state, controller);
       case "diagnostics":
         this.diagnostics!.start();
         return renderFrame(state, controller, {
@@ -78,14 +92,30 @@ class ForestWorkshopElement extends HTMLElement {
   private render(state: AppState) {
     const screen = this.screen(state, this.controller!);
     this.style.setProperty("--fw-font-size", `${state.fontSize}px`);
-    // Keep keyboard focus and the scroll position across re-renders of the same screen.
-    const focusedId = (this.root.activeElement as HTMLElement | null)?.id;
+    // Keep keyboard focus, the caret in a text field and the scroll position across re-renders of the same screen,
+    // so a field that updates the store as the player types keeps working.
+    const focused = this.root.activeElement as HTMLInputElement | HTMLTextAreaElement | null;
+    const focusedId = focused?.id;
+    const caret =
+      focused && "selectionStart" in focused && typeof focused.selectionStart === "number"
+        ? [focused.selectionStart, focused.selectionEnd ?? focused.selectionStart]
+        : null;
     const scrollTop = state.route === this.renderedRoute ? (this.root.querySelector(".scroll")?.scrollTop ?? 0) : 0;
     this.root.replaceChildren(this.styleNode, screen);
     this.renderedRoute = state.route;
     const scroller = this.root.querySelector(".scroll");
     if (scroller) scroller.scrollTop = scrollTop;
-    if (focusedId) (this.root.getElementById(focusedId) as HTMLElement | null)?.focus({ preventScroll: true });
+    if (focusedId) {
+      const next = this.root.getElementById(focusedId) as HTMLInputElement | HTMLTextAreaElement | null;
+      next?.focus({ preventScroll: true });
+      if (next && caret && typeof next.setSelectionRange === "function") {
+        try {
+          next.setSelectionRange(caret[0]!, caret[1]!);
+        } catch {
+          // type=range and similar inputs have no caret.
+        }
+      }
+    }
   }
 }
 

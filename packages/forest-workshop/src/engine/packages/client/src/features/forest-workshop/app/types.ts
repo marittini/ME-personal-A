@@ -8,7 +8,75 @@ export interface WorldState {
   settings: { worldName: string; playerNickname: string };
   wallet: { gold: number };
   inventory: Record<string, number>;
-  progress: { starterKitClaimed: boolean };
+  progress: { starterKitClaimed: boolean; starterResidentId: string | null };
+  residents: Record<string, Resident>;
+  pairs: Record<string, Pair>;
+}
+
+export type ResidentKind = "character" | "persona";
+
+export interface ResidentImage {
+  reference: string;
+  url: string;
+  width: number;
+  height: number;
+  bytes: number;
+  hasTransparency: boolean;
+  fileName: string;
+  uploadKey: string;
+  uploadedAt: string;
+}
+
+export interface Placement {
+  scale: number;
+  offsetX: number;
+  markerHeight: number;
+}
+
+export interface ResidentChange {
+  at: string;
+  kind: string;
+  detail: string;
+}
+
+export interface Resident {
+  residentId: string;
+  kind: ResidentKind;
+  sourceId: string;
+  source: { name: string; description: string; personality: string; scenario: string; takenAt: string };
+  displayName: string;
+  worldSetting: string;
+  recruited: boolean;
+  registeredAt: string;
+  image: { current: ResidentImage | null; history: ResidentImage[]; placement: Placement };
+  changes: ResidentChange[];
+}
+
+export interface Pair {
+  pairId: string;
+  characterResidentId: string;
+  personaResidentId: string;
+  createdAt: string;
+  archived: boolean;
+  archivedAt: string | null;
+  familiarity: number;
+  ease: number;
+  lastEvent: { at: string; summary: string } | null;
+}
+
+export interface SourceEntry {
+  kind: ResidentKind;
+  id: string;
+  name: string;
+  summary: string;
+  residentId: string | null;
+}
+
+export interface SourcePreview {
+  kind: ResidentKind;
+  id: string;
+  snapshot: { name: string; description: string; personality: string; scenario: string };
+  summary: string;
 }
 
 export interface ItemDefinition {
@@ -20,6 +88,12 @@ export interface ItemDefinition {
 export interface GameContent {
   items: ItemDefinition[];
   starterKit: { gold: number; items: Record<string, number> };
+  relationStages: Array<{ from: number; label: string }>;
+  residents: {
+    worldSettingMax: number;
+    maxImageBytes: number;
+    placement: Record<keyof Placement, { min: number; max: number; default: number }>;
+  };
 }
 
 export interface WorldView {

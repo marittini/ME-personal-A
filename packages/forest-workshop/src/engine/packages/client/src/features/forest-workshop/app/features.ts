@@ -6,7 +6,6 @@ export type LockedFeature =
   | "tickets"
   | "weather"
   | "mail"
-  | "residents"
   | "work-report"
   | "offline-cap"
   | "stories"
@@ -20,16 +19,17 @@ export type LockedFeature =
   | "auto-sell"
   | "weather-effects"
   | "auto-read"
-  | "resident-images"
   | "ai-guidelines"
   | "memory"
-  | "image-history";
+  | "specialty"
+  | "breakthrough"
+  | "pair-memory"
+  | "pair-guidelines";
 
 const LOCKED: Readonly<Record<LockedFeature, { label: string; phase: "P2" | "P3" | "P4" | "P5" }>> = {
   tickets: { label: "초대권", phase: "P3" },
   weather: { label: "현실 날씨", phase: "P5" },
   mail: { label: "우편함", phase: "P4" },
-  residents: { label: "주민", phase: "P2" },
   "work-report": { label: "작업 보고", phase: "P3" },
   "offline-cap": { label: "미접속 누적 진행", phase: "P3" },
   stories: { label: "주민 이야기", phase: "P4" },
@@ -43,10 +43,12 @@ const LOCKED: Readonly<Record<LockedFeature, { label: string; phase: "P2" | "P3"
   "auto-sell": { label: "자동 판매", phase: "P3" },
   "weather-effects": { label: "날씨 효과", phase: "P5" },
   "auto-read": { label: "자동 읽기", phase: "P4" },
-  "resident-images": { label: "주민 그림 관리", phase: "P2" },
   "ai-guidelines": { label: "AI 지침 관리", phase: "P4" },
   memory: { label: "기억 관리", phase: "P4" },
-  "image-history": { label: "그림 이력 정리", phase: "P2" },
+  specialty: { label: "전문 분야", phase: "P3" },
+  breakthrough: { label: "패시브 · 돌파", phase: "P3" },
+  "pair-memory": { label: "페어 기억 보기", phase: "P4" },
+  "pair-guidelines": { label: "페어 지침 관리", phase: "P4" },
 };
 
 export function isLocked(feature: LockedFeature): boolean {

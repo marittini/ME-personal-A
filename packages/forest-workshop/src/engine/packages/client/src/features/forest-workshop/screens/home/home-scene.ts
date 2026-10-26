@@ -1,11 +1,14 @@
 // The home scene (board 01-1): the workshop under the trees, with residents standing on the path. Layers follow
 // plan §8 (background → seasonal props → up to two residents → emotion marks → weather → DOM UI). Until the verified
-// background art arrives (P5) the background is this drawing in code; residents appear here from P2, so their two
-// places are marked locked.
-import type { Controller } from "../../app/controller";
+// background art arrives (P5) the background is this drawing in code. Recruited residents stand in the two places,
+// drawn from their own picture and placement; before the starting resident is chosen the first place invites the
+// player to 주민 등록, and a place still empty waits for invitations (P3).
+import type { AppState, Controller } from "../../app/controller";
 import { h } from "../../app/dom";
+import type { Resident, WorldState } from "../../app/types";
 import { featureButton } from "../chrome/locked";
 import { ICONS } from "../chrome/icons";
+import { residentFigure } from "../residents/resident-figure";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 
@@ -41,21 +44,67 @@ function backdrop() {
   return svg;
 }
 
-export function renderHomeScene(controller: Controller) {
+/** Up to two recruited residents, the starting resident first. */
+function sceneResidents(world: WorldState): Resident[] {
+  const starter = world.progress.starterResidentId;
+  return Object.values(world.residents)
+    .filter((resident) => resident.recruited)
+    .sort(
+      (a, b) =>
+        Number(b.residentId === starter) - Number(a.residentId === starter) ||
+        a.registeredAt.localeCompare(b.registeredAt),
+    )
+    .slice(0, 2);
+}
+
+function spot(side: "left" | "right", resident: Resident | null, world: WorldState, controller: Controller) {
+  if (resident) {
+    return h(
+      "button",
+      {
+        className: `resident-spot filled ${side}`,
+        attrs: { type: "button", "aria-label": `${resident.displayName} 보기` },
+        on: { click: () => controller.openResidents(resident.residentId) },
+      },
+      [residentFigure(resident), h("span", { className: "spot-name", text: resident.displayName })],
+    );
+  }
+  if (world.progress.starterResidentId === null && side === "left") {
+    const registered = Object.keys(world.residents).length > 0;
+    return h(
+      "button",
+      {
+        className: `resident-spot invite ${side}`,
+        attrs: { type: "button" },
+        on: { click: () => controller.openRegister(registered ? 3 : 1) },
+      },
+      [
+        h("span", { className: "spot-shadow" }),
+        h("span", { className: "spot-text", text: registered ? "시작 주민 고르기" : "주민 맞이하기" }),
+      ],
+    );
+  }
+  return featureButton(controller, "invite", {
+    className: `resident-spot ${side}`,
+    label: "주민 자리",
+    children: [h("span", { className: "spot-shadow" }), h("span", { className: "spot-text", text: "주민" })],
+  });
+}
+
+export function renderHomeScene(state: AppState, controller: Controller) {
+  const world = state.world?.state === "ready" ? state.world.value.state : null;
+  const residents = world ? sceneResidents(world) : [];
   return h("section", { className: "scene", attrs: { "aria-label": "공방 장면" } }, [
     backdrop(),
-    h("div", { className: "scene-stage" }, [
-      featureButton(controller, "residents", {
-        className: "resident-spot left",
-        label: "주민 자리",
-        children: [h("span", { className: "spot-shadow" }), h("span", { className: "spot-text", text: "주민" })],
-      }),
-      featureButton(controller, "residents", {
-        className: "resident-spot right",
-        label: "주민 자리",
-        children: [h("span", { className: "spot-shadow" }), h("span", { className: "spot-text", text: "주민" })],
-      }),
-    ]),
-    h("p", { className: "scene-caption" }, [ICONS.leaf("icon tiny"), "주민을 초대하면 이곳에 모여요"]),
+    world
+      ? h("div", { className: "scene-stage" }, [
+          spot("left", residents[0] ?? null, world, controller),
+          spot("right", residents[1] ?? null, world, controller),
+        ])
+      : null,
+    // With a resident standing here the empty place speaks for itself; the caption would sit under their name.
+    residents.length === 0
+      ? h("p", { className: "scene-caption" }, [ICONS.leaf("icon tiny"), "주민을 맞이하면 이곳에 모여요"])
+      : null,
   ]);
 }

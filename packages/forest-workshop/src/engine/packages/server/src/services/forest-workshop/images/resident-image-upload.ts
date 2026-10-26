@@ -28,7 +28,6 @@ export const SET_IMAGE_COMMAND = "residents.setImage";
 export function cleanFileName(name: unknown): string {
   if (typeof name !== "string") return "";
   const base = name.split(/[\\/]/u).pop() ?? "";
-  // eslint-disable-next-line no-control-regex
   return base
     .replace(/[\u0000-\u001f\u007f]/gu, "")
     .trim()

@@ -1,14 +1,23 @@
 // The top of every screen, in the two forms the mockups use:
 //   home  — the 숲결 공방 sign at top left, gold · invitation tickets · gear on the right; below it the weather chip
 //           and the mail button (board 01-1)
-//   sub   — a back button, the screen's sign, and (on 작업 · 시설과 창고) gold · tickets · gear (boards 01-2/3, 04, 05)
+//   sub   — a back button, the screen's sign, and (on 작업 · 시설과 창고) gold · tickets · gear (boards 01-2/3, 04, 05);
+//           주민 and 관계 add a ribbon under the sign (board 03)
 import type { AppState, Controller, Route } from "../../app/controller";
 import { h } from "../../app/dom";
 import { featureButton } from "./locked";
 import { ICONS } from "./icons";
 
 export type TopBar =
-  { kind: "home" } | { kind: "sub"; title: string; back?: { route: Route; label: string }; resources: boolean };
+  | { kind: "home" }
+  | {
+      kind: "sub";
+      title: string;
+      back?: { route: Route; label: string };
+      resources: boolean;
+      /** The ribbon under the sign (boards 03-1 주민, 03-2 관계). */
+      subtitle?: string;
+    };
 
 function resources(state: AppState, controller: Controller) {
   const world = state.world?.state === "ready" ? state.world.value : null;
@@ -79,5 +88,6 @@ export function renderTopBar(state: AppState, controller: Controller, bar: TopBa
       h("h1", { className: "sign", text: bar.title, attrs: { id: "fw-screen-title" } }),
       bar.resources ? resources(state, controller) : null,
     ]),
+    bar.subtitle ? h("p", { className: "ribbon", text: bar.subtitle }) : null,
   ]);
 }

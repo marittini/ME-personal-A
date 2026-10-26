@@ -106,6 +106,8 @@ p { margin: 0; }
   box-shadow: 0 0.4em 1.2em rgba(60, 35, 15, 0.28);
 }
 .has-nav .notice { bottom: calc(5.6em + env(safe-area-inset-bottom, 0px)); }
+/* While a toast shows, the page can scroll its last controls above it. */
+.has-notice .page { padding-bottom: 6em; }
 .notice p { flex: 1; min-width: 0; overflow-wrap: anywhere; font-weight: 600; }
 .notice.error { border-color: var(--fw-fail); color: var(--fw-fail); background: #fbe9e4; }
 .notice-close { flex: none; min-height: 2.75em; padding: 0 0.6em; border: 0; background: none; color: inherit; font: inherit; font-weight: 700; text-decoration: underline; cursor: pointer; }

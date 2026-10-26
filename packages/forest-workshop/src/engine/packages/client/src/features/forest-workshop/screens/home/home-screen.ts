@@ -85,7 +85,7 @@ export function renderHomeScreen(state: AppState, controller: Controller) {
   return renderFrame(state, controller, {
     top: { kind: "home" },
     backdrop: "forest",
-    hero: renderHomeScene(controller),
+    hero: renderHomeScene(state, controller),
     body: [workReport(controller), offlineBar(controller), storyCard(controller)],
     nav: true,
     sheet: renderStarterKitSheet(state, controller),

@@ -105,4 +105,20 @@ export const ICONS = {
     { circle: [15, 17, 1.2], fill: true },
   ]),
   menu: icon(["M5 8h14", "M5 12h14", "M5 16h14"]),
+  // Residents
+  filter: icon(["M4 5.5h16l-6 7.5v5.5l-4 1.5v-7z"]),
+  heart: icon(["M12 19s-7-4.4-7-9.5A4 4 0 0 1 12 7a4 4 0 0 1 7 2.5C19 14.6 12 19 12 19z"]),
+  sparkle: icon(["M12 4l1.8 5.2L19 11l-5.2 1.8L12 18l-1.8-5.2L5 11l5.2-1.8z"]),
+  zoom: icon([{ circle: [10.5, 10.5, 6] }, "M15 15l5 5", "M10.5 8v5", "M8 10.5h5"]),
+  arrows: icon(["M4 12h16", "M7.5 8.5L4 12l3.5 3.5", "M16.5 8.5L20 12l-3.5 3.5"]),
+  updown: icon(["M12 4v16", "M8.5 7.5L12 4l3.5 3.5", "M8.5 16.5L12 20l3.5-3.5"]),
+  archive: icon(["M3.5 5h17v4h-17z", "M5 9v10h14V9", "M10 13h4"]),
+  addImage: icon([
+    "M6 3.5h8l4 4v13H6z",
+    "M14 3.5v4h4",
+    "M9 16l2.5-3 2 2 1-1.2",
+    { circle: [17.5, 17.5, 3.5] },
+    "M17.5 16v3",
+    "M16 17.5h3",
+  ]),
 };

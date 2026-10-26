@@ -2,11 +2,10 @@
 // 백업 불러오기 with the restore preview, and 그림 이력 정리. Below the mockup's content, two rows the mockup does not
 // draw but restore needs: 다른 세계 (restore always creates one) and 연결 점검.
 import type { AppState, Controller, Route } from "../../app/controller";
-import { errorLine, h, statusLine } from "../../app/dom";
-import type { StorageUsage } from "../../app/types";
+import { button, errorLine, h, statusLine } from "../../app/dom";
+import type { StorageUsage, WorldState } from "../../app/types";
 import { card, renderFrame } from "../chrome/frame";
 import { ICONS, type IconFactory } from "../chrome/icons";
-import { featureButton } from "../chrome/locked";
 import { renderRestorePanel } from "./restore-panel";
 
 function formatSavedAt(value: string) {
@@ -111,10 +110,14 @@ export function renderBackupScreen(state: AppState, controller: Controller) {
         card(
           null,
           [
-            featureButton(controller, "image-history", {
-              className: "menu-row",
-              label: "그림 이력 정리",
-              children: [
+            h(
+              "button",
+              {
+                className: "menu-row",
+                attrs: { type: "button" },
+                on: { click: () => controller.openSheet({ kind: "history-cleanup" }) },
+              },
+              [
                 h("span", { className: "menu-icon light" }, [ICONS.image()]),
                 h("span", { className: "menu-text" }, [
                   h("span", { className: "menu-title", text: "그림 이력 정리" }),
@@ -122,7 +125,7 @@ export function renderBackupScreen(state: AppState, controller: Controller) {
                 ]),
                 h("span", { className: "menu-chevron" }, [ICONS.chevron()]),
               ],
-            }),
+            ),
             secondaryRow(controller, "worlds", ICONS.house, "다른 세계", "세계 고르기 · 새로 만들기"),
             secondaryRow(controller, "diagnostics", ICONS.info, "연결 점검", "엔진 연결과 그림 저장 경로 확인"),
           ],
@@ -135,5 +138,41 @@ export function renderBackupScreen(state: AppState, controller: Controller) {
     backdrop: "wood",
     body,
     nav: true,
+    sheet:
+      world && state.sheet?.kind === "history-cleanup" ? historyCleanupSheet(world.state, state, controller) : null,
   });
+}
+
+/** 그림 이력 정리: confirms first, because earlier pictures cannot be brought back afterwards. */
+function historyCleanupSheet(world: WorldState, state: AppState, controller: Controller) {
+  const count = Object.values(world.residents).reduce((total, resident) => total + resident.image.history.length, 0);
+  const bytes = Object.values(world.residents)
+    .flatMap((resident) => resident.image.history)
+    .reduce((total, image) => total + image.bytes, 0);
+  const busy = Boolean(state.busy["image-history-clear"]);
+  return h("div", { className: "sheet-backdrop" }, [
+    h(
+      "section",
+      {
+        className: "sheet card",
+        attrs: { role: "dialog", "aria-modal": "true", "aria-labelledby": "fw-history-cleanup" },
+      },
+      [
+        h("h2", { className: "section-title", text: "그림 이력 정리", attrs: { id: "fw-history-cleanup" } }),
+        count
+          ? h("p", {
+              text: `주민들의 이전 그림 ${count}장(${formatSize(bytes)})을 정리해요. 지금 쓰는 그림은 그대로이고, 정리한 그림은 '이전 그림'에서 되돌릴 수 없어요.`,
+            })
+          : h("p", { className: "empty", text: "정리할 이전 그림이 없어요." }),
+        h("p", { className: "hint", text: "다른 곳에서 쓰는 그림 파일은 갤러리에 그대로 남아요." }),
+        count
+          ? button(busy ? "정리하는 중…" : `${count}장 정리하기`, () => void controller.clearImageHistory(), {
+              disabled: busy,
+              attrs: { "data-wide": "" },
+            })
+          : null,
+        button("닫기", () => controller.closeSheet(), { variant: "secondary", attrs: { "data-wide": "" } }),
+      ],
+    ),
+  ]);
 }

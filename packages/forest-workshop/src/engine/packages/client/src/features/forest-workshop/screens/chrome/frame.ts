@@ -36,18 +36,22 @@ function notice(state: AppState, controller: Controller) {
 }
 
 export function renderFrame(state: AppState, controller: Controller, frame: Frame) {
-  return h("div", { className: `shell backdrop-${frame.backdrop}${frame.nav ? " has-nav" : ""}` }, [
-    h("div", { className: "scroll" }, [
-      h("div", { className: "column" }, [
-        renderTopBar(state, controller, frame.top),
-        frame.hero ?? null,
-        h("main", { className: "page", attrs: { "aria-labelledby": "fw-screen-title" } }, frame.body),
+  return h(
+    "div",
+    { className: `shell backdrop-${frame.backdrop}${frame.nav ? " has-nav" : ""}${state.notice ? " has-notice" : ""}` },
+    [
+      h("div", { className: "scroll" }, [
+        h("div", { className: "column" }, [
+          renderTopBar(state, controller, frame.top),
+          frame.hero ?? null,
+          h("main", { className: "page", attrs: { "aria-labelledby": "fw-screen-title" } }, frame.body),
+        ]),
       ]),
-    ]),
-    notice(state, controller),
-    frame.nav ? renderBottomNav(state, controller) : null,
-    frame.sheet ?? null,
-  ]);
+      notice(state, controller),
+      frame.nav ? renderBottomNav(state, controller) : null,
+      frame.sheet ?? null,
+    ],
+  );
 }
 
 /** A card with the mockup's leaf-marked title. */

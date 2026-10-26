@@ -18,6 +18,12 @@ export type BackupPreview = { ok: true; summary: BackupSummary } | { ok: false; 
 
 const INVALID = "숲결 공방 백업 파일이 아닙니다. 설정 → 저장·백업에서 내보낸 JSON 파일을 골라 주세요.";
 
+/** Residents and pairs are stored as records keyed by ID. */
+function countEntries(value: unknown, keep: (entry: unknown) => boolean): number {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return 0;
+  return Object.values(value as Record<string, unknown>).filter(keep).length;
+}
+
 export function previewBackup(raw: unknown): BackupPreview {
   const backup = raw as {
     format?: unknown;
@@ -51,8 +57,8 @@ export function previewBackup(raw: unknown): BackupPreview {
       itemKinds: amounts.length,
       itemTotal: amounts.reduce((total, amount) => total + amount, 0),
       exportedAt: typeof backup.exportedAt === "string" ? backup.exportedAt : "",
-      residents: Array.isArray(backup.world.residents) ? backup.world.residents.length : 0,
-      pairs: Array.isArray(backup.world.pairs) ? backup.world.pairs.length : 0,
+      residents: countEntries(backup.world.residents, () => true),
+      pairs: countEntries(backup.world.pairs, (pair) => !(pair as { archived?: unknown }).archived),
       pictures: Array.isArray(backup.assets) ? backup.assets.length : 0,
     },
   };

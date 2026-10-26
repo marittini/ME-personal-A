@@ -5,12 +5,24 @@ behaviour; mockups win for look. `docs/forest-workshop/` records what is impleme
 
 ## Layers
 
-- `src/engine/packages/server/src/services/forest-workshop/engine-adapter.ts` is the only file that names Engine host
-  members. Other server files take the adapter's structural types. `engine-boundary.json` must keep an empty
-  private-import inventory: never import an Engine file by relative path.
-- `image-input.ts` is pure byte inspection (unit-tested). `image-adapter.ts` owns sharp and the Global Gallery.
-- The client is one custom element with a Shadow DOM and plain DOM nodes. Requests go through the Engine's API client
-  from `marinara:host`, never a hand-made fetch with its own admin header.
+Server (`src/engine/packages/server/src/services/forest-workshop/`), each folder importing only the ones above it:
+
+- `host/engine-adapter.ts` is the only file that names Engine host members; everything else takes its structural types.
+  `engine-boundary.json` must keep an empty private-import inventory: never import an Engine file by relative path.
+- `content/` game data (items, starter kit); amounts live here, not in rules.
+- `domain/` pure rules: the zod world model is the single source of the type and of load/backup validation;
+  `migrations.ts` upgrades one schema version at a time; each command is one module in `domain/commands/` registered in
+  `registry.ts`; every rule failure is an `FwError(code)` with a Korean message.
+- `store/` package documents with compare-and-swap; `services/` use cases (command execution with idempotency and
+  retries, worlds, backups); `images/` picture checks, WebP, Global Gallery; `diagnostics/` P0 checks; `http/` routes.
+
+Client (`src/engine/packages/client/src/features/forest-workshop/`): `app/` (host API wrapper, routes, store, the
+controller that owns every state change and request ID, DOM helper) and `screens/` (one render function per screen).
+Screens never call the API; they call controller actions. Requests go through the Engine's API client from
+`marinara:host`, never a hand-made fetch.
+
+The final mockups (5 boards, supplied with the plan) set the look; `docs/forest-workshop/P1-report.md` §3 maps each
+screen to its board and lists what later phases add.
 
 ## Invariants (do not break)
 
@@ -27,7 +39,7 @@ behaviour; mockups win for look. `docs/forest-workshop/` records what is impleme
 ```sh
 MARINARA_ENGINE_ROOT=<ME-personal checkout with dependencies> node scripts/build-feature-packages.mjs forest-workshop
 MARINARA_ENGINE_ROOT=<...> node scripts/typecheck-packages.mjs forest-workshop
-npx tsx tests/forest-workshop-p0.regression.ts
+npm run test:forest-workshop
 ```
 
 Generated files (`server.mjs`, `client.js`, `manifest.json`, `agents.json`, `locales/en.json`, the artifact and the

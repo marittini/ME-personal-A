@@ -7,7 +7,7 @@ import { deflateSync } from "node:zlib";
 import {
   MAX_INPUT_BYTES,
   inspectResidentImageInput,
-} from "../packages/forest-workshop/src/engine/packages/server/src/services/forest-workshop/image-input";
+} from "../packages/forest-workshop/src/engine/packages/server/src/services/forest-workshop/images/image-input";
 
 const CRC_TABLE = Array.from({ length: 256 }, (_, n) => {
   let c = n;

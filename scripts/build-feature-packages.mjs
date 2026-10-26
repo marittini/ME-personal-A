@@ -594,13 +594,13 @@ const features = [
   },
   {
     id: "forest-workshop",
-    version: "0.1.0",
+    version: "0.2.0",
     // Built and proven against ME-personal (the owner's Engine fork), which reports 2.5.1.
     minEngineVersion: "2.5.1",
     maxEngineExclusive: MAX_ENGINE_EXCLUSIVE,
     name: "Forest Workshop",
     description:
-      "A portrait cozy workshop game in development. This 0.1 build is the P0 connection check only: it proves storage, resource reads, model context fitting and resident picture uploads before any game screen ships.",
+      "A portrait cozy workshop game in development. This 0.2 build adds worlds, idempotent saving, a welcome package, the storeroom and JSON backup and restore on top of the connection checks; residents, production and stories follow.",
     category: "misc",
     kind: ["agent"],
     modes: ["conversation", "roleplay"],

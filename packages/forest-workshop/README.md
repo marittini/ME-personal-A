@@ -4,20 +4,18 @@ A portrait cozy workshop game for ME-personal, in development. `forest-workshop`
 name 숲결 공방 is provisional. The design contract is *Development_Plan_FINAL_v1_6* (숲속 공방 독립 에이전트 최종
 개발계획서 v1.6); `docs/forest-workshop/` in this repository records what has been implemented and verified.
 
-## What 0.1.0 is
+## What 0.2.0 is
 
-**0.1.0 is the P0 connection check, not the game.** It installs a Home tab that runs the checks the plan requires
-before any game logic is written:
+Not the full game yet. It is the storage foundation (plan P1) with the screens it needs:
 
-| Check | What it proves |
-| --- | --- |
-| Engine connection | Which capability runtime members the running Engine provides; activation refuses an Engine without package documents or transactions. |
-| Character and persona reads | `resources.listCharacters` and `resources.listPersonas` answer. Nothing is written to either. |
-| Model connection | `languageModels.resolve` picks the default connection and `fitContext` estimates tokens. No generation request is sent. |
-| Documents | Create, `expectedRevision` update, stale-write rejection (`null`), revision-checked removal. |
-| Transaction | A failed `persistence.transaction` rolls back both a create and an update. |
-| Resident picture | A PNG or static WebP is checked by its bytes and the decoder, converted to WebP quality 95 with transparency kept, stored in the Global Gallery, and saved as a `global-gallery:<id>` reference. The PNG original is never written to disk. |
+- Worlds: create several, switch between them, rename the world and your nickname (the player has a nickname only).
+- Every change is a server-decided command: a resent command never applies twice, a failed save changes nothing,
+  and concurrent tabs cannot grant anything twice.
+- The one-time welcome package and the storeroom.
+- Settings → 저장 · 백업: JSON backup without secrets, and restore with a preview that always makes a new world.
+- Settings → 연결 점검: the P0 checks (Engine members, storage/model probe, resident picture path to the Global Gallery).
 
+Residents and pairs, production and automation, invitations, expeditions, stories and letters follow in later phases.
 The package never calls character avatar generation or `integrations.images.*`, never copies a character or persona
 avatar, and never edits a character card or persona.
 
@@ -41,7 +39,7 @@ Engine versions below 2.5.1 are not offered the package.
 
 ## Data
 
-Package documents use kinds `fw-p0` (the picture check slot) and `fw-p0-probe` (temporary, removed by each check).
+Package documents use kinds `fw-world` (one per world), `fw-command` (one per accepted command, for idempotency), `fw-p0` (the connection-check picture slot) and `fw-p0-probe` (temporary, removed by each check).
 Uninstalling the package does not delete the gallery picture; the Global Gallery protects a picture while a package
 document references it.
 

@@ -2,7 +2,7 @@
 // running Engine actually did. It writes only throwaway `fw-p0-probe` documents and removes them before returning.
 // It never writes characters or personas and never calls a provider (fitContext only estimates tokens).
 import { randomUUID } from "node:crypto";
-import { PACKAGE_ID, type HostDocumentRecord, type HostRuntime } from "./engine-adapter";
+import { PACKAGE_ID, type HostDocumentRecord, type HostRuntime } from "../host/engine-adapter";
 
 export type ProbeStatus = "pass" | "fail" | "unavailable";
 

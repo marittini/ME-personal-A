@@ -56,6 +56,20 @@ export interface HostPersistenceSession {
   documents: HostDocumentStore;
 }
 
+/** The persistence members the game needs; activation refuses an Engine without them (missingRequiredHostMembers). */
+export interface HostPersistence extends HostPersistenceSession {
+  transaction<T>(operation: (session: HostPersistenceSession) => Promise<T>): Promise<T>;
+}
+
+/** Narrows the runtime to the members activation has already checked. */
+export function requirePersistence(runtime: HostRuntime): HostPersistence {
+  const persistence = runtime.persistence;
+  if (!persistence?.documents || typeof persistence.transaction !== "function") {
+    throw new Error("Forest Workshop needs package documents and transactions from the Engine");
+  }
+  return persistence as HostPersistence;
+}
+
 export interface HostLanguageModelMessage {
   role: "system" | "user" | "assistant";
   content: string;

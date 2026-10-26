@@ -2,7 +2,7 @@
   {
     "id": "forest-workshop",
     "name": "Forest Workshop",
-    "description": "A portrait cozy workshop game in development. This 0.1 build is the P0 connection check only: it proves storage, resource reads, model context fitting and resident picture uploads before any game screen ships.",
+    "description": "A portrait cozy workshop game in development. This 0.2 build adds worlds, idempotent saving, a welcome package, the storeroom and JSON backup and restore on top of the connection checks; residents, production and stories follow.",
     "author": "marittini",
     "phase": "pre_generation",
     "enabledByDefault": false,

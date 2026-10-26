@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { FwError } from "../domain/errors";
 import { assertWorldId } from "../domain/ids";
+import { presentActivity } from "../domain/production/activity";
 import { createWorldState, nicknameSchema, worldNameSchema, type WorldState } from "../domain/world-model";
 import type { HostPersistence } from "../host/engine-adapter";
 import { createWorldDocument, findWorld, listWorlds, loadWorld, type WorldSummary } from "../store/world-repository";
@@ -56,7 +57,9 @@ export function createWorldService(persistence: HostPersistence, clock: () => Da
       }
       const now = clock().toISOString();
       const { worldName, playerNickname } = parsed.data;
-      const state = createWorldState({ worldId, worldName, playerNickname, now });
+      const created = createWorldState({ worldId, worldName, playerNickname, now });
+      // The player is creating it right now: time starts counting from here.
+      const state = { ...created, production: { ...created.production, activity: presentActivity(now) } };
       try {
         const stored = await createWorldDocument(documents, state, now, "Forest Workshop world");
         return { worldId, revision: stored.revision, updatedAt: stored.updatedAt, state, created: true };

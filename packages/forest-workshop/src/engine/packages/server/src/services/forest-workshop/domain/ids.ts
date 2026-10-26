@@ -44,3 +44,10 @@ export function stableStringify(value: unknown): string {
 export function sha256Hex(value: string | Uint8Array): string {
   return createHash("sha256").update(value).digest("hex");
 }
+
+/** A UUID-shaped ID derived from a seed, for content-made records (starter rules) that must be the same on retry. */
+export function seededUuid(seed: string): string {
+  const hex = sha256Hex(seed);
+  const variant = ((parseInt(hex[16]!, 16) & 0x3) | 0x8).toString(16);
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-4${hex.slice(13, 16)}-${variant}${hex.slice(17, 20)}-${hex.slice(20, 32)}`;
+}

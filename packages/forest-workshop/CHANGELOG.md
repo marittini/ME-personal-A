@@ -1,3 +1,9 @@
+## 0.4.0 — 2026-10-27
+- Automatic production: a gathering yard and a processing bench run on their own from recommended rules (target stock, priority, on/off). Change targets and order on the Work screen and apply them; 추천 설정 previews the recommended rules first.
+- Production is measured against stock plus what is already being made, may finish at most one batch over a target, and never uses protected stock. A waiting facility says why (materials, protected amount, target reached).
+- Time away counts for at most 72 hours per absence, however often the world is opened in the background; a run cut at that edge keeps its remaining time until you return. Only the visible, focused game screen counts as being present.
+- Facility upgrades for gold (faster runs from the next run), stock protection, selling from the storeroom, and the 작업 보고 on Home (reading it never grants anything twice).
+
 ## 0.3.0 — 2026-10-27
 - Screens follow the final mockups: Home, Work, Facilities and Storeroom, Settings and Save · Backup, with parts that open in later phases kept in place and marked 준비 중.
 - Residents: register your characters and personas into a world. The source is only read; its text is kept beside the resident's new 공방 세계 설정 for comparison, with a change history. The same source is always one resident. A persona resident is an inhabitant, never the player.

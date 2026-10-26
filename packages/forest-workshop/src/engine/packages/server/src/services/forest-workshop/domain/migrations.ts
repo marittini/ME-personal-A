@@ -2,6 +2,7 @@
 // failure the original stays untouched and the player is told how to restore). Migration never writes by itself:
 // the upgraded state is saved only by the next successful command, so a failed read changes nothing on disk.
 import { FwError } from "./errors";
+import { initialProduction } from "./production/initial";
 import { CURRENT_SCHEMA_VERSION, worldStateSchema, type WorldState } from "./world-model";
 
 type RawWorld = Record<string, unknown>;
@@ -28,6 +29,9 @@ const MIGRATIONS: Readonly<Record<number, (world: RawWorld) => RawWorld>> = {
       }),
     ),
   }),
+  // v3 → v4 (P3): production starts with level-1 facilities and the recommended rules. Time starts counting at the
+  // first settlement after the upgrade, so no time before it is credited.
+  3: (world) => ({ ...world, schemaVersion: 4, production: initialProduction(String(world.worldId)) }),
 };
 
 export function migrateWorld(raw: unknown): WorldState {

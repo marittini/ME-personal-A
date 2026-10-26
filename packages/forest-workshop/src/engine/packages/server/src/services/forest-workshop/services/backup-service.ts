@@ -13,6 +13,7 @@ import { z } from "zod";
 import { FwError } from "../domain/errors";
 import { assertWorldId, sha256Hex } from "../domain/ids";
 import { migrateWorld } from "../domain/migrations";
+import { presentActivity } from "../domain/production/activity";
 import { GALLERY_REFERENCE, residentImageReferences, type ResidentImage } from "../domain/model/residents";
 import { worldStateSchema, type WorldState } from "../domain/world-model";
 import type { HostPersistence } from "../host/engine-adapter";
@@ -206,8 +207,16 @@ export function createBackupService(
           stored.push(target.reference);
           mapping.set(image.reference, target);
         }
-        const state = remapImages({ ...original, worldId: newWorldId }, mapping);
         const now = clock().toISOString();
+        // The restored world starts its clock now: the time between the backup and the restore is not credited.
+        const state = remapImages(
+          {
+            ...original,
+            worldId: newWorldId,
+            production: { ...original.production, activity: presentActivity(now) },
+          },
+          mapping,
+        );
         const created = await createWorldDocument(
           documents,
           state,

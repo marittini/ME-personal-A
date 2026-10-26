@@ -176,7 +176,8 @@ async function main() {
       progress: { starterKitClaimed: true },
     };
     const migrated = migrateWorld(structuredClone(v1));
-    assert.equal(migrated.schemaVersion, 3);
+    assert.equal(migrated.schemaVersion, 4);
+    assert.equal(Object.keys(migrated.production.facilities).length, 2, "v3 → v4 adds production");
     assert.deepEqual(migrated.residents, {});
     assert.deepEqual(migrated.pairs, {});
     assert.equal(migrated.progress.starterResidentId, null);

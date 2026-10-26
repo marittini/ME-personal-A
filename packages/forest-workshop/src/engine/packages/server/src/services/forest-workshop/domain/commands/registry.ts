@@ -4,7 +4,9 @@
 import { FwError } from "../errors";
 import { worldStateSchema, type WorldState } from "../world-model";
 import type { CommandContext, CommandDefinition, CommandOutcome } from "./command";
+import { sellItems } from "./economy";
 import { claimStarterKit } from "./onboarding";
+import { markReportsRead, setProtected, setRules, upgradeFacility } from "./production";
 import { addPair, archivePair, restorePair } from "./pairs";
 import {
   clearResidentImageHistory,
@@ -28,6 +30,11 @@ const DEFINITIONS = [
   addPair,
   archivePair,
   restorePair,
+  setRules,
+  setProtected,
+  upgradeFacility,
+  markReportsRead,
+  sellItems,
 ] as unknown as ReadonlyArray<CommandDefinition<never>>;
 
 const REGISTRY = new Map(DEFINITIONS.map((definition) => [definition.type, definition]));

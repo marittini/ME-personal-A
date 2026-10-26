@@ -1,13 +1,16 @@
 // The world document's shape (plan §6). The zod schema is the single source: the TypeScript type is inferred from
 // it, every load is validated against it, and a backup is checked with it before anything is written.
 // Each phase adds its parts through a schema migration (domain/migrations.ts): v2 added residents and pairs (P2),
-// v3 made pairs any two residents.
+// v3 made pairs any two residents, v4 added production (P3).
 import { z } from "zod";
 import { isKnownItem } from "../content/items";
+import { FACILITIES, recipeDefinition } from "../content/production";
 import { MAX_PAIRS, pairSchema } from "./model/pairs";
+import { productionSchema } from "./model/production";
+import { initialProduction } from "./production/initial";
 import { MAX_RESIDENTS, residentSchema } from "./model/residents";
 
-export const CURRENT_SCHEMA_VERSION = 3;
+export const CURRENT_SCHEMA_VERSION = 4;
 
 const nonNegativeInt = z.number().int().min(0).max(Number.MAX_SAFE_INTEGER);
 const displayText = (max: number) =>
@@ -43,6 +46,7 @@ const worldShape = z
       .strict(),
     residents: z.record(z.string().uuid(), residentSchema),
     pairs: z.record(z.string().uuid(), pairSchema),
+    production: productionSchema,
   })
   .strict();
 
@@ -76,6 +80,25 @@ export const worldStateSchema = worldShape.superRefine((world, context) => {
     if (couples.has(couple)) issue(["pairs", key], "duplicate pair");
     couples.add(couple);
   }
+
+  // Production: exactly the content's facilities; rules and jobs use their facility's recipes, one rule per recipe.
+  const facilityIds = Object.keys(world.production.facilities);
+  if (facilityIds.length !== FACILITIES.length || !FACILITIES.every((f) => world.production.facilities[f.id])) {
+    issue(["production", "facilities"], "facility set");
+  }
+  for (const [facilityId, facility] of Object.entries(world.production.facilities)) {
+    const recipes = new Set<string>();
+    for (const rule of facility.rules) {
+      if (recipeDefinition(rule.recipeId)?.facilityId !== facilityId) issue(["production", facilityId], "rule recipe");
+      if (recipes.has(rule.recipeId)) issue(["production", facilityId], "duplicate recipe rule");
+      recipes.add(rule.recipeId);
+    }
+    if (facility.job && recipeDefinition(facility.job.recipeId)?.facilityId !== facilityId) {
+      issue(["production", facilityId], "job recipe");
+    }
+    if (facility.job && facility.job.endsSim < world.production.simMs) issue(["production", facilityId], "job overdue");
+  }
+  if (!Object.keys(world.production.protectedStock).every(isKnownItem)) issue(["production"], "protected item");
 });
 
 export type WorldState = z.infer<typeof worldStateSchema>;
@@ -98,6 +121,7 @@ export function createWorldState(input: NewWorldInput): WorldState {
     progress: { starterKitClaimed: false, starterResidentId: null },
     residents: {},
     pairs: {},
+    production: initialProduction(input.worldId),
   });
 }
 

@@ -25,6 +25,7 @@ import { PACKAGE_VERSION } from "./package-info";
 import { createBackupService } from "./services/backup-service";
 import { createCommandService } from "./services/command-service";
 import { createRebuildService } from "./services/rebuild-service";
+import { createSettlementService } from "./services/settlement-service";
 import { createSourceService } from "./services/source-service";
 import { createStorageService } from "./services/storage-service";
 import { createWorldService } from "./services/world-service";
@@ -52,6 +53,7 @@ export async function activate({ app, api }: ActivationContext) {
     sources,
     rebuild: createRebuildService(runtime, sources),
     worlds: createWorldService(persistence),
+    settlement: createSettlementService(persistence),
     commands: createCommandService(persistence, undefined, sources.host),
     backups: createBackupService(persistence, PACKAGE_VERSION),
     storage: createStorageService(persistence),

@@ -10,6 +10,7 @@
 import type { CommandHost } from "../domain/commands/command";
 import { FwError } from "../domain/errors";
 import { applyCommand, getCommandDefinition, parseCommandPayload } from "../domain/commands/registry";
+import { settleWorld } from "../domain/production/settle";
 import { assertRequestId, assertWorldId, sha256Hex, stableStringify } from "../domain/ids";
 import type { WorldState } from "../domain/world-model";
 import type { HostPersistence } from "../host/engine-adapter";
@@ -119,7 +120,10 @@ export function createCommandService(
         const now = clock().toISOString();
         let outcome;
         try {
-          outcome = applyCommand(current.state, definition, request.payload, {
+          // A command means the player is here: the workshop is first brought up to now (production, 72-hour rule),
+          // so the rule sees the present storeroom, and the settlement is saved together with the command.
+          const present = settleWorld(current.state, now, { active: true });
+          outcome = applyCommand(present, definition, request.payload, {
             now,
             commandId: request.commandId,
             prepared,

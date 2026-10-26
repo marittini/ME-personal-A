@@ -10,10 +10,23 @@
 //   GET  /sources?worldId=          characters and personas that can become residents (read-only)
 //   GET  /sources/preview?worldId=&kind=&id=   the snapshot a registration would keep (원래 설정)
 //   POST /rebuild-suggestion        { worldId, source } → a 공방 세계 설정 draft from the language model; nothing saved
+//   POST /heartbeat                 { worldId } from the visible, focused game screen → settles and renews presence
 //   POST /residents/image           multipart { worldId, residentId, uploadKey, file } → the resident's new picture
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { ITEMS } from "../content/items";
+import {
+  FACILITIES,
+  FACILITY_MAX_LEVEL,
+  MAX_RULES_PER_FACILITY,
+  PROTECTED_STOCK_RANGE,
+  RECIPES,
+  RECOMMENDED_RULES,
+  SPEED_BONUS_PER_LEVEL,
+  TARGET_STOCK_RANGE,
+  upgradeCost,
+} from "../content/production";
 import { RELATION_STAGES } from "../content/relations";
+import { ABSENCE_LIMIT_MS } from "../domain/model/production";
 import { STARTER_KIT } from "../content/starter-kit";
 import { PLACEMENT_LIMITS, WORLD_SETTING_MAX } from "../domain/model/residents";
 import { galleryAssetReader, galleryAssetStore } from "../images/gallery-files";
@@ -22,6 +35,7 @@ import { UploadRefused, releaseGalleryImages, uploadResidentImage } from "../ima
 import type { HostPersistence } from "../host/engine-adapter";
 import type { BackupService } from "../services/backup-service";
 import type { RebuildService } from "../services/rebuild-service";
+import type { SettlementService } from "../services/settlement-service";
 import type { SourceService } from "../services/source-service";
 import type { StorageService } from "../services/storage-service";
 import { parseCommandRequest, type CommandService } from "../services/command-service";
@@ -37,12 +51,25 @@ export interface GameRouteServices {
   storage: StorageService;
   sources: SourceService;
   rebuild: RebuildService;
+  settlement: SettlementService;
   logger: RouteLogger | undefined;
 }
 
 /** Static content the client renders with; the server stays the authority on amounts and rules. */
 const CONTENT = {
   items: ITEMS,
+  facilities: FACILITIES,
+  recipes: RECIPES,
+  production: {
+    maxLevel: FACILITY_MAX_LEVEL,
+    maxRules: MAX_RULES_PER_FACILITY,
+    speedBonusPerLevel: SPEED_BONUS_PER_LEVEL,
+    targetStock: TARGET_STOCK_RANGE,
+    protectedStock: PROTECTED_STOCK_RANGE,
+    upgradeCosts: Array.from({ length: FACILITY_MAX_LEVEL - 1 }, (_, index) => upgradeCost(index + 1)),
+    recommendedRules: RECOMMENDED_RULES,
+    absenceLimitMs: ABSENCE_LIMIT_MS,
+  },
   starterKit: STARTER_KIT,
   relationStages: RELATION_STAGES,
   residents: { worldSettingMax: WORLD_SETTING_MAX, placement: PLACEMENT_LIMITS, maxImageBytes: MAX_INPUT_BYTES },
@@ -53,7 +80,7 @@ function queryWorldId(request: FastifyRequest): unknown {
 }
 
 export function registerGameRoutes(router: FastifyInstance, services: GameRouteServices) {
-  const { app, worlds, commands, backups, storage, sources, rebuild, logger } = services;
+  const { app, worlds, commands, backups, storage, sources, rebuild, settlement, logger } = services;
   const query = (request: FastifyRequest) => (request.query ?? {}) as Record<string, unknown>;
 
   router.get("/worlds", async (_request: FastifyRequest, reply: FastifyReply) =>
@@ -68,11 +95,18 @@ export function registerGameRoutes(router: FastifyInstance, services: GameRouteS
     }),
   );
 
+  // Reading settles production to now (not presence: a read is not the player being here) and saves it first.
   router.get("/state", async (request: FastifyRequest, reply: FastifyReply) =>
     respond(reply, logger, "read state", async () => ({
-      ...(await worlds.get(queryWorldId(request) as string)),
+      ...(await settlement.settle(queryWorldId(request), { active: false })),
       content: CONTENT,
     })),
+  );
+
+  router.post("/heartbeat", async (request: FastifyRequest, reply: FastifyReply) =>
+    respond(reply, logger, "heartbeat", async () =>
+      settlement.settle((request.body as Record<string, unknown> | undefined)?.worldId, { active: true }),
+    ),
   );
 
   router.post("/commands", async (request: FastifyRequest, reply: FastifyReply) =>

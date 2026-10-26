@@ -27,6 +27,12 @@ export type FwErrorCode =
   | "pair_self"
   | "pair_limit"
   | "image_not_found"
+  // Production and economy (P3)
+  | "facility_not_found"
+  | "invalid_rules"
+  | "max_level"
+  | "not_enough_gold"
+  | "not_enough_stock"
   // Text generation
   | "lm_unavailable"
   | "generation_failed"
@@ -56,6 +62,11 @@ const STATUS: Record<FwErrorCode, number> = {
   pair_self: 400,
   pair_limit: 409,
   image_not_found: 404,
+  facility_not_found: 404,
+  invalid_rules: 400,
+  max_level: 409,
+  not_enough_gold: 409,
+  not_enough_stock: 409,
   lm_unavailable: 503,
   generation_failed: 502,
   unsupported_schema: 422,
@@ -84,6 +95,12 @@ const MESSAGES: Record<FwErrorCode, string> = {
   pair_self: "같은 주민끼리는 페어를 만들 수 없습니다. 다른 주민을 골라 주세요.",
   pair_limit: "페어는 한 세계에 200개까지 만들 수 있습니다.",
   image_not_found: "그 그림은 이 주민의 이전 그림 목록에 없습니다.",
+  facility_not_found: "시설을 찾을 수 없습니다.",
+  invalid_rules:
+    "운영 규칙을 저장할 수 없습니다. 이 시설의 제작법인지, 같은 제작법이 두 번 들어가지 않았는지 확인해 주세요.",
+  max_level: "이미 최고 단계까지 강화한 시설입니다.",
+  not_enough_gold: "골드가 부족합니다. 재화는 바뀌지 않았습니다.",
+  not_enough_stock: "사용할 수 있는 수량이 부족합니다. 보호한 재고는 쓰지 않습니다.",
   lm_unavailable: "글을 제안할 언어 모델 연결이 없습니다. 엔진 설정에서 연결을 고르거나 직접 써 주세요.",
   generation_failed: "제안을 받지 못했습니다. 다시 시도하거나 직접 써 주세요. 저장된 내용은 바뀌지 않았습니다.",
   unsupported_schema: "이 저장 데이터는 더 새로운 패키지 버전에서 만들어졌습니다. 패키지를 업데이트해 주세요.",

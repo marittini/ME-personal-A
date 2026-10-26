@@ -594,13 +594,13 @@ const features = [
   },
   {
     id: "forest-workshop",
-    version: "0.3.0",
+    version: "0.4.0",
     // Built and proven against ME-personal (the owner's Engine fork), which reports 2.5.1.
     minEngineVersion: "2.5.1",
     maxEngineExclusive: MAX_ENGINE_EXCLUSIVE,
     name: "Forest Workshop",
     description:
-      "A portrait cozy workshop game in development. This 0.3 build adds residents registered from your characters and personas (with an optional language-model rebuild suggestion), your own uploaded resident pictures stored as WebP, pairs between any two residents, and backups that carry the pictures; production, invitations and stories follow.",
+      "A portrait cozy workshop game in development. This 0.4 build adds automatic production (a gathering yard and a processing bench running on your rules, stock protection, upgrades, selling, a work report and the 72-hour absence cap) on top of residents registered from your characters and personas (with an optional language-model rebuild suggestion), your own uploaded resident pictures stored as WebP, pairs between any two residents, and backups that carry the pictures; production, invitations and stories follow.",
     category: "misc",
     kind: ["agent"],
     modes: ["conversation", "roleplay"],

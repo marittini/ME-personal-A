@@ -57,6 +57,19 @@ const claim = (commandId: string, expectedRevision = 1) => ({
   payload: {},
 });
 
+/** P1 worlds hold no pictures: any picture read or store here is a test failure. */
+const NO_PICTURES = {
+  read: async (): Promise<Buffer> => {
+    throw new Error("P1 worlds reference no pictures");
+  },
+  store: {
+    store: async (): Promise<{ reference: string; url: string }> => {
+      throw new Error("P1 backups carry no pictures");
+    },
+    remove: async () => undefined,
+  },
+};
+
 async function main() {
   // Worlds: creation is idempotent on the world ID and normalizes text.
   {
@@ -284,19 +297,23 @@ async function main() {
     const env = setup();
     await newWorld(env);
     await env.commands.execute(claim("cmd-claim-b1"));
-    const { backup, fileName } = await env.backups.exportWorld(WORLD);
+    const { backup, fileName } = await env.backups.exportWorld(WORLD, NO_PICTURES.read);
     assert.match(fileName, /^forest-workshop-11111111-.*\.json$/u);
     assert.equal(backup.packageVersion, PACKAGE_VERSION);
     const json = JSON.parse(JSON.stringify(backup));
     assert.ok(!stableStringify(json).includes("fw-command"), "no command records in a backup");
 
-    const restored = await env.backups.restore({ newWorldId: RESTORED, backup: json });
+    const restored = await env.backups.restore({ newWorldId: RESTORED, backup: json }, NO_PICTURES.store);
     assert.equal(restored.created, true);
     assert.equal(restored.restoredFrom, WORLD);
     assert.equal(restored.state.worldId, RESTORED);
     assert.equal(restored.state.wallet.gold, STARTER_KIT.gold);
     assert.deepEqual(restored.state.inventory, (await env.worlds.get(WORLD)).state.inventory);
-    assert.equal((await env.backups.restore({ newWorldId: RESTORED, backup: json })).created, false, "retried restore");
+    assert.equal(
+      (await env.backups.restore({ newWorldId: RESTORED, backup: json }, NO_PICTURES.store)).created,
+      false,
+      "retried restore",
+    );
     assert.equal(env.host.count("fw-world"), 2);
     // The restored world keeps the claim: a backup cannot be used to claim the starter kit again.
     await rejects(
@@ -307,30 +324,39 @@ async function main() {
 
     const other = "44444444-4444-4444-8444-444444444444";
     await rejects(
-      env.backups.restore({ newWorldId: other, backup: { ...json, world: { ...json.world, wallet: { gold: -5 } } } }),
+      env.backups.restore(
+        { newWorldId: other, backup: { ...json, world: { ...json.world, wallet: { gold: -5 } } } },
+        NO_PICTURES.store,
+      ),
       "invalid_backup",
       "negative gold",
     );
     await rejects(
-      env.backups.restore({ newWorldId: other, backup: { ...json, world: { ...json.world, schemaVersion: 99 } } }),
+      env.backups.restore(
+        { newWorldId: other, backup: { ...json, world: { ...json.world, schemaVersion: 99 } } },
+        NO_PICTURES.store,
+      ),
       "unsupported_schema",
       "future schema",
     );
     await rejects(
-      env.backups.restore({ newWorldId: other, backup: { ...json, assets: [{}] } }),
+      env.backups.restore({ newWorldId: other, backup: { ...json, assets: [{}] } }, NO_PICTURES.store),
       "invalid_backup",
-      "assets not yet supported",
+      "malformed asset",
     );
     await rejects(
-      env.backups.restore({ newWorldId: other, backup: { ...json, format: "something-else" } }),
+      env.backups.restore({ newWorldId: other, backup: { ...json, format: "something-else" } }, NO_PICTURES.store),
       "invalid_backup",
       "wrong format",
     );
     await rejects(
-      env.backups.restore({
-        newWorldId: other,
-        backup: { ...json, world: { ...json.world, inventory: { "gold-bar": 1 } } },
-      }),
+      env.backups.restore(
+        {
+          newWorldId: other,
+          backup: { ...json, world: { ...json.world, inventory: { "gold-bar": 1 } } },
+        },
+        NO_PICTURES.store,
+      ),
       "invalid_backup",
       "unknown item",
     );
@@ -344,7 +370,7 @@ async function main() {
       (e: unknown) => e instanceof FwError && e.code === "corrupt_world",
     );
     assert.throws(
-      () => migrateWorld({ schemaVersion: 2 }),
+      () => migrateWorld({ schemaVersion: 99 }),
       (e: unknown) => e instanceof FwError && e.code === "unsupported_schema",
     );
     const env = setup();

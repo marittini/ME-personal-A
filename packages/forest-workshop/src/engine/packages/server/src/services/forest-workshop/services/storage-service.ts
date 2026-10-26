@@ -1,7 +1,8 @@
 // 저장 공간 사용량 (mockup 05 · 저장·백업): how much this world stores, by kind. Measured, never estimated:
-// records are the world's own package documents as stored JSON. Resident pictures and backgrounds are counted from
-// the Global Gallery references once those features store pictures (P2, P5); until then they are truly 0.
+// records are the world's own package documents as stored JSON; resident pictures are the WebP files the world
+// references (current and history, each file once), as stored. Backgrounds arrive with P5 and are truly 0 until then.
 import { assertWorldId, documentId, DOCUMENT_KIND } from "../domain/ids";
+import { residentImageReferences } from "../domain/model/residents";
 import { PACKAGE_ID, type HostPersistence } from "../host/engine-adapter";
 import { loadWorld } from "../store/world-repository";
 
@@ -27,7 +28,12 @@ export function createStorageService(persistence: HostPersistence) {
       );
       const recordsBytes =
         jsonBytes(world.record.data) + commands.reduce((total, record) => total + jsonBytes(record.data), 0);
-      return { residentImagesBytes: 0, backgroundsBytes: 0, recordsBytes };
+      const pictures = new Map<string, number>();
+      for (const resident of Object.values(world.state.residents)) {
+        for (const image of residentImageReferences(resident)) pictures.set(image.reference, image.bytes);
+      }
+      const residentImagesBytes = [...pictures.values()].reduce((total, bytes) => total + bytes, 0);
+      return { residentImagesBytes, backgroundsBytes: 0, recordsBytes };
     },
   };
 }

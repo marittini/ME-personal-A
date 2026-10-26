@@ -80,6 +80,10 @@ export interface HostResolvedLanguageModel {
   model: string;
   maxContext: number | null;
   maxOutputTokens: number | null;
+  chatComplete(
+    messages: HostLanguageModelMessage[],
+    options?: { temperature?: number; maxTokens?: number; signal?: AbortSignal; debugMode?: boolean },
+  ): Promise<{ content: string; finishReason?: string | null }>;
   fitContext(
     messages: HostLanguageModelMessage[],
     options?: { maxTokens?: number },
@@ -98,6 +102,7 @@ export interface HostRuntime {
     transaction?<T>(operation: (session: HostPersistenceSession) => Promise<T>): Promise<T>;
   };
   logger?: {
+    debug?(message: string, ...args: unknown[]): void;
     info(message: string, ...args: unknown[]): void;
     warn(message: string, ...args: unknown[]): void;
     error(error: unknown, message: string, ...args: unknown[]): void;

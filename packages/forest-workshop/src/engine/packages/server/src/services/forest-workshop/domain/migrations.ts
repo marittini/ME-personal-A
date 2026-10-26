@@ -7,7 +7,16 @@ import { CURRENT_SCHEMA_VERSION, worldStateSchema, type WorldState } from "./wor
 type RawWorld = Record<string, unknown>;
 
 /** `MIGRATIONS[n]` turns a version-n document into version n+1. Add one entry per schema bump; never edit old ones. */
-const MIGRATIONS: Readonly<Record<number, (world: RawWorld) => RawWorld>> = {};
+const MIGRATIONS: Readonly<Record<number, (world: RawWorld) => RawWorld>> = {
+  // v1 → v2 (P2): residents and pairs arrive, empty; no starting resident chosen yet.
+  1: (world) => ({
+    ...world,
+    schemaVersion: 2,
+    progress: { ...(world.progress as RawWorld), starterResidentId: null },
+    residents: {},
+    pairs: {},
+  }),
+};
 
 export function migrateWorld(raw: unknown): WorldState {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new FwError("corrupt_world");

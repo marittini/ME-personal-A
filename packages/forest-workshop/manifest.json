@@ -10,8 +10,8 @@
   },
   "id": "forest-workshop",
   "name": "Forest Workshop",
-  "version": "0.2.0",
-  "description": "A portrait cozy workshop game in development. This 0.2 build adds worlds, idempotent saving, a welcome package, the storeroom and JSON backup and restore on top of the connection checks; residents, production and stories follow. Install it, restart Marinara Engine when prompted, then open Home → 숲결 공방.",
+  "version": "0.3.0",
+  "description": "A portrait cozy workshop game in development. This 0.3 build adds residents registered from your characters and personas (with an optional language-model rebuild suggestion), your own uploaded resident pictures stored as WebP, character–persona pairs, and backups that carry the pictures; production, invitations and stories follow. Install it, restart Marinara Engine when prompted, then open Home → 숲결 공방.",
   "engine": {
     "min": "2.5.1",
     "maxExclusive": "4.0.0"
@@ -36,13 +36,13 @@
   "files": [
     {
       "path": "agents.json",
-      "sha256": "8c5edb743a4c5f3e9d90c98b0deca34c743123e517cc9a53dfaaa15d5d106d92",
-      "bytes": 672
+      "sha256": "72abe61a91f70d526bc042d76bb5ae7a556229f3a0f9308e9ec3a6aeec2bef23",
+      "bytes": 778
     },
     {
       "path": "server.mjs",
-      "sha256": "f8f3355bb2bccf3566b6262f5cd9be49f9895348a0793d3b6a990288261f06a3",
-      "bytes": 32387
+      "sha256": "6b32ec5c0f592ffa15ff8e824dd94e8fae8bb66914a233fb07950cc5ee908630",
+      "bytes": 57487
     },
     {
       "path": "client.js",

@@ -103,7 +103,7 @@ const FORWARDED_HEADERS = [
   "x-marinara-csrf",
 ] as const;
 
-function callerHeaders(request: FastifyRequest): Record<string, string> {
+export function callerHeaders(request: FastifyRequest): Record<string, string> {
   const headers: Record<string, string> = {};
   for (const name of FORWARDED_HEADERS) {
     const value = request.headers[name];

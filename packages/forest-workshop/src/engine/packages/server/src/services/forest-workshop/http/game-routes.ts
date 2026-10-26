@@ -7,32 +7,54 @@
 //   GET  /backup?worldId=           download a backup JSON
 //   POST /restore                   { newWorldId, backup } → a new world
 //   GET  /storage?worldId=          저장 공간 사용량 by kind
+//   GET  /sources?worldId=          characters and personas that can become residents (read-only)
+//   GET  /sources/preview?worldId=&kind=&id=   the snapshot a registration would keep (원래 설정)
+//   POST /rebuild-suggestion        { worldId, source } → a 공방 세계 설정 draft from the language model; nothing saved
+//   POST /residents/image           multipart { worldId, residentId, uploadKey, file } → the resident's new picture
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { ITEMS } from "../content/items";
+import { RELATION_STAGES } from "../content/relations";
 import { STARTER_KIT } from "../content/starter-kit";
+import { PLACEMENT_LIMITS, WORLD_SETTING_MAX } from "../domain/model/residents";
+import { galleryAssetReader, galleryAssetStore } from "../images/gallery-files";
+import { MAX_INPUT_BYTES } from "../images/image-input";
+import { UploadRefused, releaseGalleryImages, uploadResidentImage } from "../images/resident-image-upload";
+import type { HostPersistence } from "../host/engine-adapter";
 import type { BackupService } from "../services/backup-service";
+import type { RebuildService } from "../services/rebuild-service";
+import type { SourceService } from "../services/source-service";
 import type { StorageService } from "../services/storage-service";
 import { parseCommandRequest, type CommandService } from "../services/command-service";
 import type { WorldService } from "../services/world-service";
 import { respond, type RouteLogger } from "./respond";
 
 export interface GameRouteServices {
+  app: FastifyInstance;
+  persistence: HostPersistence;
   worlds: WorldService;
   commands: CommandService;
   backups: BackupService;
   storage: StorageService;
+  sources: SourceService;
+  rebuild: RebuildService;
   logger: RouteLogger | undefined;
 }
 
-/** Static content the client renders with; the server stays the authority on amounts. */
-const CONTENT = { items: ITEMS, starterKit: STARTER_KIT };
+/** Static content the client renders with; the server stays the authority on amounts and rules. */
+const CONTENT = {
+  items: ITEMS,
+  starterKit: STARTER_KIT,
+  relationStages: RELATION_STAGES,
+  residents: { worldSettingMax: WORLD_SETTING_MAX, placement: PLACEMENT_LIMITS, maxImageBytes: MAX_INPUT_BYTES },
+};
 
 function queryWorldId(request: FastifyRequest): unknown {
   return (request.query as Record<string, unknown> | undefined)?.worldId;
 }
 
 export function registerGameRoutes(router: FastifyInstance, services: GameRouteServices) {
-  const { worlds, commands, backups, storage, logger } = services;
+  const { app, worlds, commands, backups, storage, sources, rebuild, logger } = services;
+  const query = (request: FastifyRequest) => (request.query ?? {}) as Record<string, unknown>;
 
   router.get("/worlds", async (_request: FastifyRequest, reply: FastifyReply) =>
     respond(reply, logger, "list worlds", async () => ({ worlds: await worlds.list() })),
@@ -54,12 +76,47 @@ export function registerGameRoutes(router: FastifyInstance, services: GameRouteS
   );
 
   router.post("/commands", async (request: FastifyRequest, reply: FastifyReply) =>
-    respond(reply, logger, "command", async () => commands.execute(parseCommandRequest(request.body))),
+    respond(reply, logger, "command", async () => {
+      const response = await commands.execute(parseCommandRequest(request.body));
+      if (!response.duplicate) await releaseGalleryImages({ app, logger }, request, response.result.released);
+      return response;
+    }),
+  );
+
+  router.get("/sources", async (request: FastifyRequest, reply: FastifyReply) =>
+    respond(reply, logger, "list sources", async () => sources.list(queryWorldId(request))),
+  );
+
+  router.get("/sources/preview", async (request: FastifyRequest, reply: FastifyReply) =>
+    respond(reply, logger, "preview source", async () => {
+      const { worldId, kind, id } = query(request);
+      return sources.preview(worldId, kind, id);
+    }),
+  );
+
+  router.post("/rebuild-suggestion", async (request: FastifyRequest, reply: FastifyReply) =>
+    respond(reply, logger, "rebuild suggestion", async () => rebuild.suggest(request.body)),
+  );
+
+  router.post("/residents/image", async (request: FastifyRequest, reply: FastifyReply) =>
+    respond(reply, logger, "resident image", async () => {
+      try {
+        return await uploadResidentImage({ app, documents: services.persistence.documents, commands, logger }, request);
+      } catch (error) {
+        if (error instanceof UploadRefused) {
+          return reply.status(error.status).send({ error: error.code, message: error.message });
+        }
+        throw error;
+      }
+    }),
   );
 
   router.get("/backup", async (request: FastifyRequest, reply: FastifyReply) =>
     respond(reply, logger, "export backup", async () => {
-      const { fileName, backup } = await backups.exportWorld(queryWorldId(request) as string);
+      const { fileName, backup } = await backups.exportWorld(
+        queryWorldId(request) as string,
+        galleryAssetReader(app, request),
+      );
       reply.header("content-type", "application/json; charset=utf-8");
       reply.header("content-disposition", `attachment; filename="${fileName}"`);
       reply.header("cache-control", "no-store");
@@ -73,7 +130,7 @@ export function registerGameRoutes(router: FastifyInstance, services: GameRouteS
 
   router.post("/restore", async (request: FastifyRequest, reply: FastifyReply) =>
     respond(reply, logger, "restore backup", async () => {
-      const restored = await backups.restore(request.body);
+      const restored = await backups.restore(request.body, galleryAssetStore(app, request));
       if (restored.created) reply.status(201);
       return { ...restored, content: CONTENT };
     }),

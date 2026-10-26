@@ -41,6 +41,6 @@ export function stableStringify(value: unknown): string {
   return `{${entries.map(([key, nested]) => `${JSON.stringify(key)}:${stableStringify(nested)}`).join(",")}}`;
 }
 
-export function sha256Hex(text: string): string {
-  return createHash("sha256").update(text).digest("hex");
+export function sha256Hex(value: string | Uint8Array): string {
+  return createHash("sha256").update(value).digest("hex");
 }

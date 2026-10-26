@@ -5,8 +5,11 @@
 //   - the world change and the command record are written in one transaction, so a failed save leaves neither;
 //   - a concurrent write is detected by revision and the command is re-evaluated, at most 3 times, then 409;
 //   - nothing is answered as success before the write is confirmed.
+// A command with prepare() (residents.register reads its source) does that host read once, on the first attempt
+// and outside the transaction; the pure rule then runs against each fresh world with the same prepared input.
+import type { CommandHost } from "../domain/commands/command";
 import { FwError } from "../domain/errors";
-import { applyCommand, getCommandDefinition } from "../domain/commands/registry";
+import { applyCommand, getCommandDefinition, parseCommandPayload } from "../domain/commands/registry";
 import { assertRequestId, assertWorldId, sha256Hex, stableStringify } from "../domain/ids";
 import type { WorldState } from "../domain/world-model";
 import type { HostPersistence } from "../host/engine-adapter";
@@ -55,13 +58,24 @@ export function commandPayloadHash(request: Pick<CommandRequest, "worldId" | "ty
   return sha256Hex(stableStringify({ worldId: request.worldId, type: request.type, payload: request.payload }));
 }
 
+export interface ExecuteOptions {
+  /** Set only by server code that prepared the payload itself (resident picture upload). */
+  internal?: boolean;
+  /**
+   * What identifies "the same request" for idempotency when the payload holds server-made values that differ on a
+   * retry (a fresh gallery ID for the same upload key). Defaults to the payload.
+   */
+  identity?: unknown;
+}
+
 export interface CommandService {
-  execute(request: CommandRequest): Promise<CommandResponse>;
+  execute(request: CommandRequest, options?: ExecuteOptions): Promise<CommandResponse>;
 }
 
 export function createCommandService(
   persistence: HostPersistence,
   clock: () => Date = () => new Date(),
+  host?: CommandHost,
 ): CommandService {
   const documents = persistence.documents;
 
@@ -78,22 +92,38 @@ export function createCommandService(
   }
 
   return {
-    async execute(request) {
+    async execute(request, options = {}) {
       const definition = getCommandDefinition(request.type);
-      const payloadHash = commandPayloadHash(request);
+      if (definition.internal && !options.internal) throw new FwError("unknown_command");
+      const payloadHash = commandPayloadHash({
+        ...request,
+        payload: options.identity === undefined ? request.payload : options.identity,
+      });
+      let prepared: unknown;
+      let preparedOnce = false;
 
       for (let attempt = 1; attempt <= MAX_COMMAND_ATTEMPTS; attempt += 1) {
         const existing = await findCommandRecord(documents, request.worldId, request.commandId);
         if (existing) return replay(request, existing, payloadHash);
 
         const current = await loadWorld(documents, request.worldId);
+        if (definition.prepare && !preparedOnce) {
+          if (!host) throw new FwError("sources_unavailable");
+          const payload = parseCommandPayload(definition, request.payload);
+          prepared = await definition.prepare(payload, host, clock().toISOString());
+          preparedOnce = true;
+        }
         if (definition.requiresFreshView && current.revision !== request.expectedRevision) {
           throw new FwError("stale_view", { details: { revision: current.revision } });
         }
         const now = clock().toISOString();
         let outcome;
         try {
-          outcome = applyCommand(current.state, definition, request.payload, { now, commandId: request.commandId });
+          outcome = applyCommand(current.state, definition, request.payload, {
+            now,
+            commandId: request.commandId,
+            prepared,
+          });
         } catch (error) {
           // A rule may refuse because another tab is applying this very command right now (the world already shows
           // its effect). The command's own record, once visible, is the answer, not the refusal.

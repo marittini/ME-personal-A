@@ -7,6 +7,8 @@ import {
   FACILITY_MAX_LEVEL,
   MAX_RULES_PER_FACILITY,
   PROTECTED_STOCK_RANGE,
+  QUEUE_COUNT_RANGE,
+  QUEUE_SLOT_LEVELS,
   TARGET_STOCK_RANGE,
 } from "../../content/production";
 
@@ -30,7 +32,9 @@ export const jobSchema = z
   .object({
     jobId: nonNegativeInt,
     recipeId: z.string().min(1).max(64),
+    /** The rule (자동 운영) or the queue entry (지정 횟수) that started it. */
     policyId: z.string().uuid(),
+    source: z.enum(["rule", "queue"]),
     /** Workshop time the run started and ends. Duration and outputs are fixed at the start (plan §7.2-C). */
     startedSim: nonNegativeInt,
     endsSim: nonNegativeInt,
@@ -40,7 +44,7 @@ export const jobSchema = z
   .strict();
 export type Job = z.infer<typeof jobSchema>;
 
-export const WAIT_REASONS = ["materials", "target_reached", "no_rules"] as const;
+export const WAIT_REASONS = ["materials", "target_reached", "no_rules", "queue_empty", "locked"] as const;
 export const waitingSchema = z
   .object({
     reason: z.enum(WAIT_REASONS),
@@ -53,11 +57,32 @@ export const waitingSchema = z
   .strict();
 export type Waiting = z.infer<typeof waitingSchema>;
 
+/** One 지정 횟수 request: run this recipe `total` times; `started` of them have begun. */
+export const queueEntrySchema = z
+  .object({
+    entryId: z.string().uuid(),
+    recipeId: z.string().min(1).max(64),
+    total: z.number().int().min(QUEUE_COUNT_RANGE.min).max(QUEUE_COUNT_RANGE.max),
+    started: z.number().int().min(0).max(QUEUE_COUNT_RANGE.max),
+  })
+  .strict()
+  .refine((entry) => entry.started < entry.total, { message: "finished entry" });
+export type QueueEntry = z.infer<typeof queueEntrySchema>;
+
+export const FACILITY_MODES = ["auto", "count"] as const;
+export type FacilityMode = (typeof FACILITY_MODES)[number];
+
 export const facilityStateSchema = z
   .object({
+    /** Opened by its 해금 condition (or from the start). A closed facility never runs. */
+    unlocked: z.boolean(),
     level: z.number().int().min(1).max(FACILITY_MAX_LEVEL),
-    mode: z.literal("auto"),
+    /** 자동 운영 (rules) or 지정 횟수 (queue). Only one runs; the other's settings wait unchanged (plan §7.2-B). */
+    mode: z.enum(FACILITY_MODES),
     rules: z.array(ruleSchema).max(MAX_RULES_PER_FACILITY),
+    queue: z.array(queueEntrySchema).max(QUEUE_SLOT_LEVELS.length),
+    /** The resident placed here (배치), or null. Facilities work without one. */
+    residentId: z.string().uuid().nullable(),
     job: jobSchema.nullable(),
     /** Why the facility is idle, as of the last evaluation; null while a job runs. */
     waiting: waitingSchema.nullable(),
@@ -77,6 +102,9 @@ export const reportSchema = z
     /** Inputs of the completed runs. */
     consumed: z.record(z.string(), nonNegativeInt),
     runs: nonNegativeInt,
+    /** Auto-sold items and the gold they brought. */
+    sold: z.record(z.string(), nonNegativeInt),
+    gold: nonNegativeInt,
     /** Part of this report came from time the player was away (credited absence). */
     offlineMs: nonNegativeInt,
   })
@@ -102,6 +130,16 @@ export const activitySchema = z
   .strict();
 export type Activity = z.infer<typeof activitySchema>;
 
+/** 자동 판매 for one item (plan §7.2-C): off by default; keeps at least `keep` and sells at most `dailyMax` a UTC day. */
+export const autoSellSchema = z
+  .object({
+    enabled: z.boolean(),
+    keep: z.number().int().min(0).max(999),
+    dailyMax: z.number().int().min(1).max(999),
+  })
+  .strict();
+export type AutoSell = z.infer<typeof autoSellSchema>;
+
 export const productionSchema = z
   .object({
     simMs: nonNegativeInt,
@@ -110,6 +148,19 @@ export const productionSchema = z
       z.string(),
       z.number().int().min(PROTECTED_STOCK_RANGE.min).max(PROTECTED_STOCK_RANGE.max),
     ),
+    autoSell: z.record(z.string(), autoSellSchema),
+    /** Auto-sold amounts on one UTC day; a new day starts from zero. Moving the city does not reset it. */
+    sales: z
+      .object({
+        day: z
+          .string()
+          .regex(/^\d{4}-\d{2}-\d{2}$/u)
+          .nullable(),
+        sold: z.record(z.string(), nonNegativeInt),
+      })
+      .strict(),
+    /** Everything ever made, per item (해금 conditions). */
+    made: z.record(z.string(), nonNegativeInt),
     reports: z.array(reportSchema).max(REPORT_LIMIT),
     /** Reports with an ID up to this one were read in 작업 보고 (reading never grants anything). */
     reportsReadThrough: nonNegativeInt,

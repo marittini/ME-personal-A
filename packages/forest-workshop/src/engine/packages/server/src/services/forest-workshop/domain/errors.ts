@@ -33,6 +33,18 @@ export type FwErrorCode =
   | "max_level"
   | "not_enough_gold"
   | "not_enough_stock"
+  | "facility_locked"
+  | "unlock_not_met"
+  | "queue_full"
+  | "resident_not_recruited"
+  // Invitations and deliveries (P3)
+  | "starter_needed"
+  | "invite_empty"
+  | "not_enough_tickets"
+  | "not_enough_tokens"
+  | "max_breakthrough"
+  | "order_not_found"
+  | "order_done"
   // Text generation
   | "lm_unavailable"
   | "generation_failed"
@@ -67,6 +79,17 @@ const STATUS: Record<FwErrorCode, number> = {
   max_level: 409,
   not_enough_gold: 409,
   not_enough_stock: 409,
+  facility_locked: 409,
+  unlock_not_met: 409,
+  queue_full: 409,
+  resident_not_recruited: 409,
+  starter_needed: 409,
+  invite_empty: 409,
+  not_enough_tickets: 409,
+  not_enough_tokens: 409,
+  max_breakthrough: 409,
+  order_not_found: 404,
+  order_done: 409,
   lm_unavailable: 503,
   generation_failed: 502,
   unsupported_schema: 422,
@@ -101,6 +124,17 @@ const MESSAGES: Record<FwErrorCode, string> = {
   max_level: "이미 최고 단계까지 강화한 시설입니다.",
   not_enough_gold: "골드가 부족합니다. 재화는 바뀌지 않았습니다.",
   not_enough_stock: "사용할 수 있는 수량이 부족합니다. 보호한 재고는 쓰지 않습니다.",
+  facility_locked: "아직 열리지 않은 시설입니다. 해금 조건을 먼저 채워 주세요.",
+  unlock_not_met: "해금 조건을 아직 채우지 못했습니다.",
+  queue_full: "대기열이 가득 찼습니다. 시설을 강화하면 칸이 늘어납니다.",
+  resident_not_recruited: "공방에 온 주민만 배치하거나 고를 수 있습니다. 먼저 초대해 주세요.",
+  starter_needed: "시작 주민을 먼저 정해 주세요.",
+  invite_empty: "초대할 주민이 없습니다. 먼저 캐릭터나 페르소나를 주민으로 불러와 주세요.",
+  not_enough_tickets: "초대권이 부족합니다. 재화는 바뀌지 않았습니다.",
+  not_enough_tokens: "종표가 부족합니다. 재화는 바뀌지 않았습니다.",
+  max_breakthrough: "이미 최대 돌파한 주민입니다.",
+  order_not_found: "오늘의 납품 의뢰가 아닙니다. 목록을 새로 불러와 주세요.",
+  order_done: "오늘 이미 납품한 의뢰입니다.",
   lm_unavailable: "글을 제안할 언어 모델 연결이 없습니다. 엔진 설정에서 연결을 고르거나 직접 써 주세요.",
   generation_failed: "제안을 받지 못했습니다. 다시 시도하거나 직접 써 주세요. 저장된 내용은 바뀌지 않았습니다.",
   unsupported_schema: "이 저장 데이터는 더 새로운 패키지 버전에서 만들어졌습니다. 패키지를 업데이트해 주세요.",

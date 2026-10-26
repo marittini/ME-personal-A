@@ -3,6 +3,8 @@
 // snapshot of what it said at registration is kept for the 원래 설정 ↔ 공방 세계 설정 comparison. A persona resident is
 // an inhabitant like any other; it is never the player (the player has a nickname only).
 import { z } from "zod";
+import { MAX_BREAKTHROUGH } from "../../content/crew";
+import { FIELD_IDS } from "../../content/production";
 
 export const RESIDENT_KINDS = ["character", "persona"] as const;
 export type ResidentKind = (typeof RESIDENT_KINDS)[number];
@@ -101,6 +103,8 @@ export const CHANGE_KINDS = [
   "image_restored",
   "image_history_cleared",
   "placement",
+  "field",
+  "breakthrough",
 ] as const;
 
 export const changeSchema = z.object({ at: isoTime, kind: z.enum(CHANGE_KINDS), detail: z.string().max(200) }).strict();
@@ -116,6 +120,10 @@ export const residentSchema = z
     worldSetting: worldSettingSchema,
     /** Recruited residents live in the workshop; the others are registered and wait for an invitation (P3). */
     recruited: z.boolean(),
+    /** 전문 분야, chosen by the player; null until chosen. A placed resident helps only in a facility of this field. */
+    field: z.enum(FIELD_IDS).nullable(),
+    /** 돌파 0–5, from inviting a resident who already came (plan §7.2-F). */
+    breakthrough: z.number().int().min(0).max(MAX_BREAKTHROUGH),
     registeredAt: isoTime,
     image: z
       .object({

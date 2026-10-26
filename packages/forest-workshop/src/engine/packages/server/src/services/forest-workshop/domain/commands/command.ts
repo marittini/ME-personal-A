@@ -9,6 +9,11 @@ export interface CommandContext {
   /** Server time for this attempt, ISO 8601. */
   now: string;
   commandId: string;
+  /**
+   * Server-made random seed for this attempt (초대 rolls). Never chosen by the client, so a client cannot pick
+   * outcomes by choosing a commandId. Tests pass a fixed one; without one, rolls derive from the commandId.
+   */
+  seed?: string;
   /** What the command's prepare() read from the host before the rule ran; undefined for commands without one. */
   prepared?: unknown;
 }

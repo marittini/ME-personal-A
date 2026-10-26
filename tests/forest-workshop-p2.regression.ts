@@ -8,6 +8,7 @@ import { FakeHost } from "./support/forest-workshop-fake-host";
 
 import { FwError } from "../packages/forest-workshop/src/engine/packages/server/src/services/forest-workshop/domain/errors";
 import { migrateWorld } from "../packages/forest-workshop/src/engine/packages/server/src/services/forest-workshop/domain/migrations";
+import { CURRENT_SCHEMA_VERSION } from "../packages/forest-workshop/src/engine/packages/server/src/services/forest-workshop/domain/world-model";
 import { readSourceProfile } from "../packages/forest-workshop/src/engine/packages/server/src/services/forest-workshop/domain/source-profile";
 import type { ResidentImage } from "../packages/forest-workshop/src/engine/packages/server/src/services/forest-workshop/domain/model/residents";
 import type { HostRuntime } from "../packages/forest-workshop/src/engine/packages/server/src/services/forest-workshop/host/engine-adapter";
@@ -176,8 +177,11 @@ async function main() {
       progress: { starterKitClaimed: true },
     };
     const migrated = migrateWorld(structuredClone(v1));
-    assert.equal(migrated.schemaVersion, 4);
-    assert.equal(Object.keys(migrated.production.facilities).length, 2, "v3 → v4 adds production");
+    assert.equal(migrated.schemaVersion, CURRENT_SCHEMA_VERSION);
+    assert.equal(Object.keys(migrated.production.facilities).length, 5, "v3 → v4 adds production, v5 every field");
+    assert.equal(migrated.production.facilities["gather-yard"]!.unlocked, true);
+    assert.equal(migrated.production.facilities["grow-plot"]!.unlocked, false, "a later facility waits for 해금");
+    assert.equal(migrated.wallet.tickets, 3, "a world that claimed the kit gets the kit's 초대권 once");
     assert.deepEqual(migrated.residents, {});
     assert.deepEqual(migrated.pairs, {});
     assert.equal(migrated.progress.starterResidentId, null);

@@ -7,6 +7,7 @@
 //   - nothing is answered as success before the write is confirmed.
 // A command with prepare() (residents.register reads its source) does that host read once, on the first attempt
 // and outside the transaction; the pure rule then runs against each fresh world with the same prepared input.
+import { randomBytes } from "node:crypto";
 import type { CommandHost } from "../domain/commands/command";
 import { FwError } from "../domain/errors";
 import { applyCommand, getCommandDefinition, parseCommandPayload } from "../domain/commands/registry";
@@ -127,6 +128,7 @@ export function createCommandService(
             now,
             commandId: request.commandId,
             prepared,
+            seed: randomBytes(16).toString("hex"),
           });
         } catch (error) {
           // A rule may refuse because another tab is applying this very command right now (the world already shows

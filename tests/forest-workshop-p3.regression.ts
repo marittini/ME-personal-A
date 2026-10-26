@@ -77,7 +77,7 @@ async function main() {
   // Content: the shipped data is valid; a cycle or a self-feeding recipe is refused.
   {
     validateProductionContent();
-    const facilities = [{ id: "f", name: "f", field: "process" as const, order: 1, description: "" }];
+    const facilities = [{ id: "f", name: "f", field: "process" as const, order: 1, description: "", unlock: null }];
     assert.throws(
       () =>
         validateProductionContent(facilities, [
@@ -117,8 +117,8 @@ async function main() {
         ]),
       /cycle/u,
     );
-    assert.equal(FACILITIES.length, 2);
-    assert.equal(RECIPES.length, 3);
+    assert.equal(FACILITIES.length, 5, "one facility per field");
+    assert.ok(RECIPES.length >= 3);
   }
 
   // The 72-hour rule.
@@ -408,7 +408,15 @@ async function main() {
   // A new world starts with the recommended rules and initial production valid against the schema.
   {
     const production = initialProduction(WORLD);
-    assert.deepEqual(Object.keys(production.facilities).sort(), ["gather-yard", "process-bench"]);
+    assert.deepEqual(Object.keys(production.facilities).sort(), [
+      "craft-bench",
+      "gather-yard",
+      "grow-plot",
+      "process-bench",
+      "survey-desk",
+    ]);
+    const open = Object.entries(production.facilities).filter(([, facility]) => facility.unlocked);
+    assert.deepEqual(open.map(([id]) => id).sort(), ["gather-yard", "process-bench"], "the first play test's two");
     assert.deepEqual(initialProduction(WORLD), production, "the same rules on a retried creation");
   }
 

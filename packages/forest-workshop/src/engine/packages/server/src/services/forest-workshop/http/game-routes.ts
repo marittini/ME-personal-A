@@ -10,15 +10,26 @@
 //   GET  /sources?worldId=          characters and personas that can become residents (read-only)
 //   GET  /sources/preview?worldId=&kind=&id=   the snapshot a registration would keep (원래 설정)
 //   POST /rebuild-suggestion        { worldId, source } → a 공방 세계 설정 draft from the language model; nothing saved
+//   GET  /deliveries?worldId=       today's 납품 의뢰 (UTC day) and which are done
 //   POST /heartbeat                 { worldId } from the visible, focused game screen → settles and renews presence
 //   POST /residents/image           multipart { worldId, residentId, uploadKey, file } → the resident's new picture
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import {
+  MAX_BREAKTHROUGH,
+  PASSIVE_BASE,
+  PASSIVE_PER_BREAKTHROUGH,
+  SET_BONUS_MAX,
+  SET_BONUS_PER_PAIR,
+} from "../content/crew";
+import { INVITE_RULES } from "../content/invite";
 import { ITEMS } from "../content/items";
 import {
   FACILITIES,
   FACILITY_MAX_LEVEL,
   MAX_RULES_PER_FACILITY,
   PROTECTED_STOCK_RANGE,
+  QUEUE_COUNT_RANGE,
+  QUEUE_SLOT_LEVELS,
   RECIPES,
   RECOMMENDED_RULES,
   SPEED_BONUS_PER_LEVEL,
@@ -26,7 +37,9 @@ import {
   upgradeCost,
 } from "../content/production";
 import { RELATION_STAGES } from "../content/relations";
+import { todaysOrders } from "../domain/economy/deliveries";
 import { ABSENCE_LIMIT_MS } from "../domain/model/production";
+import { utcDay } from "../domain/production/simulation";
 import { STARTER_KIT } from "../content/starter-kit";
 import { PLACEMENT_LIMITS, WORLD_SETTING_MAX } from "../domain/model/residents";
 import { galleryAssetReader, galleryAssetStore } from "../images/gallery-files";
@@ -69,7 +82,17 @@ const CONTENT = {
     upgradeCosts: Array.from({ length: FACILITY_MAX_LEVEL - 1 }, (_, index) => upgradeCost(index + 1)),
     recommendedRules: RECOMMENDED_RULES,
     absenceLimitMs: ABSENCE_LIMIT_MS,
+    queueSlotLevels: QUEUE_SLOT_LEVELS,
+    queueCount: QUEUE_COUNT_RANGE,
   },
+  crew: {
+    passiveBase: PASSIVE_BASE,
+    passivePerBreakthrough: PASSIVE_PER_BREAKTHROUGH,
+    maxBreakthrough: MAX_BREAKTHROUGH,
+    setBonusPerPair: SET_BONUS_PER_PAIR,
+    setBonusMax: SET_BONUS_MAX,
+  },
+  invite: INVITE_RULES,
   starterKit: STARTER_KIT,
   relationStages: RELATION_STAGES,
   residents: { worldSettingMax: WORLD_SETTING_MAX, placement: PLACEMENT_LIMITS, maxImageBytes: MAX_INPUT_BYTES },
@@ -101,6 +124,18 @@ export function registerGameRoutes(router: FastifyInstance, services: GameRouteS
       ...(await settlement.settle(queryWorldId(request), { active: false })),
       content: CONTENT,
     })),
+  );
+
+  router.get("/deliveries", async (request: FastifyRequest, reply: FastifyReply) =>
+    respond(reply, logger, "deliveries", async () => {
+      const { state } = await worlds.get(String(queryWorldId(request)));
+      const day = utcDay(Date.now());
+      return {
+        day,
+        orders: todaysOrders(state.worldId, day),
+        done: state.deliveries.day === day ? state.deliveries.done : [],
+      };
+    }),
   );
 
   router.post("/heartbeat", async (request: FastifyRequest, reply: FastifyReply) =>

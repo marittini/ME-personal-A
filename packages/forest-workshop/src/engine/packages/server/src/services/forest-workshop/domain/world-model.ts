@@ -1,16 +1,18 @@
 // The world document's shape (plan §6). The zod schema is the single source: the TypeScript type is inferred from
 // it, every load is validated against it, and a backup is checked with it before anything is written.
 // Each phase adds its parts through a schema migration (domain/migrations.ts): v2 added residents and pairs (P2),
-// v3 made pairs any two residents, v4 added production (P3).
+// v3 made pairs any two residents, v4 added production (P3a), v5 the rest of P3 (fields, placement, 지정 횟수, 자동 판매,
+// 초대, 납품).
 import { z } from "zod";
 import { isKnownItem } from "../content/items";
-import { FACILITIES, recipeDefinition } from "../content/production";
+import { FACILITIES, queueSlots, recipeDefinition } from "../content/production";
+import { deliveryStateSchema, initialInvite, inviteStateSchema } from "./model/invite";
 import { MAX_PAIRS, pairSchema } from "./model/pairs";
 import { productionSchema } from "./model/production";
 import { initialProduction } from "./production/initial";
 import { MAX_RESIDENTS, residentSchema } from "./model/residents";
 
-export const CURRENT_SCHEMA_VERSION = 4;
+export const CURRENT_SCHEMA_VERSION = 5;
 
 const nonNegativeInt = z.number().int().min(0).max(Number.MAX_SAFE_INTEGER);
 const displayText = (max: number) =>
@@ -35,7 +37,8 @@ const worldShape = z
     worldId: z.string().uuid(),
     createdAt: z.string().datetime(),
     settings: z.object({ worldName: worldNameSchema, playerNickname: nicknameSchema }).strict(),
-    wallet: z.object({ gold: nonNegativeInt }).strict(),
+    /** gold · 초대권 · 종표 (선택 영입 증표). */
+    wallet: z.object({ gold: nonNegativeInt, tickets: nonNegativeInt, tokens: nonNegativeInt }).strict(),
     inventory: inventorySchema,
     progress: z
       .object({
@@ -47,6 +50,8 @@ const worldShape = z
     residents: z.record(z.string().uuid(), residentSchema),
     pairs: z.record(z.string().uuid(), pairSchema),
     production: productionSchema,
+    invite: inviteStateSchema,
+    deliveries: deliveryStateSchema,
   })
   .strict();
 
@@ -86,7 +91,20 @@ export const worldStateSchema = worldShape.superRefine((world, context) => {
   if (facilityIds.length !== FACILITIES.length || !FACILITIES.every((f) => world.production.facilities[f.id])) {
     issue(["production", "facilities"], "facility set");
   }
+  const placed = new Set<string>();
   for (const [facilityId, facility] of Object.entries(world.production.facilities)) {
+    if (facility.residentId !== null) {
+      if (!world.residents[facility.residentId]?.recruited) issue(["production", facilityId], "placed resident");
+      if (placed.has(facility.residentId)) issue(["production", facilityId], "resident placed twice");
+      placed.add(facility.residentId);
+    }
+    if (facility.queue.length > queueSlots(facility.level)) issue(["production", facilityId], "queue slots");
+    for (const entry of facility.queue) {
+      if (recipeDefinition(entry.recipeId)?.facilityId !== facilityId)
+        issue(["production", facilityId], "queue recipe");
+    }
+    if (!facility.unlocked && (facility.job || facility.residentId))
+      issue(["production", facilityId], "closed facility");
     const recipes = new Set<string>();
     for (const rule of facility.rules) {
       if (recipeDefinition(rule.recipeId)?.facilityId !== facilityId) issue(["production", facilityId], "rule recipe");
@@ -99,6 +117,9 @@ export const worldStateSchema = worldShape.superRefine((world, context) => {
     if (facility.job && facility.job.endsSim < world.production.simMs) issue(["production", facilityId], "job overdue");
   }
   if (!Object.keys(world.production.protectedStock).every(isKnownItem)) issue(["production"], "protected item");
+  if (!Object.keys(world.production.autoSell).every(isKnownItem)) issue(["production"], "auto-sell item");
+  const wish = world.invite.wishResidentId;
+  if (wish !== null && !world.residents[wish]) issue(["invite", "wishResidentId"], "unknown resident");
 });
 
 export type WorldState = z.infer<typeof worldStateSchema>;
@@ -116,12 +137,14 @@ export function createWorldState(input: NewWorldInput): WorldState {
     worldId: input.worldId,
     createdAt: input.now,
     settings: { worldName: input.worldName, playerNickname: input.playerNickname },
-    wallet: { gold: 0 },
+    wallet: { gold: 0, tickets: 0, tokens: 0 },
     inventory: {},
     progress: { starterKitClaimed: false, starterResidentId: null },
     residents: {},
     pairs: {},
     production: initialProduction(input.worldId),
+    invite: initialInvite(),
+    deliveries: { day: null, done: [] },
   });
 }
 

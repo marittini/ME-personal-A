@@ -15,11 +15,15 @@ export const claimStarterKit = defineCommand({
     return {
       state: {
         ...state,
-        wallet: { ...state.wallet, gold: state.wallet.gold + STARTER_KIT.gold },
+        wallet: {
+          ...state.wallet,
+          gold: state.wallet.gold + STARTER_KIT.gold,
+          tickets: state.wallet.tickets + STARTER_KIT.tickets,
+        },
         inventory: addItems(state.inventory, STARTER_KIT.items),
         progress: { ...state.progress, starterKitClaimed: true },
       },
-      result: { granted: { gold: STARTER_KIT.gold, items: { ...STARTER_KIT.items } } },
+      result: { granted: { gold: STARTER_KIT.gold, tickets: STARTER_KIT.tickets, items: { ...STARTER_KIT.items } } },
     };
   },
 });

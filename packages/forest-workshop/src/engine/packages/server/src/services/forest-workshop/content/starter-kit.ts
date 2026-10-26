@@ -3,6 +3,8 @@
 
 export const STARTER_KIT = {
   gold: 200,
+  /** 초대권 for the first invitations (board 03-3); more come from 납품 의뢰. */
+  tickets: 3,
   items: {
     "wild-berry": 20,
     herb: 10,

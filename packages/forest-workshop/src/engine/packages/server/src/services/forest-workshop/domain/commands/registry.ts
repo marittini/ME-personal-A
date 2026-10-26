@@ -5,9 +5,20 @@ import { FwError } from "../errors";
 import { settleWorld } from "../production/settle";
 import { worldStateSchema, type WorldState } from "../world-model";
 import type { CommandContext, CommandDefinition, CommandOutcome } from "./command";
-import { sellItems } from "./economy";
+import { deliverOrder, sellItems, setAutoSell } from "./economy";
+import { drawInvites, exchangeTokens, setWish } from "./invite";
 import { claimStarterKit } from "./onboarding";
-import { markReportsRead, setProtected, setRules, upgradeFacility } from "./production";
+import {
+  assignResident,
+  markReportsRead,
+  queueAdd,
+  queueRemove,
+  setMode,
+  setProtected,
+  setRules,
+  unlockFacility,
+  upgradeFacility,
+} from "./production";
 import { addPair, archivePair, restorePair } from "./pairs";
 import {
   clearResidentImageHistory,
@@ -15,7 +26,7 @@ import {
   setResidentImage,
   setResidentPlacement,
 } from "./resident-images";
-import { chooseStarter, registerResident, updateResident } from "./residents";
+import { chooseStarter, registerResident, setField, updateResident } from "./residents";
 import { updateSettings } from "./settings";
 
 const DEFINITIONS = [
@@ -24,6 +35,7 @@ const DEFINITIONS = [
   registerResident,
   updateResident,
   chooseStarter,
+  setField,
   setResidentImage,
   restoreResidentImage,
   setResidentPlacement,
@@ -35,7 +47,17 @@ const DEFINITIONS = [
   setProtected,
   upgradeFacility,
   markReportsRead,
+  unlockFacility,
+  setMode,
+  queueAdd,
+  queueRemove,
+  assignResident,
   sellItems,
+  setAutoSell,
+  deliverOrder,
+  drawInvites,
+  setWish,
+  exchangeTokens,
 ] as unknown as ReadonlyArray<CommandDefinition<never>>;
 
 const REGISTRY = new Map(DEFINITIONS.map((definition) => [definition.type, definition]));

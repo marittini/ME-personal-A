@@ -2,7 +2,10 @@
 // failure the original stays untouched and the player is told how to restore). Migration never writes by itself:
 // the upgraded state is saved only by the next successful command, so a failed read changes nothing on disk.
 import { FwError } from "./errors";
-import { initialProduction } from "./production/initial";
+import { STARTER_KIT } from "../content/starter-kit";
+import { FACILITIES } from "../content/production";
+import { initialInvite } from "./model/invite";
+import { initialFacility, initialProduction } from "./production/initial";
 import { CURRENT_SCHEMA_VERSION, worldStateSchema, type WorldState } from "./world-model";
 
 type RawWorld = Record<string, unknown>;
@@ -32,6 +35,54 @@ const MIGRATIONS: Readonly<Record<number, (world: RawWorld) => RawWorld>> = {
   // v3 → v4 (P3): production starts with level-1 facilities and the recommended rules. Time starts counting at the
   // first settlement after the upgrade, so no time before it is credited.
   3: (world) => ({ ...world, schemaVersion: 4, production: initialProduction(String(world.worldId)) }),
+  // v4 → v5 (P3b): fields and 돌파 on residents (none chosen yet), every facility of the content (the new ones closed
+  // until their 해금), 자동 운영 kept as it was with an empty 지정 횟수 queue, 자동 판매 off, 초대 and 납품 empty.
+  // Worlds that already claimed the starter kit get the 초대권 the kit now includes, once, here.
+  4: (world) => {
+    const production = world.production as RawWorld;
+    const worldId = String(world.worldId);
+    const facilities = production.facilities as Record<string, RawWorld>;
+    const progress = world.progress as RawWorld;
+    const wallet = world.wallet as RawWorld;
+    return {
+      ...world,
+      schemaVersion: 5,
+      wallet: { ...wallet, tickets: progress.starterKitClaimed ? STARTER_KIT.tickets : 0, tokens: 0 },
+      residents: Object.fromEntries(
+        Object.entries((world.residents ?? {}) as Record<string, RawWorld>).map(([id, resident]) => [
+          id,
+          { ...resident, field: null, breakthrough: 0 },
+        ]),
+      ),
+      production: {
+        ...production,
+        facilities: Object.fromEntries(
+          FACILITIES.map((definition) => {
+            const old = facilities[definition.id];
+            if (!old) return [definition.id, initialFacility(worldId, definition.id)];
+            const job = old.job as RawWorld | null;
+            return [
+              definition.id,
+              {
+                ...old,
+                // A v3 world reaches here through step 3, which already builds today's facility shape.
+                unlocked: typeof old.unlocked === "boolean" ? old.unlocked : true,
+                queue: old.queue ?? [],
+                residentId: old.residentId ?? null,
+                job: job ? { source: "rule", ...job } : null,
+              },
+            ];
+          }),
+        ),
+        autoSell: {},
+        sales: { day: null, sold: {} },
+        made: {},
+        reports: ((production.reports ?? []) as RawWorld[]).map((report) => ({ sold: {}, gold: 0, ...report })),
+      },
+      invite: initialInvite(),
+      deliveries: { day: null, done: [] },
+    };
+  },
 };
 
 export function migrateWorld(raw: unknown): WorldState {

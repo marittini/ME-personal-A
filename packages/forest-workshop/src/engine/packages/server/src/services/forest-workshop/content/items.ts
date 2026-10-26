@@ -16,7 +16,16 @@ export const ITEMS: readonly ItemDefinition[] = [
   { id: "wild-berry", name: "산딸기", category: "material", sellPrice: 2 },
   { id: "herb", name: "허브", category: "material", sellPrice: 2 },
   { id: "wood", name: "목재", category: "material", sellPrice: 3 },
+  { id: "wheat", name: "밀", category: "material", sellPrice: 2 },
+  { id: "flower", name: "들꽃", category: "material", sellPrice: 3 },
+  { id: "honey", name: "꿀", category: "material", sellPrice: 6 },
+  { id: "mushroom", name: "버섯", category: "material", sellPrice: 4 },
   { id: "berry-jam", name: "산딸기 잼", category: "product", sellPrice: 14 },
+  { id: "dried-herb", name: "말린 허브", category: "product", sellPrice: 8 },
+  { id: "flour", name: "밀가루", category: "product", sellPrice: 8 },
+  { id: "herb-sachet", name: "허브 향주머니", category: "product", sellPrice: 30 },
+  { id: "berry-pie", name: "산딸기 파이", category: "product", sellPrice: 48 },
+  { id: "wooden-tray", name: "나무 쟁반", category: "product", sellPrice: 16 },
 ];
 
 const BY_ID = new Map(ITEMS.map((item) => [item.id, item]));

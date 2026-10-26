@@ -11,7 +11,7 @@
   "id": "forest-workshop",
   "name": "Forest Workshop",
   "version": "0.3.0",
-  "description": "A portrait cozy workshop game in development. This 0.3 build adds residents registered from your characters and personas (with an optional language-model rebuild suggestion), your own uploaded resident pictures stored as WebP, character–persona pairs, and backups that carry the pictures; production, invitations and stories follow. Install it, restart Marinara Engine when prompted, then open Home → 숲결 공방.",
+  "description": "A portrait cozy workshop game in development. This 0.3 build adds residents registered from your characters and personas (with an optional language-model rebuild suggestion), your own uploaded resident pictures stored as WebP, pairs between any two residents, and backups that carry the pictures; production, invitations and stories follow. Install it, restart Marinara Engine when prompted, then open Home → 숲결 공방.",
   "engine": {
     "min": "2.5.1",
     "maxExclusive": "4.0.0"
@@ -36,18 +36,18 @@
   "files": [
     {
       "path": "agents.json",
-      "sha256": "72abe61a91f70d526bc042d76bb5ae7a556229f3a0f9308e9ec3a6aeec2bef23",
-      "bytes": 778
+      "sha256": "7dd78c2200b3268754dbad9d62f10b9e7084f71031fda49094d644f4340716bf",
+      "bytes": 784
     },
     {
       "path": "server.mjs",
-      "sha256": "6b32ec5c0f592ffa15ff8e824dd94e8fae8bb66914a233fb07950cc5ee908630",
-      "bytes": 57487
+      "sha256": "b8cd2a380adfd2f74ed3807310ec1f0179d9dbd1a7f79e8a38b1fafadf245e86",
+      "bytes": 57326
     },
     {
       "path": "client.js",
-      "sha256": "b512529c8c34aecaa29d97846894304fa5912742c16ce45a75f3a7fd054ecccf",
-      "bytes": 154654
+      "sha256": "5726d102cff4593dff024c5c6977e8a963b560f2f022db365cb99871e1e82062",
+      "bytes": 156772
     }
   ],
   "permissions": [

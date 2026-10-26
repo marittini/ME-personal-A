@@ -600,7 +600,7 @@ const features = [
     maxEngineExclusive: MAX_ENGINE_EXCLUSIVE,
     name: "Forest Workshop",
     description:
-      "A portrait cozy workshop game in development. This 0.3 build adds residents registered from your characters and personas (with an optional language-model rebuild suggestion), your own uploaded resident pictures stored as WebP, character–persona pairs, and backups that carry the pictures; production, invitations and stories follow.",
+      "A portrait cozy workshop game in development. This 0.3 build adds residents registered from your characters and personas (with an optional language-model rebuild suggestion), your own uploaded resident pictures stored as WebP, pairs between any two residents, and backups that carry the pictures; production, invitations and stories follow.",
     category: "misc",
     kind: ["agent"],
     modes: ["conversation", "roleplay"],

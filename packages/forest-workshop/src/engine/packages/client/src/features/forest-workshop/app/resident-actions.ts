@@ -4,7 +4,7 @@
 import { gameApi } from "./api";
 import type { ControllerCore } from "./controller";
 import { newWorldId as newUuid } from "./host-api";
-import type { Placement, Resident, ResidentKind, WorldState } from "./types";
+import type { Pair, Placement, Resident, ResidentKind, WorldState } from "./types";
 
 export interface ResidentsView {
   tab: "all" | ResidentKind;
@@ -34,6 +34,16 @@ export function visibleResidents(state: WorldState, view: ResidentsView): Reside
         resident.source.name.toLowerCase().includes(query),
     )
     .sort((a, b) => Number(b.recruited) - Number(a.recruited) || a.registeredAt.localeCompare(b.registeredAt));
+}
+
+/** The action key of "pair these two": the same whichever of the two the player started from. */
+export function pairAddKey(first: string, second: string): string {
+  return `pair-add:${[first, second].sort().join(":")}`;
+}
+
+/** The other resident of a pair, seen from one of its residents. */
+export function partnerOf(pair: Pair, residentId: string): string {
+  return pair.residentIds[0] === residentId ? pair.residentIds[1] : pair.residentIds[0];
 }
 
 export function createResidentActions(core: ControllerCore) {
@@ -96,14 +106,13 @@ export function createResidentActions(core: ControllerCore) {
       const resident = residentIn(residentId);
       const partner = residentIn(partnerId);
       if (!resident || !partner) return;
-      const [characterResidentId, personaResidentId] =
-        resident.kind === "character"
-          ? [resident.residentId, partner.residentId]
-          : [partner.residentId, resident.residentId];
-      const key = `pair-add:${characterResidentId}:${personaResidentId}`;
+      const key = pairAddKey(resident.residentId, partner.residentId);
       // The pair ID is made once per couple and kept across retries, so a retried add cannot make two rows.
       const pairId = core.requestIdFor(`${key}:id`, key, newUuid);
-      const response = await core.runCommand(key, "pairs.add", { pairId, characterResidentId, personaResidentId });
+      const response = await core.runCommand(key, "pairs.add", {
+        pairId,
+        residentIds: [resident.residentId, partner.residentId],
+      });
       if (response) {
         core.forgetRequest(`${key}:id`);
         store.set({ sheet: null });

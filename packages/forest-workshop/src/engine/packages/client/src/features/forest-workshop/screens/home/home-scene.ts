@@ -19,28 +19,33 @@ function backdrop() {
   svg.setAttribute("preserveAspectRatio", "xMidYMax slice");
   svg.setAttribute("aria-hidden", "true");
   svg.setAttribute("class", "scene-art");
+  // Storybook look: flat fills, one dark-brown outline (#4b2e1a, 3 units), no gradients or soft transparency.
   svg.innerHTML = `
-    <defs>
-      <linearGradient id="fw-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cfe3c2"/><stop offset="1" stop-color="#eef0d2"/></linearGradient>
-      <linearGradient id="fw-roof" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3f8a86"/><stop offset="1" stop-color="#2c6b68"/></linearGradient>
-    </defs>
-    <rect width="390" height="300" fill="url(#fw-sky)"/>
-    <circle cx="40" cy="40" r="70" fill="#7ea866" opacity=".55"/><circle cx="360" cy="30" r="80" fill="#d9a05a" opacity=".5"/>
-    <circle cx="330" cy="70" r="55" fill="#8bb26d" opacity=".55"/><circle cx="80" cy="95" r="45" fill="#9cbf78" opacity=".6"/>
-    <path d="M0 215 Q100 190 200 205 T390 200 V300 H0z" fill="#9bbd7a"/>
-    <g transform="translate(150 70)">
-      <rect x="0" y="62" width="170" height="108" rx="6" fill="#a87a4e"/>
-      <rect x="10" y="74" width="150" height="96" fill="#c99a69"/>
-      <path d="M-22 70 L85 8 L192 70 Z" fill="url(#fw-roof)"/>
-      <rect x="66" y="104" width="38" height="66" rx="4" fill="#6e4628"/>
-      <rect x="20" y="96" width="34" height="30" rx="3" fill="#f6dc94"/><rect x="116" y="96" width="34" height="30" rx="3" fill="#f6dc94"/>
-      <rect x="58" y="80" width="54" height="16" rx="3" fill="#f3e6c6"/>
-      <circle cx="148" cy="84" r="7" fill="#f5c45c"/>
-    </g>
-    <path d="M150 300 Q190 240 235 240 Q280 240 300 300z" fill="#dccaa0"/>
-    <g fill="#5d8f47"><circle cx="40" cy="230" r="26"/><circle cx="75" cy="245" r="20"/><circle cx="350" cy="232" r="24"/><circle cx="320" cy="250" r="18"/></g>
-    <g fill="#fff6e4"><circle cx="30" cy="222" r="3"/><circle cx="52" cy="238" r="3"/><circle cx="345" cy="226" r="3"/><circle cx="327" cy="244" r="3"/></g>
-    <g fill="#c9a0d8"><circle cx="70" cy="232" r="3"/><circle cx="360" cy="244" r="3"/></g>`;
+    <g stroke="#4b2e1a" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
+      <rect width="390" height="300" fill="#cfe5c0" stroke="none"/>
+      <path d="M-10 70 Q20 10 70 30 Q100 -10 150 20 L150 -10 H-10z" fill="#8fbf6e"/>
+      <path d="M400 80 Q370 20 320 40 Q300 -5 250 15 L250 -10 H400z" fill="#e2a55a"/>
+      <circle cx="60" cy="120" r="34" fill="#8fbf6e"/>
+      <circle cx="335" cy="115" r="30" fill="#8fbf6e"/>
+      <path d="M-5 215 Q100 188 200 203 T395 198 V305 H-5z" fill="#a9cc86"/>
+      <g transform="translate(150 70)">
+        <rect x="0" y="62" width="170" height="108" rx="6" fill="#b98250"/>
+        <rect x="10" y="74" width="150" height="96" fill="#dcb07c"/>
+        <path d="M-22 70 L85 8 L192 70 Z" fill="#3f8a86"/>
+        <path d="M10 62 L85 20 L160 62" fill="none" stroke-width="2.5"/>
+        <rect x="66" y="104" width="38" height="66" rx="4" fill="#7a4b2a"/>
+        <rect x="20" y="96" width="34" height="30" rx="3" fill="#f8de98"/>
+        <rect x="116" y="96" width="34" height="30" rx="3" fill="#f8de98"/>
+        <rect x="56" y="78" width="58" height="18" rx="3" fill="#f6e9cb"/>
+        <circle cx="147" cy="84" r="7" fill="#f5c45c"/>
+      </g>
+      <path d="M150 305 Q190 240 235 240 Q280 240 302 305z" fill="#ead6a8"/>
+      <circle cx="40" cy="232" r="25" fill="#6fa452"/><circle cx="76" cy="248" r="19" fill="#6fa452"/>
+      <circle cx="350" cy="232" r="23" fill="#6fa452"/><circle cx="318" cy="250" r="17" fill="#6fa452"/>
+      <g stroke-width="2"><circle cx="30" cy="224" r="4" fill="#fff6e4"/><circle cx="54" cy="240" r="4" fill="#fff6e4"/>
+      <circle cx="345" cy="226" r="4" fill="#fff6e4"/><circle cx="326" cy="246" r="4" fill="#fff6e4"/>
+      <circle cx="70" cy="232" r="4" fill="#d5a9e3"/><circle cx="360" cy="246" r="4" fill="#d5a9e3"/></g>
+    </g>`;
   return svg;
 }
 

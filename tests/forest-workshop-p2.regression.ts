@@ -32,6 +32,8 @@ const RES_D = "aaaaaaaa-0000-4000-8000-000000000004";
 const PAIR_AB = "bbbbbbbb-0000-4000-8000-000000000001";
 const PAIR_AC = "bbbbbbbb-0000-4000-8000-000000000002";
 const PAIR_X = "bbbbbbbb-0000-4000-8000-000000000003";
+const PAIR_AD = "bbbbbbbb-0000-4000-8000-000000000004";
+const PAIR_Y = "bbbbbbbb-0000-4000-8000-000000000005";
 let tick = 0;
 const clock = () => new Date(Date.UTC(2026, 9, 27, 9, 0, tick++));
 
@@ -64,6 +66,11 @@ function fakeResources() {
       comment: "",
     },
     { id: "char-empty", data: JSON.stringify({ name: "   " }), comment: "" },
+    {
+      id: "char-garden",
+      data: JSON.stringify({ name: "달빛 정원사", description: "밤에 피는 꽃을 돌본다." }),
+      comment: "",
+    },
   ];
   const personas = [
     {
@@ -169,11 +176,60 @@ async function main() {
       progress: { starterKitClaimed: true },
     };
     const migrated = migrateWorld(structuredClone(v1));
-    assert.equal(migrated.schemaVersion, 2);
+    assert.equal(migrated.schemaVersion, 3);
     assert.deepEqual(migrated.residents, {});
     assert.deepEqual(migrated.pairs, {});
     assert.equal(migrated.progress.starterResidentId, null);
     assert.equal(migrated.wallet.gold, 200);
+  }
+
+  // Migration v2 → v3: a character × persona pair becomes an unordered couple of two residents.
+  {
+    const resident = (residentId: string, kind: string, sourceId: string) => ({
+      residentId,
+      kind,
+      sourceId,
+      source: {
+        name: sourceId,
+        description: "",
+        personality: "",
+        scenario: "",
+        sourceHash: "0".repeat(64),
+        takenAt: "2026-10-26T12:00:00.000Z",
+      },
+      displayName: sourceId,
+      worldSetting: "설정",
+      recruited: false,
+      registeredAt: "2026-10-26T12:00:00.000Z",
+      image: { current: null, history: [], placement: { scale: 100, offsetX: 0, markerHeight: 0 } },
+      changes: [],
+    });
+    const v2 = {
+      schemaVersion: 2,
+      worldId: WORLD,
+      createdAt: "2026-10-26T12:00:00.000Z",
+      settings: { worldName: "숲", playerNickname: "공방지기" },
+      wallet: { gold: 0 },
+      inventory: {},
+      progress: { starterKitClaimed: false, starterResidentId: null },
+      residents: { [RES_B]: resident(RES_B, "character", "c"), [RES_A]: resident(RES_A, "persona", "p") },
+      pairs: {
+        [PAIR_AB]: {
+          pairId: PAIR_AB,
+          characterResidentId: RES_B,
+          personaResidentId: RES_A,
+          createdAt: "2026-10-26T12:00:00.000Z",
+          archived: false,
+          archivedAt: null,
+          familiarity: 3,
+          ease: 1,
+          lastEvent: null,
+        },
+      },
+    };
+    const migrated = migrateWorld(structuredClone(v2));
+    assert.deepEqual(migrated.pairs[PAIR_AB]!.residentIds, [RES_A, RES_B], "ascending couple");
+    assert.equal(migrated.pairs[PAIR_AB]!.familiarity, 3, "values kept");
   }
 
   // Source reading: card V2 wrapper, persona backstory, nameless sources skipped, avatars never read.
@@ -191,7 +247,7 @@ async function main() {
   {
     const listed = await env.sources.list(WORLD);
     assert.deepEqual(listed.available, { characters: true, personas: true });
-    assert.equal(listed.sources.length, 3);
+    assert.equal(listed.sources.length, 4);
     assert.ok(listed.sources.every((source) => source.residentId === null));
     const dragon = listed.sources.find((source) => source.id === "persona-dragon")!;
     assert.match(dragon.summary, /책을 좋아하는 학자/u);
@@ -330,30 +386,43 @@ async function main() {
     await rejects(run(env, "residents.chooseStarter", { residentId: RES_B }), "starter_chosen", "second starter");
   }
 
-  // 중복 소속: A–B and A–C are two rows of one shared A.
+  // 중복 소속 and any kinds: A–B and A–C are two rows of one shared A; persona–persona and character–character pair too.
   {
-    await run(env, "pairs.add", { pairId: PAIR_AB, characterResidentId: RES_A, personaResidentId: RES_B });
-    const both = await run(env, "pairs.add", { pairId: PAIR_AC, characterResidentId: RES_A, personaResidentId: RES_C });
+    await run(env, "pairs.add", { pairId: PAIR_AB, residentIds: [RES_A, RES_B] });
+    const both = await run(env, "pairs.add", { pairId: PAIR_AC, residentIds: [RES_C, RES_A] });
     const pairs = Object.values(both.state.pairs);
     assert.equal(pairs.length, 2);
-    assert.ok(pairs.every((pair) => pair.characterResidentId === RES_A));
+    assert.ok(pairs.every((pair) => pair.residentIds.includes(RES_A)));
+    assert.ok(
+      pairs.every((pair) => pair.residentIds[0] < pair.residentIds[1]),
+      "stored as ascending couples",
+    );
     assert.ok(
       pairs.every((pair) => pair.familiarity === 0 && pair.ease === 0 && pair.lastEvent === null),
       "no backdated history",
     );
     await rejects(
-      run(env, "pairs.add", { pairId: PAIR_X, characterResidentId: RES_A, personaResidentId: RES_B }),
+      run(env, "pairs.add", { pairId: PAIR_X, residentIds: [RES_B, RES_A] }),
       "pair_exists",
-      "same pair",
+      "same pair, other order",
     );
     await rejects(
-      run(env, "pairs.add", { pairId: PAIR_X, characterResidentId: RES_B, personaResidentId: RES_C }),
-      "pair_kinds",
-      "two personas",
+      run(env, "pairs.add", { pairId: PAIR_X, residentIds: [RES_A, RES_A] }),
+      "pair_self",
+      "a resident with itself",
+    );
+    const personas = await run(env, "pairs.add", { pairId: PAIR_X, residentIds: [RES_B, RES_C] });
+    assert.equal(Object.keys(personas.state.pairs).length, 3, "persona–persona pair");
+    await register(env, RES_D, "character", "char-garden", "공방 온실을 돌본다.");
+    const characters = await run(env, "pairs.add", { pairId: PAIR_AD, residentIds: [RES_A, RES_D] });
+    assert.equal(
+      characters.state.pairs[PAIR_AD]!.residentIds.join(),
+      [RES_A, RES_D].sort().join(),
+      "character–character pair",
     );
     await run(env, "pairs.archive", { pairId: PAIR_AB });
     await rejects(
-      run(env, "pairs.add", { pairId: PAIR_X, characterResidentId: RES_A, personaResidentId: RES_B }),
+      run(env, "pairs.add", { pairId: PAIR_Y, residentIds: [RES_A, RES_B] }),
       "pair_exists",
       "archived twin: restore instead",
     );
@@ -517,8 +586,8 @@ async function main() {
     const restored = await env.backups.restore({ newWorldId: RESTORED, backup: json }, store);
     assert.equal(restored.created, true);
     const state = restored.state;
-    assert.equal(Object.keys(state.residents).length, 3);
-    assert.equal(Object.keys(state.pairs).length, 2);
+    assert.equal(Object.keys(state.residents).length, 4);
+    assert.equal(Object.keys(state.pairs).length, 4);
     const restoredRefs = Object.values(state.residents).flatMap((r) =>
       [r.image.current, ...r.image.history].filter(Boolean).map((i) => i!.reference),
     );

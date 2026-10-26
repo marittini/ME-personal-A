@@ -24,7 +24,7 @@ export type FwErrorCode =
   | "starter_chosen"
   | "pair_exists"
   | "pair_not_found"
-  | "pair_kinds"
+  | "pair_self"
   | "pair_limit"
   | "image_not_found"
   // Text generation
@@ -53,7 +53,7 @@ const STATUS: Record<FwErrorCode, number> = {
   starter_chosen: 409,
   pair_exists: 409,
   pair_not_found: 404,
-  pair_kinds: 400,
+  pair_self: 400,
   pair_limit: 409,
   image_not_found: 404,
   lm_unavailable: 503,
@@ -81,7 +81,7 @@ const MESSAGES: Record<FwErrorCode, string> = {
   starter_chosen: "시작 주민은 이미 정해졌습니다.",
   pair_exists: "이미 같은 두 주민의 페어가 있습니다.",
   pair_not_found: "페어를 찾을 수 없습니다.",
-  pair_kinds: "페어는 캐릭터 주민 한 명과 페르소나 주민 한 명으로 만듭니다.",
+  pair_self: "같은 주민끼리는 페어를 만들 수 없습니다. 다른 주민을 골라 주세요.",
   pair_limit: "페어는 한 세계에 200개까지 만들 수 있습니다.",
   image_not_found: "그 그림은 이 주민의 이전 그림 목록에 없습니다.",
   lm_unavailable: "글을 제안할 언어 모델 연결이 없습니다. 엔진 설정에서 연결을 고르거나 직접 써 주세요.",

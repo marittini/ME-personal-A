@@ -28,7 +28,6 @@ function picture(resident: Resident, className: string) {
       width: String(image.width),
       height: String(image.height),
       decoding: "async",
-      loading: "lazy",
       draggable: "false",
     },
   });

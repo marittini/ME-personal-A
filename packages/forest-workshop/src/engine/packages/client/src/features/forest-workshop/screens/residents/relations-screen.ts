@@ -9,7 +9,8 @@ import type { GameContent, Pair, Resident, WorldView } from "../../app/types";
 import { card, renderFrame } from "../chrome/frame";
 import { ICONS } from "../chrome/icons";
 import { featureButton } from "../chrome/locked";
-import { KIND_LABEL, kindTag, residentAvatar } from "./resident-figure";
+import { pairAddKey, partnerOf } from "../../app/resident-actions";
+import { kindTag, residentAvatar } from "./resident-figure";
 
 const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
@@ -18,9 +19,8 @@ function stageLabel(content: GameContent | null, familiarity: number) {
   return [...stages].reverse().find((stage) => familiarity >= stage.from)?.label ?? "–";
 }
 
-function partnerOf(pair: Pair, resident: Resident, world: WorldView) {
-  const partnerId = resident.kind === "character" ? pair.personaResidentId : pair.characterResidentId;
-  return world.state.residents[partnerId] ?? null;
+function partnerResident(pair: Pair, resident: Resident, world: WorldView) {
+  return world.state.residents[partnerOf(pair, resident.residentId)] ?? null;
 }
 
 function hero(resident: Resident, pairs: Pair[]) {
@@ -39,7 +39,7 @@ function hero(resident: Resident, pairs: Pair[]) {
               ? "두 관계는 같은 세계에서 이어져요"
               : pairs.length === 1
                 ? "같은 세계에서 이어지는 관계예요"
-                : `${KIND_LABEL[resident.kind === "character" ? "persona" : "character"]} 주민과 페어를 만들 수 있어요`,
+                : "다른 주민과 페어를 만들 수 있어요",
         }),
       ]),
     ],
@@ -55,7 +55,7 @@ function pairRow(
   state: AppState,
   controller: Controller,
 ) {
-  const partner = partnerOf(pair, resident, world);
+  const partner = partnerResident(pair, resident, world);
   const editing = state.relationsEditing;
   const busy = Boolean(state.busy[`pair-archive:${pair.pairId}`]);
   return h("li", { className: "pair-row card" }, [
@@ -113,7 +113,7 @@ function archivedList(pairs: Pair[], resident: Resident, world: WorldView, state
         "ul",
         { className: "archived-list" },
         pairs.map((pair) => {
-          const partner = partnerOf(pair, resident, world);
+          const partner = partnerResident(pair, resident, world);
           const busy = Boolean(state.busy[`pair-restore:${pair.pairId}`]);
           return h("li", { className: "archived-row" }, [
             residentAvatar(partner),
@@ -131,15 +131,13 @@ function archivedList(pairs: Pair[], resident: Resident, world: WorldView, state
 }
 
 function pairAddSheet(resident: Resident, world: WorldView, state: AppState, controller: Controller) {
-  const partnerKind = resident.kind === "character" ? "persona" : "character";
-  const linked = new Set(
+  // Any other resident, of either kind; one already paired with this resident (archived or not) has its row.
+  const linked = new Map(
     Object.values(world.state.pairs)
-      .filter(
-        (pair) => pair.characterResidentId === resident.residentId || pair.personaResidentId === resident.residentId,
-      )
-      .map((pair) => (resident.kind === "character" ? pair.personaResidentId : pair.characterResidentId)),
+      .filter((pair) => pair.residentIds.includes(resident.residentId))
+      .map((pair) => [partnerOf(pair, resident.residentId), pair.archived] as const),
   );
-  const candidates = Object.values(world.state.residents).filter((other) => other.kind === partnerKind);
+  const candidates = Object.values(world.state.residents).filter((other) => other.residentId !== resident.residentId);
   return h("div", { className: "sheet-backdrop" }, [
     h(
       "section",
@@ -148,22 +146,19 @@ function pairAddSheet(resident: Resident, world: WorldView, state: AppState, con
         h("h2", { className: "section-title", text: "페어 추가", attrs: { id: "fw-pair-add" } }),
         h("p", {
           className: "muted",
-          text: `${resident.displayName}와(과) 이어질 ${KIND_LABEL[partnerKind]} 주민을 골라 주세요. 지난 기억이 새로 생기지는 않아요.`,
+          text: `${resident.displayName}와(과) 이어질 주민을 골라 주세요. 캐릭터든 페르소나든 괜찮아요. 지난 기억이 새로 생기지는 않아요.`,
         }),
         candidates.length === 0
           ? h("p", {
               className: "empty",
-              text: `${KIND_LABEL[partnerKind]} 주민이 아직 없어요. 주민 불러오기에서 먼저 등록해 주세요.`,
+              text: "함께할 다른 주민이 아직 없어요. 주민 불러오기에서 먼저 등록해 주세요.",
             })
           : h(
               "ul",
               { className: "candidate-list" },
               candidates.map((other) => {
                 const already = linked.has(other.residentId);
-                const key =
-                  resident.kind === "character"
-                    ? `pair-add:${resident.residentId}:${other.residentId}`
-                    : `pair-add:${other.residentId}:${resident.residentId}`;
+                const key = pairAddKey(resident.residentId, other.residentId);
                 return h("li", {}, [
                   h(
                     "button",
@@ -179,7 +174,13 @@ function pairAddSheet(resident: Resident, world: WorldView, state: AppState, con
                       kindTag(other),
                       h("span", {
                         className: "candidate-state",
-                        text: already ? "이미 페어" : state.busy[key] ? "만드는 중…" : "고르기",
+                        text: already
+                          ? linked.get(other.residentId)
+                            ? "보관함에 있어요"
+                            : "이미 페어"
+                          : state.busy[key]
+                            ? "만드는 중…"
+                            : "고르기",
                       }),
                     ],
                   ),
@@ -212,9 +213,7 @@ export function renderRelationsScreen(state: AppState, controller: Controller) {
       body: [statusLine(world ? "주민을 고른 뒤 관계를 열어 주세요." : "세계를 불러오는 중…")],
     });
   const mine = Object.values(world.state.pairs)
-    .filter(
-      (pair) => pair.characterResidentId === resident.residentId || pair.personaResidentId === resident.residentId,
-    )
+    .filter((pair) => pair.residentIds.includes(resident.residentId))
     .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
   const active = mine.filter((pair) => !pair.archived);
   return renderFrame(state, controller, {

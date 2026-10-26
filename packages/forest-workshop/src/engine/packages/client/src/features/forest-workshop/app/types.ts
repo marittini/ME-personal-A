@@ -54,8 +54,8 @@ export interface Resident {
 
 export interface Pair {
   pairId: string;
-  characterResidentId: string;
-  personaResidentId: string;
+  /** Two different residents of any kind, in ascending order (a pair has no direction). */
+  residentIds: [string, string];
   createdAt: string;
   archived: boolean;
   archivedAt: string | null;

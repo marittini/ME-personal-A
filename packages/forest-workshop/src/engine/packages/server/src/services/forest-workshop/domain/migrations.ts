@@ -16,6 +16,18 @@ const MIGRATIONS: Readonly<Record<number, (world: RawWorld) => RawWorld>> = {
     residents: {},
     pairs: {},
   }),
+  // v2 → v3: a pair is any two residents, stored as an ascending couple (it was character × persona).
+  2: (world) => ({
+    ...world,
+    schemaVersion: 3,
+    pairs: Object.fromEntries(
+      Object.entries((world.pairs ?? {}) as Record<string, RawWorld>).map(([id, pair]) => {
+        const { characterResidentId, personaResidentId, ...rest } = pair;
+        const ids = [String(characterResidentId), String(personaResidentId)].sort();
+        return [id, { ...rest, residentIds: ids }];
+      }),
+    ),
+  }),
 };
 
 export function migrateWorld(raw: unknown): WorldState {

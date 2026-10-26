@@ -1,12 +1,13 @@
 // The world document's shape (plan §6). The zod schema is the single source: the TypeScript type is inferred from
 // it, every load is validated against it, and a backup is checked with it before anything is written.
-// Each phase adds its parts through a schema migration (domain/migrations.ts): v2 added residents and pairs (P2).
+// Each phase adds its parts through a schema migration (domain/migrations.ts): v2 added residents and pairs (P2),
+// v3 made pairs any two residents.
 import { z } from "zod";
 import { isKnownItem } from "../content/items";
-import { MAX_PAIRS, pairSchema, samePair } from "./model/pairs";
+import { MAX_PAIRS, pairSchema } from "./model/pairs";
 import { MAX_RESIDENTS, residentSchema } from "./model/residents";
 
-export const CURRENT_SCHEMA_VERSION = 2;
+export const CURRENT_SCHEMA_VERSION = 3;
 
 const nonNegativeInt = z.number().int().min(0).max(Number.MAX_SAFE_INTEGER);
 const displayText = (max: number) =>
@@ -65,18 +66,15 @@ export const worldStateSchema = worldShape.superRefine((world, context) => {
   const starter = world.progress.starterResidentId;
   if (starter !== null && !world.residents[starter]?.recruited) issue(["progress", "starterResidentId"], "unknown");
 
-  const activeCouples: Array<{ characterResidentId: string; personaResidentId: string }> = [];
+  // Each couple has one row (archived or not), so its history stays one history.
+  const couples = new Set<string>();
   for (const [key, pair] of pairs) {
     if (pair.pairId !== key) issue(["pairs", key], "key mismatch");
-    if (world.residents[pair.characterResidentId]?.kind !== "character") issue(["pairs", key], "character side");
-    if (world.residents[pair.personaResidentId]?.kind !== "persona") issue(["pairs", key], "persona side");
+    if (!pair.residentIds.every((id) => world.residents[id])) issue(["pairs", key], "unknown resident");
     if (pair.archived !== (pair.archivedAt !== null)) issue(["pairs", key], "archive time");
-    if (!pair.archived) {
-      if (activeCouples.some((other) => samePair(pair, other.characterResidentId, other.personaResidentId))) {
-        issue(["pairs", key], "duplicate active pair");
-      }
-      activeCouples.push(pair);
-    }
+    const couple = pair.residentIds.join(":");
+    if (couples.has(couple)) issue(["pairs", key], "duplicate pair");
+    couples.add(couple);
   }
 });
 

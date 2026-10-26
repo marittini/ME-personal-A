@@ -1,3 +1,11 @@
+## 0.5.0 — 2026-10-27
+- Five facilities, one per field; 재배밭, 조사대 and 제작대 open once their condition is met. New materials and goods.
+- 지정 횟수: a facility can run a queue (1–99 runs per request, 3–5 slots by level) instead of its rules; switching lets the current run finish.
+- Residents get a field you choose and speed up a facility of that field (5%, up to 10% with breakthroughs); a pair placed together adds a small bonus everywhere.
+- 자동 판매 per item, off by default: never below your amount, the production target or protected stock, at most your daily amount per UTC day.
+- 초대: 1 or 10 invitations with tickets, equal chances (a wished resident more), breakthroughs, tokens and a chosen-resident exchange, with a guarantee, 확률 보기 and 초대 기록.
+- Tickets come from the starter kit and daily delivery requests. Worlds that already claimed the kit get its tickets once.
+
 ## 0.4.0 — 2026-10-27
 - Automatic production: a gathering yard and a processing bench run on their own from recommended rules (target stock, priority, on/off). Change targets and order on the Work screen and apply them; 추천 설정 previews the recommended rules first.
 - Production is measured against stock plus what is already being made, may finish at most one batch over a target, and never uses protected stock. A waiting facility says why (materials, protected amount, target reached).

@@ -28,6 +28,13 @@ export function renderStarterKitSheet(state: AppState, controller: Controller) {
             h("span", { text: "골드" }),
             h("strong", { text: kit.gold.toLocaleString("ko-KR") }),
           ]),
+          kit.tickets
+            ? h("li", { className: "kit-item" }, [
+                ICONS.ticket("icon"),
+                h("span", { text: "초대권" }),
+                h("strong", { text: `${kit.tickets}장` }),
+              ])
+            : null,
           ...Object.entries(kit.items).map(([itemId, amount]) =>
             h("li", { className: "kit-item" }, [
               ICONS.leaf("icon"),

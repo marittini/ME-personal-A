@@ -1,15 +1,16 @@
 // 시설과 창고 (board 01-3): 시설 · 창고 tabs. [시설] the facility card (picture, name, Lv → Lv, 처리 속도 now → next,
 // 작업 방식, description, gold 강화), then 재고 보호 with 편집하기 and its table (아이템 · 보유 수량 · 보호 재고 ·
 // 예약 재고 · 사용 가능) and 자동 판매. [창고] the whole storeroom, each item with 팔기.
-// Real now: facility switching, upgrade (server cost), protection editing, the table, selling. 예약 재고 arrives with
-// expeditions (P4) and shows "–"; 자동 판매 stays locked (P3b).
+// 예약 재고 arrives with expeditions (P4) and shows "–". 자동 판매 opens its sheet (auto-sell-sheet.ts); the switch
+// shows 켜짐 while any item sells automatically.
 import type { AppState, Controller } from "../../app/controller";
 import { button, h, statusLine } from "../../app/dom";
 import type { GameContent, WorldView } from "../../app/types";
 import { card, renderFrame } from "../chrome/frame";
 import { ICONS } from "../chrome/icons";
-import { featureButton } from "../chrome/locked";
-import { facilityOf, itemName, itemTile, speedPercent } from "./production-view";
+import { amountPicker } from "../chrome/sheet";
+import { renderAutoSellSheet } from "./auto-sell-sheet";
+import { crewBonus, facilityOf, itemName, itemTile, percent, speedPercent } from "./production-view";
 
 function holdings(view: WorldView, content: GameContent | null) {
   const order = new Map(content?.items.map((item, index) => [item.id, index]));
@@ -45,6 +46,8 @@ function facilityCard(state: AppState, content: GameContent, world: WorldView, c
   const cost = atMax ? null : content.production.upgradeCosts[facility.level - 1]!;
   const busy = Boolean(state.busy[`upgrade:${facilityId}:${facility.level}`]);
   const short = cost !== null && world.state.wallet.gold < cost;
+  const closed = !facility.unlocked;
+  const bonus = crewBonus(content, world.state, facilityId);
   return card(
     null,
     [
@@ -52,12 +55,24 @@ function facilityCard(state: AppState, content: GameContent, world: WorldView, c
         "div",
         { className: "chip-row", attrs: { role: "group", "aria-label": "시설 고르기" } },
         content.facilities.map((candidate) =>
-          h("button", {
-            className: `pill-tab${candidate.id === facilityId ? " current" : ""}`,
-            text: candidate.name,
-            attrs: { type: "button", "aria-pressed": candidate.id === facilityId ? "true" : "false" },
-            on: { click: () => controller.selectFacility(candidate.id) },
-          }),
+          h(
+            "button",
+            {
+              className: `pill-tab${candidate.id === facilityId ? " current" : ""}`,
+              attrs: {
+                type: "button",
+                "aria-pressed": candidate.id === facilityId ? "true" : "false",
+                "aria-label": world.state.production.facilities[candidate.id]?.unlocked
+                  ? candidate.name
+                  : `${candidate.name} (해금 전)`,
+              },
+              on: { click: () => controller.selectFacility(candidate.id) },
+            },
+            [
+              h("span", { text: candidate.name }),
+              world.state.production.facilities[candidate.id]?.unlocked ? null : ICONS.lock("icon tiny"),
+            ],
+          ),
         ),
       ),
       h("div", { className: "facility" }, [
@@ -77,14 +92,24 @@ function facilityCard(state: AppState, content: GameContent, world: WorldView, c
                 : h("span", { className: "level-next", text: ` → +${speedPercent(content, facility.level + 1)}%` }),
             ]),
           ]),
-          h("div", { className: "effect-row" }, [h("span", { text: "작업 방식" }), h("span", { text: "자동 운영" })]),
+          h("div", { className: "effect-row" }, [
+            h("span", { text: "작업 방식" }),
+            h("span", { text: closed ? "해금 전" : facility.mode === "auto" ? "자동 운영" : "지정 횟수" }),
+          ]),
+          h("div", { className: "effect-row" }, [
+            h("span", { text: "주민 효과" }),
+            h("span", { text: `+${percent(bonus.total)}${bonus.resident ? ` (${bonus.resident.displayName})` : ""}` }),
+          ]),
           h("p", { className: "muted", text: definition?.description ?? "" }),
+          closed
+            ? h("p", { className: "hint", text: "공방 작업에서 해금 조건을 채우고 시설을 열면 강화할 수 있어요." })
+            : null,
           h(
             "button",
             {
               className: "gold-button",
               attrs: { type: "button" },
-              disabled: atMax || busy || short,
+              disabled: closed || atMax || busy || short,
               on: { click: () => void controller.upgradeFacility(facilityId, facility.level) },
             },
             atMax
@@ -104,6 +129,29 @@ function facilityCard(state: AppState, content: GameContent, world: WorldView, c
       ]),
     ],
     { className: "facility-card" },
+  );
+}
+
+function autoSellRow(world: WorldView, controller: Controller) {
+  const on = Object.values(world.state.production.autoSell).filter((setting) => setting.enabled).length;
+  return h(
+    "button",
+    {
+      className: "toggle-row",
+      attrs: { type: "button", "aria-label": `자동 판매 ${on ? `켜짐 (${on}개 품목)` : "꺼짐"} — 설정 열기` },
+      on: { click: () => controller.openSheet({ kind: "auto-sell" }) },
+    },
+    [
+      h("span", { className: "toggle-icon" }, [ICONS.gear("icon")]),
+      h("span", { className: "toggle-text" }, [
+        h("strong", { text: on ? `자동 판매 · ${on}개 품목` : "자동 판매" }),
+        h("span", { text: "보호 · 예약 재고는 사용하지 않아요." }),
+      ]),
+      h("span", { className: `switch ${on ? "on" : "off"}` }, [
+        h("span", { className: "knob" }),
+        h("span", { className: "switch-label", text: on ? "켜짐" : "꺼짐" }),
+      ]),
+    ],
   );
 }
 
@@ -161,21 +209,7 @@ function protectionCard(world: WorldView, content: GameContent, controller: Cont
               }),
             ),
           ]),
-      featureButton(controller, "auto-sell", {
-        className: "toggle-row",
-        label: "자동 판매",
-        children: [
-          h("span", { className: "toggle-icon" }, [ICONS.gear("icon")]),
-          h("span", { className: "toggle-text" }, [
-            h("strong", { text: "자동 판매" }),
-            h("span", { text: "보호 · 예약 재고는 사용하지 않아요." }),
-          ]),
-          h("span", { className: "switch off" }, [
-            h("span", { className: "knob" }),
-            h("span", { className: "switch-label", text: "꺼짐" }),
-          ]),
-        ],
-      }),
+      autoSellRow(world, controller),
     ],
     { id: "fw-protect" },
   );
@@ -211,32 +245,6 @@ function storageCard(world: WorldView, content: GameContent, controller: Control
     ],
     { id: "fw-storage" },
   );
-}
-
-/** A number picker sheet row: −10 −1 value +1 +10, kept in the DOM until confirmed. */
-function amountPicker(id: string, initial: number, min: number, max: number) {
-  let value = Math.min(max, Math.max(min, initial));
-  const output = h("output", {
-    className: "step-value big",
-    text: String(value),
-    attrs: { id, "aria-live": "polite" },
-  });
-  const step = (delta: number) =>
-    h("button", {
-      className: "step",
-      text: delta > 0 ? `+${delta}` : String(delta),
-      attrs: { type: "button", "aria-label": `${delta > 0 ? "늘리기" : "줄이기"} ${Math.abs(delta)}` },
-      on: {
-        click: () => {
-          value = Math.min(max, Math.max(min, value + delta));
-          output.textContent = String(value);
-        },
-      },
-    });
-  return {
-    node: h("div", { className: "stepper wide" }, [step(-10), step(-1), output, step(1), step(10)]),
-    read: () => value,
-  };
 }
 
 function protectSheet(state: AppState, world: WorldView, content: GameContent, controller: Controller) {
@@ -317,7 +325,9 @@ export function renderFacilitiesScreen(state: AppState, controller: Controller) 
       ? protectSheet(state, world, content, controller)
       : ready && state.sheet?.kind === "sell"
         ? sellSheet(state, world, content, controller, state.sheet.itemId)
-        : null;
+        : ready && state.sheet?.kind === "auto-sell"
+          ? renderAutoSellSheet(state, world, content, controller)
+          : null;
   return renderFrame(state, controller, {
     top: { kind: "sub", title: "시설과 창고", back: { route: "work", label: "공방 작업" }, resources: true },
     backdrop: "forest",

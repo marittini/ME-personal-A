@@ -19,7 +19,7 @@ const TABS: readonly Tab[] = [
   { label: "작업", icon: ICONS.hammer, routes: ["work", "facilities"] },
   { label: "탐사", icon: ICONS.compass, routes: [], feature: "explore" },
   { label: "주민", icon: ICONS.residents, routes: ["residents", "relations", "resident-image"] },
-  { label: "초대", icon: ICONS.ticket, routes: [], feature: "invite" },
+  { label: "초대", icon: ICONS.ticket, routes: ["invite"] },
 ];
 
 export function renderBottomNav(state: AppState, controller: Controller) {

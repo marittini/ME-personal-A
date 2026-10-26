@@ -6,7 +6,6 @@
 import type { AppState, Controller } from "../../app/controller";
 import { h } from "../../app/dom";
 import type { Resident, WorldState } from "../../app/types";
-import { featureButton } from "../chrome/locked";
 import { ICONS } from "../chrome/icons";
 import { residentFigure } from "../residents/resident-figure";
 
@@ -89,11 +88,16 @@ function spot(side: "left" | "right", resident: Resident | null, world: WorldSta
       ],
     );
   }
-  return featureButton(controller, "invite", {
-    className: `resident-spot ${side}`,
-    label: "주민 자리",
-    children: [h("span", { className: "spot-shadow" }), h("span", { className: "spot-text", text: "주민" })],
-  });
+  // An empty place in the workshop: 초대 brings the next resident.
+  return h(
+    "button",
+    {
+      className: `resident-spot ${side}`,
+      attrs: { type: "button", "aria-label": "빈 자리 — 초대로 새 주민 맞이하기" },
+      on: { click: () => controller.navigate("invite") },
+    },
+    [h("span", { className: "spot-shadow" }), h("span", { className: "spot-text", text: "초대" })],
+  );
 }
 
 export function renderHomeScene(state: AppState, controller: Controller) {

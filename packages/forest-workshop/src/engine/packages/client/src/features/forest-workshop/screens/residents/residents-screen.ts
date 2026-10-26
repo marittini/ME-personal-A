@@ -1,17 +1,18 @@
 // 주민 (board 03-1): sign + ribbon, 이름으로 찾기 with the filter button, 전체 · 캐릭터 · 페르소나 tabs, the card grid
 // (picture, name, kind tag, field tag, 영입 완료), the selected resident's detail (picture, name, tags, 패시브 · 돌파,
 // 주민 그림 · 프로필 · 관계) and 주민 불러오기.
-// Real now: search, filter, tabs, cards, selection, 주민 그림, 프로필, 관계, 주민 불러오기. Fields, passives and 돌파
-// arrive with production (P3) and stay in place, locked; a resident waiting for an invitation says so (초대, P3).
+// The field tag opens 전문 분야 고르기; 패시브 shows the placed passive (기본 → 현재, by 돌파) and the 돌파 leaves; a
+// resident waiting for an invitation links to 초대.
 import type { AppState, Controller } from "../../app/controller";
 import { h, statusLine } from "../../app/dom";
 import { visibleResidents, type ResidentsView } from "../../app/resident-actions";
-import type { Resident, WorldView } from "../../app/types";
+import type { GameContent, Resident, WorldView } from "../../app/types";
 import { card, renderFrame } from "../chrome/frame";
 import { ICONS, type IconFactory } from "../chrome/icons";
-import { featureButton, lockedBlock } from "../chrome/locked";
+import { FIELD_ICONS, FIELD_LABELS, passiveOf, percent } from "../work/production-view";
 import { searchField } from "../chrome/search-field";
 import { kindTag, residentFigure } from "./resident-figure";
+import { renderFieldSheet } from "./field-sheet";
 import { renderProfileSheet } from "./profile-sheet";
 
 const TABS: ReadonlyArray<{ id: ResidentsView["tab"]; label: string }> = [
@@ -64,12 +65,17 @@ function tabs(view: ResidentsView, controller: Controller) {
   );
 }
 
-function fieldTag(controller: Controller) {
-  return featureButton(controller, "specialty", {
-    className: "tag field",
-    label: "전문 분야",
-    children: [ICONS.leaf("icon tiny"), h("span", { text: "분야" })],
-  });
+function fieldTag(resident: Resident, controller: Controller) {
+  const label = resident.field ? FIELD_LABELS[resident.field] : "분야 정하기";
+  return h(
+    "button",
+    {
+      className: `tag field${resident.field ? "" : " unset"}`,
+      attrs: { type: "button", "aria-label": `${resident.displayName} 전문 분야: ${label}` },
+      on: { click: () => controller.openSheet({ kind: "field", residentId: resident.residentId }) },
+    },
+    [(resident.field ? FIELD_ICONS[resident.field] : ICONS.leaf)("icon tiny"), h("span", { text: label })],
+  );
 }
 
 function residentCard(resident: Resident, selected: boolean, controller: Controller) {
@@ -90,14 +96,18 @@ function residentCard(resident: Resident, selected: boolean, controller: Control
         h("strong", { className: "resident-name", text: resident.displayName }),
       ],
     ),
-    h("span", { className: "tag-row" }, [kindTag(resident), fieldTag(controller)]),
+    h("span", { className: "tag-row" }, [kindTag(resident), fieldTag(resident, controller)]),
     resident.recruited
       ? h("span", { className: "status-pill done", text: "영입 완료" })
-      : featureButton(controller, "invite", {
-          className: "status-pill waiting",
-          label: "초대하기",
-          children: [h("span", { text: "초대 대기" })],
-        }),
+      : h(
+          "button",
+          {
+            className: "status-pill waiting",
+            attrs: { type: "button", "aria-label": `${resident.displayName} 초대 대기 — 초대 화면 열기` },
+            on: { click: () => controller.navigate("invite") },
+          },
+          [h("span", { text: "초대 대기" })],
+        ),
   ]);
 }
 
@@ -108,7 +118,43 @@ function actionButton(icon: IconFactory, label: string, onClick: () => void) {
   ]);
 }
 
-function detail(resident: Resident, controller: Controller) {
+/** Where the resident works now, and the passive it gives there. */
+function passiveBlock(resident: Resident, world: WorldView, content: GameContent | null) {
+  const max = content?.crew.maxBreakthrough ?? 5;
+  const base = content ? passiveOf(content, 0) : 0;
+  const now = content ? passiveOf(content, resident.breakthrough) : 0;
+  const placedAt = Object.entries(world.state.production.facilities).find(
+    ([, facility]) => facility.residentId === resident.residentId,
+  )?.[0];
+  const facility = content?.facilities.find((candidate) => candidate.id === placedAt);
+  const where = !resident.recruited
+    ? "초대하면 시설에 배치할 수 있어요."
+    : !facility
+      ? "아직 배치하지 않았어요. 공방 작업 → 배치 변경."
+      : facility.field === resident.field
+        ? `${facility.name}에서 처리 속도 +${percent(now)}`
+        : `${facility.name}에 있지만 분야가 달라 효과가 없어요.`;
+  return h("div", { className: "passive-block" }, [
+    h("p", { className: "passive" }, [
+      ICONS.leaf("icon tiny"),
+      h("strong", { text: "패시브" }),
+      ` ${resident.field ? `${FIELD_LABELS[resident.field]} 시설 처리 속도` : "분야를 정하면 생겨요"}`,
+    ]),
+    h("p", { className: "muted", text: `기본 효과 ${percent(base)} → 현재 ${percent(now)} · ${where}` }),
+    h("p", { className: "breakthrough" }, [
+      h("span", { text: `돌파 ${resident.breakthrough}/${max}` }),
+      h(
+        "span",
+        { className: "leaf-pips", attrs: { "aria-hidden": "true" } },
+        Array.from({ length: max }, (_, index) =>
+          h("span", { className: `pip${index < resident.breakthrough ? " on" : ""}` }),
+        ),
+      ),
+    ]),
+  ]);
+}
+
+function detail(resident: Resident, world: WorldView, content: GameContent | null, controller: Controller) {
   return card(
     null,
     [
@@ -116,24 +162,8 @@ function detail(resident: Resident, controller: Controller) {
         h("span", { className: "detail-stage" }, [residentFigure(resident)]),
         h("div", { className: "detail-info" }, [
           h("strong", { className: "detail-name", text: resident.displayName }),
-          h("span", { className: "tag-row" }, [kindTag(resident), fieldTag(controller)]),
-          lockedBlock(
-            controller,
-            "breakthrough",
-            [
-              h("p", { className: "passive" }, [ICONS.leaf("icon tiny"), h("strong", { text: "패시브" }), " –"]),
-              h("p", { className: "muted", text: "기본 효과 – → 현재 –" }),
-              h("p", { className: "breakthrough" }, [
-                h("span", { text: "돌파 –/–" }),
-                h(
-                  "span",
-                  { className: "leaf-pips" },
-                  [1, 2, 3, 4, 5].map(() => h("span", { className: "pip" })),
-                ),
-              ]),
-            ],
-            "detail-locked",
-          ),
+          h("span", { className: "tag-row" }, [kindTag(resident), fieldTag(resident, controller)]),
+          passiveBlock(resident, world, content),
         ]),
       ]),
       h("div", { className: "detail-actions" }, [
@@ -172,7 +202,7 @@ function body(world: WorldView, state: AppState, controller: Controller) {
       tabs(view, controller),
       grid,
     ]),
-    selected ? detail(selected, controller) : null,
+    selected ? detail(selected, world, state.content, controller) : null,
     h(
       "button",
       {
@@ -190,7 +220,9 @@ export function renderResidentsScreen(state: AppState, controller: Controller) {
   const sheet =
     state.sheet?.kind === "profile" && world
       ? renderProfileSheet(world, state, controller, state.sheet.residentId)
-      : null;
+      : state.sheet?.kind === "field" && world
+        ? renderFieldSheet(state, world, controller, state.sheet.residentId)
+        : null;
   return renderFrame(state, controller, {
     top: { kind: "sub", title: "주민", subtitle: "숲을 함께하는 소중한 이웃들", resources: false },
     backdrop: "forest",

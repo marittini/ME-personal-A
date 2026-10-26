@@ -10,8 +10,8 @@
   },
   "id": "forest-workshop",
   "name": "Forest Workshop",
-  "version": "0.4.0",
-  "description": "A portrait cozy workshop game in development. This 0.4 build adds automatic production (a gathering yard and a processing bench running on your rules, stock protection, upgrades, selling, a work report and the 72-hour absence cap) on top of residents registered from your characters and personas (with an optional language-model rebuild suggestion), your own uploaded resident pictures stored as WebP, pairs between any two residents, and backups that carry the pictures; production, invitations and stories follow. Install it, restart Marinara Engine when prompted, then open Home → 숲결 공방.",
+  "version": "0.5.0",
+  "description": "A portrait cozy workshop game in development. This 0.5 build completes workshop management: five facilities (three opened by one-time conditions) running on your rules or a counted queue, residents placed by their field for a passive speed bonus, opt-in auto-selling with a daily limit, invitations with tickets earned from daily deliveries (breakthroughs, tokens and a chosen-resident exchange), stock protection, upgrades and the 72-hour absence cap — on top of residents registered from your characters and personas, your own uploaded resident pictures stored as WebP, pairs between any two residents, and backups that carry the pictures; stories and letters follow. Install it, restart Marinara Engine when prompted, then open Home → 숲결 공방.",
   "engine": {
     "min": "2.5.1",
     "maxExclusive": "4.0.0"
@@ -36,18 +36,18 @@
   "files": [
     {
       "path": "agents.json",
-      "sha256": "1a97cbe18a42d9d231dd2864599f17d082ddfd6718dd70354d141faec6dbb4d0",
-      "bytes": 959
+      "sha256": "78693c554ca54f1fdb5a6c56dd7240c3045692a820c3b02b929d3d9ebee35590",
+      "bytes": 1115
     },
     {
       "path": "server.mjs",
-      "sha256": "cfb12f3a9dc218c2bc529f3ab8223e874ecb98195b340b948498cf908e9cfe52",
-      "bytes": 70572
+      "sha256": "13e44e3a623c6eab5c91bc8a06c8dcdabfe90f8c8e4823989300fe5e00d9190d",
+      "bytes": 91985
     },
     {
       "path": "client.js",
-      "sha256": "6f4f6b0efb5224ce41d1493ca6f5185a862cca8ad090141c0f75b34b619cb29f",
-      "bytes": 183414
+      "sha256": "bddf77ff4d07a624fe449a11750e99aa00aabfc32da7184a79acd39db323acd8",
+      "bytes": 224560
     }
   ],
   "permissions": [

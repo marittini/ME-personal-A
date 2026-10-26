@@ -4,9 +4,27 @@
 //   sub   — a back button, the screen's sign, and (on 작업 · 시설과 창고) gold · tickets · gear (boards 01-2/3, 04, 05);
 //           주민 and 관계 add a ribbon under the sign (board 03)
 import type { AppState, Controller, Route } from "../../app/controller";
-import { h } from "../../app/dom";
+import { h, type Child } from "../../app/dom";
 import { featureButton } from "./locked";
 import { ICONS } from "./icons";
+
+/** 초대권: the count, and a tap opens 초대권 받기 (today's 납품 의뢰). */
+export function ticketCounter(state: AppState, controller: Controller) {
+  const world = state.world?.state === "ready" ? state.world.value : null;
+  const tickets = world?.state.wallet.tickets ?? 0;
+  return h(
+    "button",
+    {
+      className: "counter ticket",
+      attrs: { type: "button", "aria-label": `초대권 ${tickets}장 — 초대권 받기` },
+      on: { click: () => controller.openDeliveries() },
+    },
+    [
+      h("span", { className: "ticket-mark" }, [ICONS.ticket("icon")]),
+      h("span", { className: "counter-value", text: String(tickets) }),
+    ],
+  );
+}
 
 export type TopBar =
   | { kind: "home" }
@@ -15,8 +33,10 @@ export type TopBar =
       title: string;
       back?: { route: Route; label: string };
       resources: boolean;
-      /** The ribbon under the sign (boards 03-1 주민, 03-2 관계). */
+      /** The ribbon under the sign (boards 03-1 주민, 03-2 관계, 03-3 초대). */
       subtitle?: string;
+      /** The screen's own counters in place of gold · tickets · gear (board 03-3: 초대권 · 종표). */
+      counters?: Child;
     };
 
 function resources(state: AppState, controller: Controller) {
@@ -28,14 +48,7 @@ function resources(state: AppState, controller: Controller) {
       h("span", { className: "coin", attrs: { "aria-hidden": "true" } }),
       h("span", { className: "counter-value", text: gold }),
     ]),
-    featureButton(controller, "tickets", {
-      className: "counter ticket",
-      label: "초대권",
-      children: [
-        h("span", { className: "ticket-mark" }, [ICONS.ticket("icon")]),
-        h("span", { className: "counter-value", text: "–" }),
-      ],
-    }),
+    ticketCounter(state, controller),
     state.route === "settings"
       ? null
       : h(
@@ -72,7 +85,7 @@ export function renderTopBar(state: AppState, controller: Controller, bar: TopBa
     ]);
   }
   const back = bar.back;
-  return h("header", { className: `top top-sub${bar.resources ? " with-resources" : ""}` }, [
+  return h("header", { className: `top top-sub${bar.resources || bar.counters ? " with-resources" : ""}` }, [
     h("div", { className: "top-row" }, [
       back
         ? h(
@@ -86,7 +99,7 @@ export function renderTopBar(state: AppState, controller: Controller, bar: TopBa
           )
         : h("span", { className: "back-spacer", attrs: { "aria-hidden": "true" } }),
       h("h1", { className: "sign", text: bar.title, attrs: { id: "fw-screen-title" } }),
-      bar.resources ? resources(state, controller) : null,
+      bar.resources ? resources(state, controller) : (bar.counters ?? null),
     ]),
     bar.subtitle ? h("p", { className: "ribbon", text: bar.subtitle }) : null,
   ]);

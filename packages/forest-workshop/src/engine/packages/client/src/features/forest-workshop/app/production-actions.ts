@@ -4,7 +4,7 @@
 import { gameApi } from "./api";
 import type { ControllerCore } from "./controller";
 import { newWorldId as newUuid } from "./host-api";
-import type { GameContent, ProductionState, Rule, WorldState } from "./types";
+import type { AutoSell, FacilityMode, GameContent, ProductionState, Rule, WorldState } from "./types";
 
 export interface WorkView {
   /** The facility 공방 작업 and 시설과 창고 show. */
@@ -13,9 +13,16 @@ export interface WorkView {
   drafts: Record<string, Rule[]>;
   /** The rule whose recipe and target are shown, per facility. */
   selected: Record<string, string>;
+  /** 지정 횟수: the recipe chosen for the next queue entry, per facility. */
+  queueRecipe: Record<string, string>;
 }
 
-export type ProductionSheet = { kind: "work-report" } | { kind: "protect-edit" } | { kind: "sell"; itemId: string };
+export type ProductionSheet =
+  | { kind: "work-report" }
+  | { kind: "protect-edit" }
+  | { kind: "sell"; itemId: string }
+  | { kind: "assign"; facilityId: string }
+  | { kind: "auto-sell" };
 
 const HEARTBEAT_MS = 60_000;
 
@@ -229,6 +236,52 @@ export function createProductionActions(core: ControllerCore) {
         store.set({ sheet: null });
         core.notify(`${amount}개를 팔아 ${String(response.result.gold)} G를 받았어요.`);
       }
+    },
+
+    async unlockFacility(facilityId: string) {
+      const response = await core.runCommand(`unlock:${facilityId}`, "production.unlockFacility", { facilityId });
+      if (response && !response.result.alreadyOpen) core.notify("시설이 열렸어요. 추천 규칙으로 바로 일을 시작해요.");
+    },
+
+    /** 자동 운영 / 지정 횟수: the running run finishes as it is; the next one follows the new mode. */
+    async setMode(facilityId: string, mode: FacilityMode) {
+      const response = await core.runCommand(`mode:${facilityId}`, "production.setMode", { facilityId, mode });
+      if (response?.result.running) core.notify("지금 작업이 끝나면 바뀐 방식으로 이어져요.");
+    },
+
+    selectQueueRecipe(facilityId: string, recipeId: string) {
+      patchWork({ queueRecipe: { ...store.get().work.queueRecipe, [facilityId]: recipeId } });
+    },
+
+    async addQueue(facilityId: string, recipeId: string, count: number) {
+      // The entry ID stays the same while this request is retried, so a lost answer cannot add it twice.
+      const entryKey = `queue-entry:${facilityId}`;
+      const entryId = core.requestIdFor(entryKey, JSON.stringify([recipeId, count]), newUuid);
+      const response = await core.runCommand(`queue:${facilityId}`, "production.queueAdd", {
+        facilityId,
+        entryId,
+        recipeId,
+        count,
+      });
+      if (response) core.forgetRequest(entryKey);
+    },
+
+    async removeQueue(facilityId: string, entryId: string) {
+      await core.runCommand(`queue-remove:${entryId}`, "production.queueRemove", { facilityId, entryId });
+    },
+
+    /** 배치 변경: null takes the resident out. */
+    async assignResident(facilityId: string, residentId: string | null) {
+      const response = await core.runCommand(`assign:${facilityId}`, "production.assignResident", {
+        facilityId,
+        residentId,
+      });
+      if (response) store.set({ sheet: null });
+    },
+
+    async setAutoSell(itemId: string, setting: AutoSell) {
+      const response = await core.runCommand(`auto-sell:${itemId}`, "economy.setAutoSell", { itemId, setting });
+      if (response) core.notify(setting.enabled ? "자동 판매 설정을 저장했어요." : "자동 판매를 껐어요.");
     },
 
     /** 작업 보고 확인: marks what was shown as read. Outputs went to the storeroom when they were made. */

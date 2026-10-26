@@ -3,6 +3,7 @@ import { hostApi } from "./host-api";
 import type {
   BackupDocument,
   CommandResponse,
+  DeliveryList,
   GameContent,
   ResidentKind,
   SourceEntry,
@@ -28,6 +29,8 @@ export const gameApi = {
     hostApi().post<WorldView & { created: boolean; content: GameContent }>(`${ROOT}/worlds`, input),
   getState: (worldId: string) =>
     hostApi().get<WorldView & { content: GameContent }>(`${ROOT}/state?worldId=${encodeURIComponent(worldId)}`),
+  getDeliveries: (worldId: string) =>
+    hostApi().get<DeliveryList>(`${ROOT}/deliveries?worldId=${encodeURIComponent(worldId)}`),
   heartbeat: (worldId: string) => hostApi().post<WorldView>(`${ROOT}/heartbeat`, { worldId }),
   sendCommand: (input: CommandInput) => hostApi().post<CommandResponse>(`${ROOT}/commands`, input),
   getStorage: (worldId: string) =>

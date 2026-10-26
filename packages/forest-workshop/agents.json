@@ -2,7 +2,7 @@
   {
     "id": "forest-workshop",
     "name": "Forest Workshop",
-    "description": "A portrait cozy workshop game in development. This 0.4 build adds automatic production (a gathering yard and a processing bench running on your rules, stock protection, upgrades, selling, a work report and the 72-hour absence cap) on top of residents registered from your characters and personas (with an optional language-model rebuild suggestion), your own uploaded resident pictures stored as WebP, pairs between any two residents, and backups that carry the pictures; production, invitations and stories follow.",
+    "description": "A portrait cozy workshop game in development. This 0.5 build completes workshop management: five facilities (three opened by one-time conditions) running on your rules or a counted queue, residents placed by their field for a passive speed bonus, opt-in auto-selling with a daily limit, invitations with tickets earned from daily deliveries (breakthroughs, tokens and a chosen-resident exchange), stock protection, upgrades and the 72-hour absence cap — on top of residents registered from your characters and personas, your own uploaded resident pictures stored as WebP, pairs between any two residents, and backups that carry the pictures; stories and letters follow.",
     "author": "marittini",
     "phase": "pre_generation",
     "enabledByDefault": false,

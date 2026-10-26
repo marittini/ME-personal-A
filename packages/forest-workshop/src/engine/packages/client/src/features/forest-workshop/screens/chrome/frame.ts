@@ -4,6 +4,7 @@
 // position across re-renders of the same route.
 import type { AppState, Controller } from "../../app/controller";
 import { h, type Child } from "../../app/dom";
+import { renderDeliveriesSheet } from "../invite/deliveries-sheet";
 import { renderBottomNav } from "./bottom-nav";
 import { renderTopBar, type TopBar } from "./top-bar";
 
@@ -49,7 +50,8 @@ export function renderFrame(state: AppState, controller: Controller, frame: Fram
       ]),
       notice(state, controller),
       frame.nav ? renderBottomNav(state, controller) : null,
-      frame.sheet ?? null,
+      // 초대권 받기 opens from the ticket counter on any screen.
+      frame.sheet ?? (state.sheet?.kind === "deliveries" ? renderDeliveriesSheet(state, controller) : null),
     ],
   );
 }

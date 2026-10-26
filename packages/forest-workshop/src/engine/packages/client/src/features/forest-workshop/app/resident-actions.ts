@@ -4,7 +4,7 @@
 import { gameApi } from "./api";
 import type { ControllerCore, Sheet } from "./controller";
 import { newWorldId as newUuid } from "./host-api";
-import type { Pair, Placement, Resident, ResidentKind, WorldState } from "./types";
+import type { FieldId, Pair, Placement, Resident, ResidentKind, WorldState } from "./types";
 
 export interface ResidentsView {
   tab: "all" | ResidentKind;
@@ -17,7 +17,8 @@ export type ResidentSheet =
   | { kind: "profile"; residentId: string }
   | { kind: "pair-add"; residentId: string }
   | { kind: "image-history"; residentId: string }
-  | { kind: "history-cleanup" };
+  | { kind: "history-cleanup" }
+  | { kind: "field"; residentId: string };
 
 /** The residents 주민 shows, in its order: recruited first, then by registration. */
 export function visibleResidents(state: WorldState, view: ResidentsView): Resident[] {
@@ -86,6 +87,12 @@ export function createResidentActions(core: ControllerCore) {
 
     closeSheet() {
       store.set({ sheet: null });
+    },
+
+    /** 전문 분야: the player's choice, free to change. */
+    async setField(residentId: string, field: FieldId) {
+      const response = await core.runCommand(`field:${residentId}`, "residents.setField", { residentId, field });
+      if (response) store.set({ sheet: null });
     },
 
     toggleRelationsEditing() {

@@ -1,18 +1,22 @@
 // 공방 작업 (board 01-2): field tabs (채집 · 재배 · 조사 · 가공 · 제작), 자동 운영 / 지정 횟수, the facility card with
 // 배치 변경, the recipe, 목표 재고 with 현재 / 목표, 재료 사용 설정 (보유 · 보호 · 사용 가능), 제작 우선순위, 현재 작업
 // with its countdown, the waiting hint, and 운영 규칙 적용 · 추천 설정.
-// Real now: 채집 and 가공 (the two facilities of the first play test), 자동 운영, every part of the plan, 적용 and 추천
-// 설정 (a preview the player applies). Locked in place: 재배 · 조사 · 제작 (their facilities), 지정 횟수 and 배치 변경
-// (resident placement) — P3b.
+// A facility not open yet shows its 해금 condition in place of the plan. 지정 횟수 swaps the rule plan for the queue
+// (queue-panel.ts); 배치 변경 opens the placement sheet (assign-sheet.ts).
 import type { AppState, Controller } from "../../app/controller";
 import { h, statusLine } from "../../app/dom";
 import { draftRules, isDraftDirty } from "../../app/production-actions";
 import type { FacilityState, GameContent, Rule, WorldView } from "../../app/types";
 import { card, renderFrame } from "../chrome/frame";
 import { ICONS, type IconFactory } from "../chrome/icons";
-import { featureButton } from "../chrome/locked";
+import { residentAvatar } from "../residents/resident-figure";
+import { renderAssignSheet } from "./assign-sheet";
+import { queuePanel } from "./queue-panel";
 import {
+  crewBonus,
   facilityOf,
+  percent,
+  unlockParts,
   formatDuration,
   itemName,
   itemTile,
@@ -31,46 +35,115 @@ const FIELDS: ReadonlyArray<{ field: string; label: string; icon: IconFactory }>
   { field: "craft", label: "제작", icon: ICONS.hammer },
 ];
 
-function fieldTabs(content: GameContent, facilityId: string, controller: Controller) {
+function fieldTabs(content: GameContent, world: WorldView, facilityId: string, controller: Controller) {
   return h(
     "div",
     { className: "field-tabs", attrs: { role: "tablist", "aria-label": "작업 분야" } },
     FIELDS.map((field) => {
       const facility = content.facilities.find((candidate) => candidate.field === field.field);
-      if (!facility) {
-        return featureButton(controller, "work-fields", {
-          className: "field-tab",
-          label: field.label,
-          children: [field.icon("icon field-glyph"), h("span", { text: field.label })],
-        });
-      }
+      if (!facility) return null;
       const current = facility.id === facilityId;
+      const open = world.state.production.facilities[facility.id]?.unlocked ?? false;
       return h(
         "button",
         {
-          className: `field-tab${current ? " current" : ""}`,
-          attrs: { type: "button", role: "tab", "aria-selected": current ? "true" : "false" },
+          className: `field-tab${current ? " current" : ""}${open ? "" : " closed"}`,
+          attrs: {
+            type: "button",
+            role: "tab",
+            "aria-selected": current ? "true" : "false",
+            "aria-label": open ? field.label : `${field.label} (해금 전)`,
+          },
           on: { click: () => controller.selectFacility(facility.id) },
         },
-        [field.icon("icon field-glyph"), h("span", { text: field.label })],
+        [
+          field.icon("icon field-glyph"),
+          h("span", { text: field.label }),
+          open ? null : h("span", { className: "lock-tag" }, [ICONS.lock("icon tiny")]),
+        ],
       );
     }),
   );
 }
 
-function modeToggle(controller: Controller) {
+function modeToggle(state: AppState, facilityId: string, facility: FacilityState, controller: Controller) {
+  const busy = Boolean(state.busy[`mode:${facilityId}`]);
+  const segment = (mode: FacilityState["mode"], label: string) =>
+    h("button", {
+      className: `segment${facility.mode === mode ? " selected" : ""}`,
+      text: label,
+      attrs: { type: "button", "aria-pressed": facility.mode === mode ? "true" : "false" },
+      disabled: busy,
+      on: { click: () => (facility.mode === mode ? undefined : void controller.setMode(facilityId, mode)) },
+    });
   return h("div", { className: "segmented", attrs: { role: "group", "aria-label": "작업 방식" } }, [
-    h("span", { className: "segment selected", text: "자동 운영", attrs: { "aria-current": "true" } }),
-    featureButton(controller, "work-mode", {
-      className: "segment",
-      label: "지정 횟수",
-      children: [h("span", { text: "지정 횟수" })],
-    }),
+    segment("auto", "자동 운영"),
+    segment("count", "지정 횟수"),
   ]);
 }
 
-function facilityCard(content: GameContent, facilityId: string, facility: FacilityState, controller: Controller) {
+/** 해금 전: the facility, its condition with progress, and 해금 once every part holds (plan §7.2-F). */
+function unlockCard(
+  state: AppState,
+  content: GameContent,
+  world: WorldView,
+  facilityId: string,
+  controller: Controller,
+) {
   const definition = facilityOf(content, facilityId);
+  const parts = unlockParts(content, world.state, facilityId);
+  const ready = parts.every((part) => part.met);
+  const busy = Boolean(state.busy[`unlock:${facilityId}`]);
+  return card(
+    null,
+    [
+      h("div", { className: "facility-entry" }, [
+        h("span", { className: "facility-open closed" }, [
+          h("span", { className: "facility-art" }, [ICONS.lock("icon big")]),
+          h("span", { className: "facility-text" }, [
+            h("strong", { text: `${definition?.name ?? facilityId} · 해금 전` }),
+            h("span", { text: definition?.description ?? "" }),
+          ]),
+        ]),
+      ]),
+      h("div", { className: "plan-block" }, [
+        h("span", { className: "plan-label", text: "해금 조건" }),
+        h(
+          "ul",
+          { className: "unlock-list" },
+          parts.map((part) =>
+            h("li", { className: part.met ? "met" : "" }, [
+              (part.met ? ICONS.check : ICONS.hourglass)("icon"),
+              h("span", { text: part.text }),
+              h("strong", { text: `${Math.min(part.have, part.need)} / ${part.need}` }),
+            ]),
+          ),
+        ),
+      ]),
+      h(
+        "button",
+        {
+          className: "button",
+          attrs: { type: "button", "data-wide": "" },
+          disabled: !ready || busy,
+          on: { click: () => void controller.unlockFacility(facilityId) },
+        },
+        [h("span", { text: busy ? "여는 중…" : ready ? "시설 열기" : "조건을 채우면 열 수 있어요" })],
+      ),
+    ],
+    { className: "work-card" },
+  );
+}
+
+function facilityCard(
+  content: GameContent,
+  world: WorldView,
+  facilityId: string,
+  facility: FacilityState,
+  controller: Controller,
+) {
+  const definition = facilityOf(content, facilityId);
+  const bonus = crewBonus(content, world.state, facilityId);
   return h("div", { className: "facility-entry" }, [
     h(
       "button",
@@ -84,18 +157,29 @@ function facilityCard(content: GameContent, facilityId: string, facility: Facili
         h("span", { className: "facility-text" }, [
           h("strong", { text: `${definition?.name ?? facilityId} Lv. ${facility.level}` }),
           h("span", { text: `${definition?.description ?? ""} 처리 속도 +${speedPercent(content, facility.level)}%` }),
+          h("span", { className: "crew-line" }, [
+            bonus.resident ? residentAvatar(bonus.resident) : null,
+            bonus.resident
+              ? `${bonus.resident.displayName} · ${bonus.matches ? `+${percent(bonus.passive)}` : "분야가 달라 효과 없음"}`
+              : "배치한 주민 없음",
+            bonus.set ? ` · 세트 +${percent(bonus.set)}` : "",
+          ]),
         ]),
       ],
     ),
-    featureButton(controller, "assign-residents", {
-      className: "outline-button",
-      label: "배치 변경",
-      children: [ICONS.swap("icon"), h("span", { text: "배치 변경" })],
-    }),
+    h(
+      "button",
+      {
+        className: "outline-button",
+        attrs: { type: "button", "aria-label": `${definition?.name ?? "시설"} 배치 변경` },
+        on: { click: () => controller.openSheet({ kind: "assign", facilityId }) },
+      },
+      [ICONS.swap("icon"), h("span", { text: "배치 변경" })],
+    ),
   ]);
 }
 
-function recipeCard(content: GameContent, rule: Rule | undefined, level: number) {
+function recipeCard(content: GameContent, rule: Rule | undefined, level: number, bonus: number) {
   const recipe = rule ? recipeOf(content, rule.recipeId) : null;
   if (!recipe) {
     return h("div", { className: "recipe" }, [
@@ -107,7 +191,7 @@ function recipeCard(content: GameContent, rule: Rule | undefined, level: number)
     ]);
   }
   const output = Object.keys(recipe.outputs)[0]!;
-  const oneRun = runMs(content, recipe, level);
+  const oneRun = runMs(content, recipe, level, bonus);
   const flow = [...Object.entries(recipe.inputs).map(([item, amount]) => `${itemName(content, item)} ${amount}`)];
   return h("div", { className: "recipe" }, [
     h("span", { className: "recipe-art" }, [itemTile(output, "big")]),
@@ -320,27 +404,45 @@ function body(state: AppState, content: GameContent, world: WorldView, controlle
   const facilityId = state.work.facilityId;
   const facility = world.state.production.facilities[facilityId];
   if (!facility) return [statusLine("시설을 불러오는 중…")];
+  if (!facility.unlocked) {
+    return [
+      fieldTabs(content, world, facilityId, controller),
+      unlockCard(state, content, world, facilityId, controller),
+    ];
+  }
   const rules = draftRules(state, world.state.production, facilityId);
   const selected = rules.find((rule) => rule.policyId === state.work.selected[facilityId]) ?? rules[0];
   const dirty = isDraftDirty(state, world.state.production, facilityId);
   const applying = Boolean(state.busy[`rules:${facilityId}`]);
+  const auto = facility.mode === "auto";
+  const bonus = crewBonus(content, world.state, facilityId).total;
   return [
-    fieldTabs(content, facilityId, controller),
+    fieldTabs(content, world, facilityId, controller),
     card(
       null,
       [
-        modeToggle(controller),
-        facilityCard(content, facilityId, facility, controller),
-        recipeCard(content, selected, facility.level),
-        selected ? targetRow(content, world, facilityId, selected, controller) : null,
-        materialsBlock(content, world, selected),
-        priorityList(content, facilityId, rules, selected?.policyId, controller),
+        modeToggle(state, facilityId, facility, controller),
+        facilityCard(content, world, facilityId, facility, controller),
+        ...(auto
+          ? [
+              recipeCard(content, selected, facility.level, bonus),
+              selected ? targetRow(content, world, facilityId, selected, controller) : null,
+              materialsBlock(content, world, selected),
+              priorityList(content, facilityId, rules, selected?.policyId, controller),
+            ]
+          : [queuePanel(state, content, world, facilityId, controller)]),
         currentWork(state, content, world, facility),
         h("p", { className: "hint center" }, [
           ICONS.info("icon"),
           facility.waiting ? waitingText(content, facility.waiting) : "재료가 부족하면 기다렸다 다시 시작해요.",
         ]),
-        dirty
+        auto && facility.queue.length
+          ? h("p", {
+              className: "hint center",
+              text: `지정 횟수 대기열 ${facility.queue.length}개는 멈춘 채 그대로 남아 있어요.`,
+            })
+          : null,
+        auto && dirty
           ? h("p", { className: "draft-note" }, [
               "바꾼 규칙은 아직 적용 전이에요. ",
               h("button", {
@@ -354,36 +456,43 @@ function body(state: AppState, content: GameContent, world: WorldView, controlle
       ],
       { className: "work-card" },
     ),
-    h("div", { className: "rule-actions" }, [
-      h(
-        "button",
-        {
-          className: "button wide-main",
-          attrs: { type: "button" },
-          disabled: !dirty || applying,
-          on: { click: () => void controller.applyRules(facilityId) },
-        },
-        [h("span", { text: applying ? "적용하는 중…" : dirty ? "운영 규칙 적용" : "적용됨" })],
-      ),
-      h(
-        "button",
-        {
-          className: "button secondary",
-          attrs: { type: "button" },
-          on: { click: () => controller.recommendRules(facilityId) },
-        },
-        [ICONS.gear("icon"), h("span", { text: "추천 설정" })],
-      ),
-    ]),
+    auto
+      ? h("div", { className: "rule-actions" }, [
+          h(
+            "button",
+            {
+              className: "button wide-main",
+              attrs: { type: "button" },
+              disabled: !dirty || applying,
+              on: { click: () => void controller.applyRules(facilityId) },
+            },
+            [h("span", { text: applying ? "적용하는 중…" : dirty ? "운영 규칙 적용" : "적용됨" })],
+          ),
+          h(
+            "button",
+            {
+              className: "button secondary",
+              attrs: { type: "button" },
+              on: { click: () => controller.recommendRules(facilityId) },
+            },
+            [ICONS.gear("icon"), h("span", { text: "추천 설정" })],
+          ),
+        ])
+      : null,
   ];
 }
 
 export function renderWorkScreen(state: AppState, controller: Controller) {
   const world = state.world?.state === "ready" ? state.world.value : null;
+  const sheet =
+    world && state.content && state.sheet?.kind === "assign"
+      ? renderAssignSheet(state, world, state.content, controller, state.sheet.facilityId)
+      : null;
   return renderFrame(state, controller, {
     top: { kind: "sub", title: "공방 작업", back: { route: "home", label: "홈" }, resources: true },
     backdrop: "forest",
     body: world && state.content ? body(state, state.content, world, controller) : [statusLine("세계를 불러오는 중…")],
     nav: true,
+    sheet,
   });
 }

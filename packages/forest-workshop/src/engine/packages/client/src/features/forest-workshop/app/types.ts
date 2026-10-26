@@ -6,12 +6,55 @@ export interface WorldState {
   worldId: string;
   createdAt: string;
   settings: { worldName: string; playerNickname: string };
-  wallet: { gold: number };
+  /** gold · 초대권 · 종표 */
+  wallet: { gold: number; tickets: number; tokens: number };
   inventory: Record<string, number>;
   progress: { starterKitClaimed: boolean; starterResidentId: string | null };
   residents: Record<string, Resident>;
   pairs: Record<string, Pair>;
   production: ProductionState;
+  invite: InviteState;
+  deliveries: { day: string | null; done: string[] };
+}
+
+export type FieldId = "gather" | "grow" | "survey" | "process" | "craft";
+export type InviteOutcome = "new" | "breakthrough" | "token";
+
+export interface InviteLogEntry {
+  logId: number;
+  at: string;
+  residentId: string;
+  name: string;
+  outcome: InviteOutcome;
+  breakthrough: number;
+  via: "draw" | "guarantee" | "exchange";
+}
+
+export interface InviteState {
+  wishResidentId: string | null;
+  sinceNew: number;
+  log: InviteLogEntry[];
+  nextLogId: number;
+}
+
+export interface DrawResult {
+  residentId: string;
+  outcome: InviteOutcome;
+  breakthrough: number;
+  via: InviteLogEntry["via"];
+}
+
+export interface DeliveryOrder {
+  id: string;
+  title: string;
+  items: Record<string, number>;
+  reward: { tickets: number; gold: number };
+}
+
+export interface DeliveryList {
+  day: string;
+  orders: DeliveryOrder[];
+  done: string[];
 }
 
 export interface Rule {
@@ -26,6 +69,7 @@ export interface Job {
   jobId: number;
   recipeId: string;
   policyId: string;
+  source: "rule" | "queue";
   startedSim: number;
   endsSim: number;
   consumed: Record<string, number>;
@@ -33,17 +77,29 @@ export interface Job {
 }
 
 export interface Waiting {
-  reason: "materials" | "target_reached" | "no_rules";
+  reason: "materials" | "target_reached" | "no_rules" | "queue_empty" | "locked";
   itemId?: string;
   needed?: number;
   usable?: number;
   protectedAmount?: number;
 }
 
+export interface QueueEntry {
+  entryId: string;
+  recipeId: string;
+  total: number;
+  started: number;
+}
+
+export type FacilityMode = "auto" | "count";
+
 export interface FacilityState {
+  unlocked: boolean;
   level: number;
-  mode: "auto";
+  mode: FacilityMode;
   rules: Rule[];
+  queue: QueueEntry[];
+  residentId: string | null;
   job: Job | null;
   waiting: Waiting | null;
 }
@@ -56,13 +112,24 @@ export interface ProductionReport {
   produced: Record<string, number>;
   consumed: Record<string, number>;
   runs: number;
+  sold: Record<string, number>;
+  gold: number;
   offlineMs: number;
+}
+
+export interface AutoSell {
+  enabled: boolean;
+  keep: number;
+  dailyMax: number;
 }
 
 export interface ProductionState {
   simMs: number;
   facilities: Record<string, FacilityState>;
   protectedStock: Record<string, number>;
+  autoSell: Record<string, AutoSell>;
+  sales: { day: string | null; sold: Record<string, number> };
+  made: Record<string, number>;
   reports: ProductionReport[];
   reportsReadThrough: number;
   nextJobId: number;
@@ -79,9 +146,13 @@ export interface ProductionState {
 export interface FacilityDefinition {
   id: string;
   name: string;
-  field: "gather" | "grow" | "survey" | "process" | "craft";
+  field: FieldId;
   order: number;
   description: string;
+  unlock: {
+    facilityLevel?: { facilityId: string; level: number };
+    made?: { itemId: string; amount: number };
+  } | null;
 }
 
 export interface RecipeDefinition {
@@ -128,6 +199,8 @@ export interface Resident {
   displayName: string;
   worldSetting: string;
   recruited: boolean;
+  field: FieldId | null;
+  breakthrough: number;
   registeredAt: string;
   image: { current: ResidentImage | null; history: ResidentImage[]; placement: Placement };
   changes: ResidentChange[];
@@ -169,7 +242,7 @@ export interface ItemDefinition {
 
 export interface GameContent {
   items: ItemDefinition[];
-  starterKit: { gold: number; items: Record<string, number> };
+  starterKit: { gold: number; tickets: number; items: Record<string, number> };
   relationStages: Array<{ from: number; label: string }>;
   facilities: FacilityDefinition[];
   recipes: RecipeDefinition[];
@@ -183,6 +256,24 @@ export interface GameContent {
     upgradeCosts: number[];
     recommendedRules: Record<string, Array<{ recipeId: string; targetStock: number; priority: number }>>;
     absenceLimitMs: number;
+    queueSlotLevels: number[];
+    queueCount: { min: number; max: number };
+  };
+  crew: {
+    passiveBase: number;
+    passivePerBreakthrough: number;
+    maxBreakthrough: number;
+    setBonusPerPair: number;
+    setBonusMax: number;
+  };
+  invite: {
+    ticketsPerDraw: number;
+    multiDraw: number;
+    baseWeight: number;
+    wishWeight: number;
+    guaranteeAfter: number;
+    tokensPerExchange: number;
+    logLimit: number;
   };
   residents: {
     worldSettingMax: number;

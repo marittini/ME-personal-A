@@ -4,14 +4,39 @@
 // and asks the server once a run should have finished.
 import type { AppState } from "../../app/controller";
 import { h } from "../../app/dom";
-import type { GameContent, Job, Waiting, WorldView } from "../../app/types";
+import type { FieldId, GameContent, Job, Waiting, WorldState, WorldView } from "../../app/types";
 import { ICONS, type IconFactory } from "../chrome/icons";
 
 const ITEM_ICONS: Record<string, IconFactory> = {
   "wild-berry": ICONS.berry,
   herb: ICONS.leaf,
   wood: ICONS.log,
+  wheat: ICONS.sprout,
+  flower: ICONS.flower,
+  honey: ICONS.jar,
+  mushroom: ICONS.sprout,
   "berry-jam": ICONS.jar,
+  "dried-herb": ICONS.leaf,
+  flour: ICONS.box,
+  "herb-sachet": ICONS.heart,
+  "berry-pie": ICONS.berry,
+  "wooden-tray": ICONS.log,
+};
+
+export const FIELD_LABELS: Record<FieldId, string> = {
+  gather: "채집",
+  grow: "재배",
+  survey: "조사",
+  process: "가공",
+  craft: "제작",
+};
+
+export const FIELD_ICONS: Record<FieldId, IconFactory> = {
+  gather: ICONS.leaf,
+  grow: ICONS.sprout,
+  survey: ICONS.search,
+  process: ICONS.jar,
+  craft: ICONS.hammer,
 };
 
 export function itemName(content: GameContent | null, itemId: string): string {
@@ -51,12 +76,65 @@ export function formatHours(ms: number): string {
   return hours >= 10 || Number.isInteger(hours) ? `${Math.floor(hours)}` : hours.toFixed(1);
 }
 
-/** One run's time at a level, as the server computes it (content/production.ts runDurationMs). */
-export function runMs(content: GameContent, recipe: { minutes: number }, level: number): number {
+/** One run's time at a level and resident bonus, as the server computes it (content/production.ts runDurationMs). */
+export function runMs(content: GameContent, recipe: { minutes: number }, level: number, extraBonus = 0): number {
   return Math.max(
     60_000,
-    Math.round((recipe.minutes * 60_000) / (1 + content.production.speedBonusPerLevel * (level - 1))),
+    Math.round((recipe.minutes * 60_000) / (1 + content.production.speedBonusPerLevel * (level - 1) + extraBonus)),
   );
+}
+
+/** A resident's passive at this 돌파, as the server computes it (content/crew.ts). */
+export function passiveOf(content: GameContent, breakthrough: number): number {
+  const steps = Math.min(content.crew.maxBreakthrough, Math.max(0, breakthrough));
+  return Math.round((content.crew.passiveBase + content.crew.passivePerBreakthrough * steps) * 1000) / 1000;
+}
+
+/** Placed residents' speed for a facility, as the server computes it (domain/production/crew.ts). */
+export function crewBonus(content: GameContent, state: WorldState, facilityId: string) {
+  const placed = new Set(
+    Object.values(state.production.facilities)
+      .map((facility) => facility.residentId)
+      .filter((id): id is string => id !== null),
+  );
+  const pairs = Object.values(state.pairs).filter(
+    (pair) => !pair.archived && pair.residentIds.every((id) => placed.has(id)),
+  ).length;
+  const set = Math.min(content.crew.setBonusMax, Math.round(content.crew.setBonusPerPair * pairs * 1000) / 1000);
+  const residentId = state.production.facilities[facilityId]?.residentId ?? null;
+  const resident = residentId ? state.residents[residentId] : undefined;
+  const matches = resident !== undefined && resident.field === facilityOf(content, facilityId)?.field;
+  const passive = matches ? passiveOf(content, resident.breakthrough) : 0;
+  return { resident: resident ?? null, matches, passive, set, total: Math.round((passive + set) * 1000) / 1000 };
+}
+
+export function percent(value: number): string {
+  return `${Math.round(value * 1000) / 10}%`;
+}
+
+/** The parts of a facility's 해금 condition and whether each holds (domain/production/unlock.ts). */
+export function unlockParts(content: GameContent, state: WorldState, facilityId: string) {
+  const condition = facilityOf(content, facilityId)?.unlock;
+  if (!condition) return [];
+  const parts: Array<{ text: string; have: number; need: number; met: boolean }> = [];
+  if (condition.facilityLevel) {
+    const other = state.production.facilities[condition.facilityLevel.facilityId];
+    const have = other?.unlocked ? other.level : 0;
+    const need = condition.facilityLevel.level;
+    const name = facilityOf(content, condition.facilityLevel.facilityId)?.name ?? "";
+    parts.push({ text: `${name} Lv. ${need} 이상`, have, need, met: have >= need });
+  }
+  if (condition.made) {
+    const have = state.production.made[condition.made.itemId] ?? 0;
+    const need = condition.made.amount;
+    parts.push({ text: `${itemName(content, condition.made.itemId)} ${need}개 만들기`, have, need, met: have >= need });
+  }
+  return parts;
+}
+
+/** Queue slots at a level (content/production.ts queueSlots). */
+export function queueSlotsAt(content: GameContent, level: number): number {
+  return content.production.queueSlotLevels.filter((from) => level >= from).length;
 }
 
 /** Speed bonus at a level, as the server computes it. */
@@ -94,6 +172,8 @@ export function waitingText(content: GameContent | null, waiting: Waiting | null
   if (!waiting) return "";
   if (waiting.reason === "no_rules") return "켜 둔 운영 규칙이 없어 쉬고 있어요.";
   if (waiting.reason === "target_reached") return "모든 목표 재고를 채워 쉬고 있어요. 재고가 줄면 다시 시작해요.";
+  if (waiting.reason === "queue_empty") return "지정 횟수 대기열이 비어 쉬고 있어요.";
+  if (waiting.reason === "locked") return "아직 열리지 않은 시설이에요.";
   const name = itemName(content, waiting.itemId ?? "");
   const guard = waiting.protectedAmount ? ` (보호 ${waiting.protectedAmount}개는 쓰지 않아요)` : "";
   return `${name}이(가) 부족해 기다리는 중: 한 번에 ${waiting.needed ?? "?"}개 필요, 쓸 수 있는 양 ${waiting.usable ?? 0}개${guard}.`;

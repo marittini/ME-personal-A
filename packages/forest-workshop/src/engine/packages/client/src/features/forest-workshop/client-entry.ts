@@ -12,6 +12,7 @@ import { createController, type AppState, type Controller } from "./app/controll
 import { renderFrame } from "./screens/chrome/frame";
 import { DiagnosticsPanel } from "./screens/diagnostics-panel";
 import { renderHomeScreen } from "./screens/home/home-screen";
+import { renderInviteScreen } from "./screens/invite/invite-screen";
 import { renderRegisterScreen } from "./screens/residents/register-screen";
 import { renderRelationsScreen } from "./screens/residents/relations-screen";
 import { renderResidentImageScreen } from "./screens/residents/resident-image-screen";
@@ -24,6 +25,7 @@ import { renderWorldsScreen } from "./screens/worlds-screen";
 import { formatDuration } from "./screens/work/production-view";
 import { STYLES } from "./styles";
 import { PRODUCTION_STYLES } from "./styles-production";
+import { INVITE_STYLES } from "./styles-invite";
 import { RESIDENT_STYLES } from "./styles-residents";
 
 const TAG = "marinara-capability-forest-workshop";
@@ -45,7 +47,7 @@ class ForestWorkshopElement extends HTMLElement {
   constructor() {
     super();
     this.root = this.attachShadow({ mode: "open" });
-    this.styleNode.textContent = STYLES + PRODUCTION_STYLES + RESIDENT_STYLES;
+    this.styleNode.textContent = STYLES + PRODUCTION_STYLES + RESIDENT_STYLES + INVITE_STYLES;
   }
 
   connectedCallback() {
@@ -114,6 +116,8 @@ class ForestWorkshopElement extends HTMLElement {
         return renderRegisterScreen(state, controller);
       case "resident-image":
         return renderResidentImageScreen(state, controller);
+      case "invite":
+        return renderInviteScreen(state, controller);
       case "diagnostics":
         this.diagnostics!.start();
         return renderFrame(state, controller, {

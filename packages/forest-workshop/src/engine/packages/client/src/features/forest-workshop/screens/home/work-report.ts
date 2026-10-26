@@ -14,7 +14,7 @@ function unread(world: WorldView): ProductionReport[] {
   return world.state.production.reports.filter((report) => report.reportId > through);
 }
 
-function sum(reports: ProductionReport[], key: "produced" | "consumed"): Record<string, number> {
+function sum(reports: ProductionReport[], key: "produced" | "consumed" | "sold"): Record<string, number> {
   const total: Record<string, number> = {};
   for (const report of reports)
     for (const [item, amount] of Object.entries(report[key])) total[item] = (total[item] ?? 0) + amount;
@@ -140,6 +140,12 @@ export function workReportSheet(state: AppState, world: WorldView, controller: C
           ? h("div", { className: "report-total" }, [
               h("p", {}, [h("strong", { text: "새로 들어온 것 " }), itemsLine(content, sum(news, "produced"), "+")]),
               h("p", {}, [h("strong", { text: "재료로 쓴 것 " }), itemsLine(content, sum(news, "consumed"), "−")]),
+              news.some((report) => report.gold > 0)
+                ? h("p", {}, [
+                    h("strong", { text: "자동 판매 " }),
+                    `${itemsLine(content, sum(news, "sold"), "−")} → +${news.reduce((total, report) => total + report.gold, 0)} G`,
+                  ])
+                : null,
             ])
           : h("p", { className: "empty", text: "새 보고가 없어요." }),
         reports.length
@@ -159,9 +165,10 @@ export function workReportSheet(state: AppState, world: WorldView, controller: C
                     }),
                     h("span", {
                       text: [
-                        `${report.runs}회 완료`,
+                        report.runs ? `${report.runs}회 완료` : "",
                         Object.keys(report.produced).length ? `들어옴 ${itemsLine(content, report.produced, "+")}` : "",
                         Object.keys(report.consumed).length ? `재료 ${itemsLine(content, report.consumed, "−")}` : "",
+                        report.gold ? `자동 판매 ${itemsLine(content, report.sold, "−")} +${report.gold} G` : "",
                       ]
                         .filter(Boolean)
                         .join(" · "),

@@ -5,8 +5,9 @@
 // again cannot apply the change twice; a definite refusal (a 4xx with a code) drops it.
 //
 // Module map: this file holds the shared core (store, request tracking, commands, navigation) and the world, settings
-// and backup actions. Residents, pairs and pictures live in resident-actions.ts; 주민 등록 in register-actions.ts.
-// Both receive the core and add their actions to the controller.
+// and backup actions. Residents, pairs and pictures live in resident-actions.ts; 주민 등록 in register-actions.ts;
+// production in production-actions.ts; 초대 and 납품 in invite-actions.ts. Each receives the core and adds its actions
+// to the controller.
 import { gameApi } from "./api";
 import { previewBackup, type BackupSummary } from "./backup-preview";
 import { lockedMessage, type LockedFeature } from "./features";
@@ -17,8 +18,10 @@ import { createStore, type Store } from "./store";
 import { createRegisterActions, type RegisterState } from "./register-actions";
 import { createProductionActions, type ProductionSheet, type WorkView } from "./production-actions";
 import { createResidentActions, type ResidentsView, type ResidentSheet } from "./resident-actions";
+import { createInviteActions, type InviteSheet, type InviteTab } from "./invite-actions";
 import type {
   CommandResponse,
+  DeliveryList,
   GameContent,
   Placement,
   StorageUsage,
@@ -38,7 +41,8 @@ export type Route =
   | "residents"
   | "relations"
   | "register"
-  | "resident-image";
+  | "resident-image"
+  | "invite";
 
 /** A backup file picked for restore, shown as a preview until the player confirms (mockup 05 · 복원 미리보기). */
 export interface RestoreSelection {
@@ -86,10 +90,14 @@ export interface AppState {
   work: WorkView;
   /** Client time the shown world arrived; countdowns are estimated from it. */
   worldReceivedAt: number;
+  /** 초대 (board 03-3): 주민 초대 or 종표 교환. */
+  inviteTab: InviteTab;
+  /** Today's 납품 의뢰, loaded when 초대권 받기 opens. */
+  deliveries: Loadable<DeliveryList> | null;
 }
 
 /** Sheets over a screen. */
-export type Sheet = ResidentSheet | ProductionSheet;
+export type Sheet = ResidentSheet | ProductionSheet | InviteSheet;
 
 /** What the action modules share. */
 export interface ControllerCore {
@@ -158,7 +166,9 @@ export function createController() {
     sheet: null,
     placementDraft: null,
     register: null,
-    work: { facilityId: "gather-yard", drafts: {}, selected: {} },
+    work: { facilityId: "gather-yard", drafts: {}, selected: {}, queueRecipe: {} },
+    inviteTab: "invite",
+    deliveries: null,
     worldReceivedAt: Date.now(),
   });
   const pending = new Map<string, PendingRequest>();
@@ -222,7 +232,7 @@ export function createController() {
       work:
         state.world?.state === "ready" && state.world.value.worldId === view.worldId
           ? state.work
-          : { facilityId: state.work.facilityId, drafts: {}, selected: {} },
+          : { facilityId: state.work.facilityId, drafts: {}, selected: {}, queueRecipe: {} },
       content: content ?? state.content,
       route: state.route === "worlds" ? "home" : state.route,
     }));
@@ -328,6 +338,7 @@ export function createController() {
     ...createResidentActions(core),
     ...createRegisterActions(core),
     ...createProductionActions(core),
+    ...createInviteActions(core),
 
     async start() {
       const worlds = await loadWorlds();

@@ -92,6 +92,10 @@ const ENGINE_HOST_MODULES = new Set([
 // Packages whose own sources are clean under strict tsc. Each run checks the package files under its roots; the
 // client run uses the Engine client's lib.
 const STRICT_RUNS = {
+  "forest-workshop": [
+    { name: "server", roots: ["packages/server/"], lib: [] },
+    { name: "client", roots: ["packages/client/"], lib: ["ES2023", "DOM", "DOM.Iterable"] },
+  ],
   "long-term-memory": [
     { name: "server and shared", roots: ["packages/server/", "packages/shared/"], lib: [] },
     { name: "client", roots: ["packages/client/"], lib: ["ES2023", "DOM", "DOM.Iterable"] },

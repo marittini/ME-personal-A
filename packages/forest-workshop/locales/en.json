@@ -1,0 +1,17 @@
+{
+  "$schema": "../../../schemas/package-localization.schema.json",
+  "_meta": {
+    "locale": "en",
+    "direction": "ltr"
+  },
+  "package": {
+    "name": "Forest Workshop",
+    "description": "A portrait cozy workshop game in development. This 0.1 build is the P0 connection check only: it proves storage, resource reads, model context fitting and resident picture uploads before any game screen ships. Install it, restart Marinara Engine when prompted, then open Home → 숲결 공방."
+  },
+  "agents": {
+    "forest-workshop": {
+      "name": "Forest Workshop",
+      "description": "A portrait cozy workshop game in development. This 0.1 build is the P0 connection check only: it proves storage, resource reads, model context fitting and resident picture uploads before any game screen ships."
+    }
+  }
+}

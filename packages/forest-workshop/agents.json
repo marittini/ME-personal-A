@@ -1,0 +1,21 @@
+[
+  {
+    "id": "forest-workshop",
+    "name": "Forest Workshop",
+    "description": "A portrait cozy workshop game in development. This 0.1 build is the P0 connection check only: it proves storage, resource reads, model context fitting and resident picture uploads before any game screen ships.",
+    "author": "marittini",
+    "phase": "pre_generation",
+    "enabledByDefault": false,
+    "category": "misc",
+    "runtimeDisabled": true,
+    "libraryHidden": true,
+    "modeAllowlist": [
+      "conversation",
+      "roleplay"
+    ],
+    "defaultTools": [],
+    "defaultSettings": {},
+    "defaultPromptTemplate": "",
+    "execution": "feature"
+  }
+]

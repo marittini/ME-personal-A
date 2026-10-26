@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 2,
+  "capabilityApi": {
+    "major": 1,
+    "minor": 341
+  },
+  "builtAgainst": {
+    "engineVersion": "2.5.1",
+    "engineCommit": "7f341f9186db8e08f21d63cc47ec458deff250d5"
+  },
+  "id": "forest-workshop",
+  "name": "Forest Workshop",
+  "version": "0.1.0",
+  "description": "A portrait cozy workshop game in development. This 0.1 build is the P0 connection check only: it proves storage, resource reads, model context fitting and resident picture uploads before any game screen ships. Install it, restart Marinara Engine when prompted, then open Home → 숲결 공방.",
+  "engine": {
+    "min": "2.5.1",
+    "maxExclusive": "4.0.0"
+  },
+  "kind": [
+    "agent"
+  ],
+  "entrypoints": {
+    "agents": "agents.json",
+    "server": "server.mjs",
+    "client": "client.js"
+  },
+  "contributions": {
+    "slots": [
+      "home-browser-tab"
+    ],
+    "homeBrowserTab": {
+      "label": "숲결 공방",
+      "ariaLabel": "숲결 공방 열기 (개발용 연결 점검)"
+    }
+  },
+  "files": [
+    {
+      "path": "agents.json",
+      "sha256": "293e85e468d9260a6a811c32bfccfa259ea6f58f0216b42dbad2d8ccb98ee1b7",
+      "bytes": 653
+    },
+    {
+      "path": "server.mjs",
+      "sha256": "855037e98ee6c98b70dab049d6a51f70df19cdd2b1bcf6cf45751d4e494ab3bf",
+      "bytes": 17396
+    },
+    {
+      "path": "client.js",
+      "sha256": "51ae60ee6d26a6545ba54ce147734a3b6be48cd41bc65bdd209cfa9b6f2f74da",
+      "bytes": 12674
+    }
+  ],
+  "permissions": [
+    "routes",
+    "storage",
+    "ui"
+  ],
+  "restartRequired": true
+}

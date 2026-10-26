@@ -147,6 +147,10 @@ export const OFFICIAL_PACKAGE_GUIDANCE = Object.freeze({
     modes: ["conversation", "roleplay", "game"],
     activation: "Install it, restart Marinara Engine when prompted, then open Home → Slurp.",
   },
+  "forest-workshop": {
+    modes: ["conversation", "roleplay"],
+    activation: "Install it, restart Marinara Engine when prompted, then open Home → 숲결 공방.",
+  },
   "gacha-forge": {
     modes: ["conversation", "roleplay", "game"],
     activation: "Install it, restart Marinara Engine when prompted, then open Home → Gacha Forge.",

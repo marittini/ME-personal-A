@@ -1,6 +1,6 @@
 // One function per package route. Paths are relative to the Engine API root (`/api`).
 import { hostApi } from "./host-api";
-import type { BackupDocument, CommandResponse, GameContent, WorldSummary, WorldView } from "./types";
+import type { BackupDocument, CommandResponse, GameContent, StorageUsage, WorldSummary, WorldView } from "./types";
 
 const ROOT = "/forest-workshop";
 
@@ -19,6 +19,8 @@ export const gameApi = {
   getState: (worldId: string) =>
     hostApi().get<WorldView & { content: GameContent }>(`${ROOT}/state?worldId=${encodeURIComponent(worldId)}`),
   sendCommand: (input: CommandInput) => hostApi().post<CommandResponse>(`${ROOT}/commands`, input),
+  getStorage: (worldId: string) =>
+    hostApi().get<StorageUsage>(`${ROOT}/storage?worldId=${encodeURIComponent(worldId)}`),
   getBackup: (worldId: string) =>
     hostApi().get<BackupDocument>(`${ROOT}/backup?worldId=${encodeURIComponent(worldId)}`),
   restore: (newWorldId: string, backup: unknown) =>

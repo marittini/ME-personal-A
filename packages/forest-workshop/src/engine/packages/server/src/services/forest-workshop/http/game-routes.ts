@@ -6,10 +6,12 @@
 //   POST /commands                  { worldId, commandId, expectedRevision, type, payload }
 //   GET  /backup?worldId=           download a backup JSON
 //   POST /restore                   { newWorldId, backup } → a new world
+//   GET  /storage?worldId=          저장 공간 사용량 by kind
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { ITEMS } from "../content/items";
 import { STARTER_KIT } from "../content/starter-kit";
 import type { BackupService } from "../services/backup-service";
+import type { StorageService } from "../services/storage-service";
 import { parseCommandRequest, type CommandService } from "../services/command-service";
 import type { WorldService } from "../services/world-service";
 import { respond, type RouteLogger } from "./respond";
@@ -18,6 +20,7 @@ export interface GameRouteServices {
   worlds: WorldService;
   commands: CommandService;
   backups: BackupService;
+  storage: StorageService;
   logger: RouteLogger | undefined;
 }
 
@@ -29,7 +32,7 @@ function queryWorldId(request: FastifyRequest): unknown {
 }
 
 export function registerGameRoutes(router: FastifyInstance, services: GameRouteServices) {
-  const { worlds, commands, backups, logger } = services;
+  const { worlds, commands, backups, storage, logger } = services;
 
   router.get("/worlds", async (_request: FastifyRequest, reply: FastifyReply) =>
     respond(reply, logger, "list worlds", async () => ({ worlds: await worlds.list() })),
@@ -62,6 +65,10 @@ export function registerGameRoutes(router: FastifyInstance, services: GameRouteS
       reply.header("cache-control", "no-store");
       return backup;
     }),
+  );
+
+  router.get("/storage", async (request: FastifyRequest, reply: FastifyReply) =>
+    respond(reply, logger, "storage usage", async () => storage.usage(queryWorldId(request))),
   );
 
   router.post("/restore", async (request: FastifyRequest, reply: FastifyReply) =>

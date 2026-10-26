@@ -44,6 +44,12 @@ export interface CommandResponse {
   state: WorldState;
 }
 
+export interface StorageUsage {
+  residentImagesBytes: number;
+  backgroundsBytes: number;
+  recordsBytes: number;
+}
+
 export interface BackupDocument {
   format: string;
   formatVersion: number;

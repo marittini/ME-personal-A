@@ -1,8 +1,10 @@
-// World list, new world and restore. Shown first when no world is open.
+// World list, new world and restore. Shown first when no world is open; reached later from 저장·백업 → 다른 세계.
+// The mockups have no board for it, so it uses the framed (wood) style of 설정 with the same cards and rows.
 import type { AppState, Controller } from "../app/controller";
 import { button, errorLine, h, statusLine } from "../app/dom";
-import { renderLayout } from "./layout";
-import { renderRestorePanel } from "./restore-panel";
+import { card, renderFrame } from "./chrome/frame";
+import { ICONS } from "./chrome/icons";
+import { renderRestorePanel } from "./settings/restore-panel";
 
 const NAME_LIMIT = { world: 40, nickname: 24 };
 
@@ -14,9 +16,7 @@ function formatDate(value: string) {
 }
 
 function worldList(state: AppState, controller: Controller) {
-  const section = h("section", { className: "card", attrs: { "aria-labelledby": "fw-worlds" } }, [
-    h("h2", { className: "section-title", text: "내 세계", attrs: { id: "fw-worlds" } }),
-  ]);
+  const section = card("내 세계", [], { id: "fw-worlds" });
   const { worlds } = state;
   if (worlds.state === "loading") section.append(statusLine("불러오는 중…"));
   else if (worlds.state === "error") {
@@ -30,23 +30,29 @@ function worldList(state: AppState, controller: Controller) {
     section.append(
       h(
         "ul",
-        { className: "list" },
+        { className: "menu-list" },
         worlds.value.map((world) =>
           h("li", {}, [
             h(
               "button",
               {
-                className: "row-button",
+                className: "menu-row",
                 attrs: { type: "button" },
                 disabled: !world.readable,
                 on: { click: () => void controller.openWorld(world.worldId) },
               },
               [
-                h("span", { className: "name", text: world.worldName }),
-                h("span", {
-                  className: "detail",
-                  text: world.readable ? `마지막 저장 ${formatDate(world.updatedAt)}` : "이 버전에서 읽을 수 없는 세계",
-                }),
+                h("span", { className: "menu-icon" }, [ICONS.house()]),
+                h("span", { className: "menu-text" }, [
+                  h("span", { className: "menu-title", text: world.worldName }),
+                  h("span", {
+                    className: "menu-detail",
+                    text: world.readable
+                      ? `마지막 저장 ${formatDate(world.updatedAt)}`
+                      : "이 버전에서 읽을 수 없는 세계",
+                  }),
+                ]),
+                h("span", { className: "menu-chevron" }, [ICONS.chevron()]),
               ],
             ),
           ]),
@@ -115,17 +121,19 @@ function createForm(state: AppState, controller: Controller) {
 
 export function renderWorldsScreen(state: AppState, controller: Controller) {
   const open = state.world?.state === "ready";
-  return renderLayout(state, controller, {
-    title: "세계 고르기",
-    subtitle: "숲결 공방",
-    back: open ? { route: "settings", label: "설정" } : undefined,
-    showWorldBar: false,
+  return renderFrame(state, controller, {
+    top: open
+      ? { kind: "sub", title: "세계 고르기", back: { route: "backup", label: "저장·백업" }, resources: false }
+      : { kind: "sub", title: "숲결 공방", resources: false },
+    backdrop: "wood",
     body: [
       worldList(state, controller),
       createForm(state, controller),
-      h("section", { className: "card menu", attrs: { "aria-label": "백업에서 복원" } }, [
-        renderRestorePanel(state, controller, "fw-worlds-restore"),
-      ]),
+      card("백업에서 복원", [renderRestorePanel(state, controller, "fw-worlds-restore")], {
+        id: "fw-worlds-restore-title",
+        className: "menu",
+      }),
     ],
+    nav: false,
   });
 }

@@ -23,6 +23,7 @@ import { registerGameRoutes } from "./http/game-routes";
 import { PACKAGE_VERSION } from "./package-info";
 import { createBackupService } from "./services/backup-service";
 import { createCommandService } from "./services/command-service";
+import { createStorageService } from "./services/storage-service";
 import { createWorldService } from "./services/world-service";
 
 interface ActivationContext {
@@ -45,6 +46,7 @@ export async function activate({ app, api }: ActivationContext) {
     worlds: createWorldService(persistence),
     commands: createCommandService(persistence),
     backups: createBackupService(persistence, PACKAGE_VERSION),
+    storage: createStorageService(persistence),
     logger: runtime.logger,
   };
 

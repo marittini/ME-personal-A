@@ -5,12 +5,14 @@
 // again cannot apply the change twice; a definite refusal (a 4xx with a code) drops it.
 import { gameApi } from "./api";
 import { previewBackup, type BackupSummary } from "./backup-preview";
+import { lockedMessage, type LockedFeature } from "./features";
+import { clampFontSize, readFontSize, writeFontSize } from "./preferences";
 import type { Loadable } from "./dom";
 import { errorCode, errorMessage, newRequestId, newWorldId } from "./host-api";
 import { createStore, type Store } from "./store";
-import type { GameContent, WorldState, WorldSummary, WorldView } from "./types";
+import type { GameContent, StorageUsage, WorldState, WorldSummary, WorldView } from "./types";
 
-export type Route = "worlds" | "home" | "settings" | "backup" | "diagnostics";
+export type Route = "worlds" | "home" | "work" | "facilities" | "settings" | "backup" | "diagnostics";
 
 /** A backup file picked for restore, shown as a preview until the player confirms (mockup 05 · 복원 미리보기). */
 export interface RestoreSelection {
@@ -34,6 +36,14 @@ export interface AppState {
   busy: Readonly<Record<string, boolean>>;
   notice: Notice | null;
   restore: RestoreSelection | null;
+  /** 설정 → 표시 → 글자 크기, per viewer. */
+  fontSize: number;
+  /** 시설과 창고: which tab is open. */
+  facilitiesTab: "facilities" | "storage";
+  /** 저장·백업 → 저장 공간 사용량, loaded when that screen opens. */
+  storage: Loadable<StorageUsage> | null;
+  /** The welcome-package sheet was put off for this session ("나중에"). */
+  starterSheetHidden: boolean;
 }
 
 const LAST_WORLD_KEY = "forest-workshop:last-world";
@@ -75,6 +85,10 @@ export function createController() {
     busy: {},
     notice: null,
     restore: null,
+    fontSize: readFontSize(),
+    facilitiesTab: "facilities",
+    storage: null,
+    starterSheetHidden: false,
   });
   const pending = new Map<string, PendingRequest>();
 
@@ -144,6 +158,17 @@ export function createController() {
     }
   }
 
+  async function loadStorage() {
+    const world = currentWorld();
+    if (!world) return;
+    store.set({ storage: { state: "loading" } });
+    try {
+      store.set({ storage: { state: "ready", value: await gameApi.getStorage(world.worldId) } });
+    } catch (error) {
+      store.set({ storage: { state: "error", message: errorMessage(error, "저장 공간을 확인하지 못했습니다.") } });
+    }
+  }
+
   async function reloadWorld() {
     const world = store.get().world;
     if (world?.state === "ready") await openWorld(world.value.worldId);
@@ -170,6 +195,30 @@ export function createController() {
     navigate(route: Route) {
       store.set({ route, notice: null, restore: null });
       if (route === "worlds") void loadWorlds();
+      if (route === "backup") void loadStorage();
+    },
+
+    /** A locked mockup element was tapped: say which phase opens it. */
+    notifyLocked(feature: LockedFeature) {
+      store.set({ notice: { kind: "info", text: lockedMessage(feature) } });
+    },
+
+    setFontSize(value: number) {
+      const fontSize = clampFontSize(value);
+      writeFontSize(fontSize);
+      store.set({ fontSize });
+    },
+
+    setFacilitiesTab(tab: AppState["facilitiesTab"]) {
+      store.set({ facilitiesTab: tab });
+    },
+
+    hideStarterSheet() {
+      store.set({ starterSheetHidden: true });
+    },
+
+    showStarterSheet() {
+      store.set({ starterSheetHidden: false });
     },
 
     dismissNotice() {

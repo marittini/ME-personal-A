@@ -8,7 +8,10 @@ export interface BackupSummary {
   itemKinds: number;
   itemTotal: number;
   exportedAt: string;
-  assetCount: number;
+  /** 복원 미리보기 rows (mockup 05): counted from the file, 0 until residents, pairs and pictures exist. */
+  residents: number;
+  pairs: number;
+  pictures: number;
 }
 
 export type BackupPreview = { ok: true; summary: BackupSummary } | { ok: false; message: string };
@@ -24,6 +27,8 @@ export function previewBackup(raw: unknown): BackupPreview {
       settings?: { worldName?: unknown; playerNickname?: unknown };
       wallet?: { gold?: unknown };
       inventory?: unknown;
+      residents?: unknown;
+      pairs?: unknown;
     };
   } | null;
   if (!backup || backup.format !== "forest-workshop-backup" || !backup.world) return { ok: false, message: INVALID };
@@ -46,7 +51,9 @@ export function previewBackup(raw: unknown): BackupPreview {
       itemKinds: amounts.length,
       itemTotal: amounts.reduce((total, amount) => total + amount, 0),
       exportedAt: typeof backup.exportedAt === "string" ? backup.exportedAt : "",
-      assetCount: Array.isArray(backup.assets) ? backup.assets.length : 0,
+      residents: Array.isArray(backup.world.residents) ? backup.world.residents.length : 0,
+      pairs: Array.isArray(backup.world.pairs) ? backup.world.pairs.length : 0,
+      pictures: Array.isArray(backup.assets) ? backup.assets.length : 0,
     },
   };
 }

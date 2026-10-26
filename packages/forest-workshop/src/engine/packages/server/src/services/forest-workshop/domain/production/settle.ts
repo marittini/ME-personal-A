@@ -14,7 +14,7 @@ export function settleWorld(state: WorldState, now: string, options: { active: b
     state.inventory,
     credit.creditedMs,
   );
-  if (summary.runs > 0 || Object.keys(summary.consumed).length > 0) {
+  if (summary.runs > 0) {
     const report: ProductionReport = {
       reportId: production.nextReportId,
       at: now,

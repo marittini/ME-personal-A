@@ -19,6 +19,7 @@ type Inventory = Record<string, number>;
 
 export interface AdvanceSummary {
   produced: Record<string, number>;
+  /** Inputs of the runs that completed (taken from the storeroom when each run started). */
   consumed: Record<string, number>;
   runs: number;
 }
@@ -118,6 +119,8 @@ export function advanceProduction(
       if (!facility?.job || facility.job.endsSim > time) continue;
       add(inventory, facility.job.outputs);
       add(summary.produced, facility.job.outputs);
+      // A run's inputs are reported with the run that used them, when it completes.
+      add(summary.consumed, facility.job.consumed);
       summary.runs += 1;
       facility.job = null;
     }
@@ -130,7 +133,6 @@ export function advanceProduction(
       facility.waiting = attempt.waiting;
       if (attempt.job) {
         add(inventory, attempt.job.consumed, -1);
-        add(summary.consumed, attempt.job.consumed);
         facility.job = attempt.job;
         production.nextJobId += 1;
       }

@@ -21,7 +21,9 @@ import { renderSettingsScreen } from "./screens/settings/settings-screen";
 import { renderFacilitiesScreen } from "./screens/work/facilities-screen";
 import { renderWorkScreen } from "./screens/work/work-screen";
 import { renderWorldsScreen } from "./screens/worlds-screen";
+import { formatDuration } from "./screens/work/production-view";
 import { STYLES } from "./styles";
+import { PRODUCTION_STYLES } from "./styles-production";
 import { RESIDENT_STYLES } from "./styles-residents";
 
 const TAG = "marinara-capability-forest-workshop";
@@ -33,11 +35,17 @@ class ForestWorkshopElement extends HTMLElement {
   private unsubscribe: (() => void) | null = null;
   private readonly styleNode = document.createElement("style");
   private renderedRoute: AppState["route"] | null = null;
+  private ticker: ReturnType<typeof setInterval> | undefined;
+  /** Countdown ends already asked about, so a finished run triggers one refresh, not one per second. */
+  private refreshedEnds = new Set<string>();
+  private readonly onPresence = () => void this.controller?.heartbeat();
+  /** The world the last opening heartbeat was for: opening a world is presence at once, not a minute later. */
+  private presentWorld: string | null = null;
 
   constructor() {
     super();
     this.root = this.attachShadow({ mode: "open" });
-    this.styleNode.textContent = STYLES + RESIDENT_STYLES;
+    this.styleNode.textContent = STYLES + PRODUCTION_STYLES + RESIDENT_STYLES;
   }
 
   connectedCallback() {
@@ -49,11 +57,41 @@ class ForestWorkshopElement extends HTMLElement {
     this.unsubscribe?.();
     this.unsubscribe = this.controller.store.subscribe((state) => this.render(state));
     this.render(this.controller.store.get());
+    // Presence (plan §7.6): a heartbeat every minute while this screen is visible and focused, and at once when it
+    // becomes so again.
+    this.controller.startHeartbeat();
+    document.addEventListener("visibilitychange", this.onPresence);
+    window.addEventListener("focus", this.onPresence);
+    clearInterval(this.ticker);
+    this.ticker = setInterval(() => this.tick(), 1000);
   }
 
   disconnectedCallback() {
     this.unsubscribe?.();
     this.unsubscribe = null;
+    this.controller?.stopHeartbeat();
+    document.removeEventListener("visibilitychange", this.onPresence);
+    window.removeEventListener("focus", this.onPresence);
+    clearInterval(this.ticker);
+  }
+
+  /** Moves countdowns and progress bars without re-rendering; asks the server once when a run should have ended. */
+  private tick() {
+    const now = Date.now();
+    for (const node of this.root.querySelectorAll<HTMLElement>("[data-countdown-end]")) {
+      const end = Number(node.dataset.countdownEnd);
+      node.textContent = formatDuration(end - now);
+      if (end <= now && !this.refreshedEnds.has(node.dataset.countdownEnd!)) {
+        this.refreshedEnds.add(node.dataset.countdownEnd!);
+        // A moment's grace so the server's clock has passed the end too.
+        setTimeout(() => void this.controller?.refreshProduction(), 1500);
+      }
+    }
+    for (const node of this.root.querySelectorAll<HTMLElement>("[data-progress-end]")) {
+      const end = Number(node.dataset.progressEnd);
+      const total = Math.max(1, Number(node.dataset.progressTotal));
+      node.style.width = `${Math.min(100, Math.max(0, Math.round(((total - Math.max(0, end - now)) / total) * 100)))}%`;
+    }
   }
 
   private screen(state: AppState, controller: Controller): HTMLElement {
@@ -90,6 +128,11 @@ class ForestWorkshopElement extends HTMLElement {
   }
 
   private render(state: AppState) {
+    const openWorld = state.world?.state === "ready" ? state.world.value.worldId : null;
+    if (openWorld && openWorld !== this.presentWorld) {
+      this.presentWorld = openWorld;
+      queueMicrotask(() => void this.controller?.heartbeat());
+    }
     const screen = this.screen(state, this.controller!);
     this.style.setProperty("--fw-font-size", `${state.fontSize}px`);
     // Keep keyboard focus, the caret in a text field and the scroll position across re-renders of the same screen,

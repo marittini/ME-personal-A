@@ -1,54 +1,14 @@
 // 홈 (board 01-1): top bar with the sign, gold, tickets, gear, weather and mail; the workshop scene; the work-report
-// card; the 72-hour offline bar; the story card; the bottom bar. Blocks without their feature yet are locked in place
-// (docs/forest-workshop/ui-spec.md). The welcome package opens as a sheet above.
+// card with 작업 보고 and the 72-hour absence bar (work-report.ts); the story card; the bottom bar. Blocks without their
+// feature yet are locked in place (docs/forest-workshop/ui-spec.md). The welcome package opens as a sheet above.
 import type { AppState, Controller } from "../../app/controller";
 import { button, errorLine, h, statusLine } from "../../app/dom";
 import { card, renderFrame } from "../chrome/frame";
 import { ICONS } from "../chrome/icons";
-import { featureButton, lockedBlock } from "../chrome/locked";
+import { featureButton } from "../chrome/locked";
 import { renderHomeScene } from "./home-scene";
 import { renderStarterKitSheet } from "./starter-kit-sheet";
-
-function workReport(controller: Controller) {
-  return card(
-    null,
-    [
-      lockedBlock(controller, "work-report", [
-        h("h2", { className: "report-title", text: "공방 소식" }),
-        h("div", { className: "report-body" }, [
-          h("div", { className: "report-items" }, [
-            h("div", { className: "report-slot" }, [
-              h("span", { className: "slot-art" }),
-              h("span", { className: "slot-name", text: "입고" }),
-              h("strong", { text: "–" }),
-            ]),
-            h("div", { className: "report-slot" }, [
-              h("span", { className: "slot-art" }),
-              h("span", { className: "slot-name", text: "입고" }),
-              h("strong", { text: "–" }),
-            ]),
-          ]),
-          h("div", { className: "report-actions" }, [
-            h("span", { className: "button report-button", attrs: { "aria-hidden": "true" } }, [
-              "작업 보고",
-              ICONS.chevron("icon"),
-            ]),
-            h("span", { className: "report-caption" }, [ICONS.leaf("icon tiny"), "자동 입고"]),
-          ]),
-        ]),
-      ]),
-    ],
-    { className: "report-card" },
-  );
-}
-
-function offlineBar(controller: Controller) {
-  return featureButton(controller, "offline-cap", {
-    className: "strip offline",
-    label: "미접속 누적 진행",
-    children: [ICONS.clock(), h("span", { text: "미접속 누적 –시간 / 최대 72시간" }), ICONS.info("icon muted-icon")],
-  });
-}
+import { absenceStrip, workReportCard, workReportSheet } from "./work-report";
 
 function storyCard(controller: Controller) {
   return featureButton(controller, "stories", {
@@ -86,8 +46,15 @@ export function renderHomeScreen(state: AppState, controller: Controller) {
     top: { kind: "home" },
     backdrop: "forest",
     hero: renderHomeScene(state, controller),
-    body: [workReport(controller), offlineBar(controller), storyCard(controller)],
+    body: [
+      workReportCard(world.value, state.content, controller),
+      absenceStrip(world.value, state.content, controller),
+      storyCard(controller),
+    ],
     nav: true,
-    sheet: renderStarterKitSheet(state, controller),
+    sheet:
+      state.sheet?.kind === "work-report"
+        ? workReportSheet(state, world.value, controller)
+        : renderStarterKitSheet(state, controller),
   });
 }

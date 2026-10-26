@@ -2,7 +2,7 @@
 // actions behind their buttons. Every change is a server command; a picture is uploaded first and the server attaches
 // it. Retried uploads reuse their upload key, so a picture is never stored twice.
 import { gameApi } from "./api";
-import type { ControllerCore } from "./controller";
+import type { ControllerCore, Sheet } from "./controller";
 import { newWorldId as newUuid } from "./host-api";
 import type { Pair, Placement, Resident, ResidentKind, WorldState } from "./types";
 
@@ -80,7 +80,7 @@ export function createResidentActions(core: ControllerCore) {
       core.navigate("resident-image");
     },
 
-    openSheet(sheet: ResidentSheet) {
+    openSheet(sheet: Sheet) {
       store.set({ sheet, notice: null });
     },
 

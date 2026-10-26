@@ -358,7 +358,13 @@ async function main() {
     assert.equal(changed.state.production.facilities["gather-yard"]!.rules.length, 1);
 
     // Upgrade: the server's cost, once even if the same tap is sent twice.
-    await run("onboarding.claimStarterKit", {});
+    const claimed = await run("onboarding.claimStarterKit", {});
+    assert.equal(
+      claimed.state.production.facilities["process-bench"]!.job?.recipeId,
+      "berry-jam",
+      "a command's new stock starts idle work at once",
+    );
+    assert.equal(claimed.state.production.reports.length, 0, "starting work alone files no report");
     const before = (await worlds.get(WORLD)).state.wallet.gold;
     const up = await run("production.upgradeFacility", { facilityId: "process-bench", fromLevel: 1 }, "cmd-upgrade-1");
     assert.equal(up.state.wallet.gold, before - upgradeCost(1));

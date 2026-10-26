@@ -155,7 +155,7 @@ p { margin: 0; }
 .sign::after { right: 0.38em; }
 .sign-home { flex: 0 1 auto; font-size: calc(var(--fs) * 1.6); padding: 0.22em 0.95em; }
 .top-sub .sign { flex: 1 1 auto; }
-.top-sub.with-resources .sign { flex: 0 1 auto; font-size: calc(var(--fs) * 1.15); padding: 0.3em 1.05em; }
+.top-sub.with-resources .sign { flex: 0 1 auto; font-size: calc(var(--fs) * 1.05); padding: 0.32em 0.95em; }
 .top-sub:not(.with-resources) .sign { margin-right: 3.2em; }
 .back-button, .back-spacer { flex: none; width: 2.75em; height: 2.75em; }
 .back-button {

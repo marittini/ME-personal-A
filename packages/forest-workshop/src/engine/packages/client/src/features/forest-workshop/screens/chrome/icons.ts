@@ -113,6 +113,18 @@ export const ICONS = {
   arrows: icon(["M4 12h16", "M7.5 8.5L4 12l3.5 3.5", "M16.5 8.5L20 12l-3.5 3.5"]),
   updown: icon(["M12 4v16", "M8.5 7.5L12 4l3.5 3.5", "M8.5 16.5L12 20l3.5-3.5"]),
   archive: icon(["M3.5 5h17v4h-17z", "M5 9v10h14V9", "M10 13h4"]),
+  // Items and production
+  berry: icon([
+    { circle: [9, 13, 3.6] },
+    { circle: [15, 13, 3.6] },
+    { circle: [12, 17.5, 3.6] },
+    "M12 9.5V5",
+    "M12 6.5c1.5-1.8 3.5-2 5-1.5",
+  ]),
+  log: icon([{ circle: [7.5, 12, 3.8] }, "M7.5 8.2h11a3.8 3.8 0 0 1 0 7.6h-11", { circle: [7.5, 12, 1.3] }]),
+  hourglass: icon(["M7 4h10", "M7 20h10", "M8 4c0 5 8 5 8 8s-8 3-8 8", "M16 4c0 5-8 5-8 8s8 3 8 8"]),
+  up: icon(["M6 15l6-6 6 6"]),
+  down: icon(["M6 9l6 6 6-6"]),
   addImage: icon([
     "M6 3.5h8l4 4v13H6z",
     "M14 3.5v4h4",

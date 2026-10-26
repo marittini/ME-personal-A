@@ -2,6 +2,7 @@
 // here. The final world is validated against the schema before anything can store it, so a buggy rule surfaces as
 // an error instead of a saved, broken world.
 import { FwError } from "../errors";
+import { settleWorld } from "../production/settle";
 import { worldStateSchema, type WorldState } from "../world-model";
 import type { CommandContext, CommandDefinition, CommandOutcome } from "./command";
 import { sellItems } from "./economy";
@@ -67,7 +68,10 @@ export function applyCommand(
   rawPayload: unknown,
   context: CommandContext,
 ): CommandOutcome {
-  const outcome = definition.apply(state, parseCommandPayload(definition, rawPayload), context);
+  const applied = definition.apply(state, parseCommandPayload(definition, rawPayload), context);
+  // Idle facilities look again at once (no time passes): a claimed kit, a sale or new rules start work now, not at the
+  // next settlement.
+  const outcome = { ...applied, state: settleWorld(applied.state, context.now, { active: true }) };
   const checked = worldStateSchema.safeParse(outcome.state);
   if (!checked.success) {
     throw new Error(`Command ${definition.type} produced an invalid world: ${checked.error.issues[0]?.path.join(".")}`);

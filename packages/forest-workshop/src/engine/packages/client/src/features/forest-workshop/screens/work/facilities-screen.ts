@@ -1,28 +1,26 @@
-// 시설과 창고 (board 01-3): 시설 · 창고 tabs. [시설] the facility card with level, effects and the gold upgrade, then
-// 재고 보호 with its table (아이템 · 보유 수량 · 보호 재고 · 예약 재고 · 사용 가능) and 자동 판매. [창고] the full storeroom.
-// Real now: the holdings in both tables. Protection and reservation are 0 until P3, shown as "–" like the mockup,
-// so 사용 가능 equals 보유 수량. Facility upgrades, protection editing and auto-selling are locked until P3.
+// 시설과 창고 (board 01-3): 시설 · 창고 tabs. [시설] the facility card (picture, name, Lv → Lv, 처리 속도 now → next,
+// 작업 방식, description, gold 강화), then 재고 보호 with 편집하기 and its table (아이템 · 보유 수량 · 보호 재고 ·
+// 예약 재고 · 사용 가능) and 자동 판매. [창고] the whole storeroom, each item with 팔기.
+// Real now: facility switching, upgrade (server cost), protection editing, the table, selling. 예약 재고 arrives with
+// expeditions (P4) and shows "–"; 자동 판매 stays locked (P3b).
 import type { AppState, Controller } from "../../app/controller";
-import { h } from "../../app/dom";
+import { button, h, statusLine } from "../../app/dom";
 import type { GameContent, WorldView } from "../../app/types";
 import { card, renderFrame } from "../chrome/frame";
 import { ICONS } from "../chrome/icons";
-import { featureButton, lockedBlock } from "../chrome/locked";
+import { featureButton } from "../chrome/locked";
+import { facilityOf, itemName, itemTile, speedPercent } from "./production-view";
 
 function holdings(view: WorldView, content: GameContent | null) {
   const order = new Map(content?.items.map((item, index) => [item.id, index]));
   return Object.entries(view.state.inventory)
     .filter(([, amount]) => amount > 0)
     .sort(([a], [b]) => (order.get(a) ?? 999) - (order.get(b) ?? 999))
-    .map(([itemId, amount]) => ({
-      itemId,
-      amount,
-      name: content?.items.find((item) => item.id === itemId)?.name ?? itemId,
-    }));
+    .map(([itemId, amount]) => ({ itemId, amount, name: itemName(content, itemId) }));
 }
 
 function tabs(state: AppState, controller: Controller) {
-  const tab = (id: AppState["facilitiesTab"], label: string, icon: ReturnType<typeof ICONS.house>) =>
+  const tab = (id: AppState["facilitiesTab"], label: string, icon: SVGSVGElement) =>
     h(
       "button",
       {
@@ -38,68 +36,131 @@ function tabs(state: AppState, controller: Controller) {
   ]);
 }
 
-function facilityCard(controller: Controller) {
-  return lockedBlock(controller, "facility-upgrade", [
-    h("div", { className: "facility" }, [
-      h("span", { className: "facility-picture" }, [ICONS.house("icon huge")]),
-      h("div", { className: "facility-info" }, [
-        h("strong", { className: "facility-name", text: "시설" }),
-        h("span", { className: "facility-level" }, ["Lv. –", h("span", { className: "level-next", text: " → Lv. –" })]),
-        h("div", { className: "effect-row" }, [h("span", { text: "효과" }), h("span", { text: "–" })]),
-        h("div", { className: "effect-row" }, [h("span", { text: "대기열" }), h("span", { text: "–" })]),
-        h("p", { className: "muted", text: "분야별 시설을 강화하면 효과가 올라가요." }),
-        h("span", { className: "gold-button" }, [h("span", { className: "coin" }), "– G · 강화"]),
-      ]),
-    ]),
-  ]);
-}
-
-function protectionTable(view: WorldView, content: GameContent | null) {
-  const rows = holdings(view, content);
-  if (rows.length === 0) return h("p", { className: "empty", text: "창고가 비어 있어요." });
-  return h("table", { className: "stock" }, [
-    h("thead", {}, [
+function facilityCard(state: AppState, content: GameContent, world: WorldView, controller: Controller) {
+  const facilityId = state.work.facilityId;
+  const facility = world.state.production.facilities[facilityId]!;
+  const definition = facilityOf(content, facilityId);
+  const max = content.production.maxLevel;
+  const atMax = facility.level >= max;
+  const cost = atMax ? null : content.production.upgradeCosts[facility.level - 1]!;
+  const busy = Boolean(state.busy[`upgrade:${facilityId}:${facility.level}`]);
+  const short = cost !== null && world.state.wallet.gold < cost;
+  return card(
+    null,
+    [
       h(
-        "tr",
-        {},
-        ["아이템", "보유 수량", "보호 재고", "예약 재고", "사용 가능"].map((label) =>
-          h("th", { text: label, attrs: { scope: "col" } }),
+        "div",
+        { className: "chip-row", attrs: { role: "group", "aria-label": "시설 고르기" } },
+        content.facilities.map((candidate) =>
+          h("button", {
+            className: `pill-tab${candidate.id === facilityId ? " current" : ""}`,
+            text: candidate.name,
+            attrs: { type: "button", "aria-pressed": candidate.id === facilityId ? "true" : "false" },
+            on: { click: () => controller.selectFacility(candidate.id) },
+          }),
         ),
       ),
-    ]),
-    h(
-      "tbody",
-      {},
-      rows.map((row) =>
-        h("tr", {}, [
-          h("th", { attrs: { scope: "row" } }, [h("span", { className: "item-dot" }), row.name]),
-          h("td", { className: "num", text: row.amount.toLocaleString("ko-KR") }),
-          // Colored like the board once P3 fills them; an empty "–" stays neutral, as on the board.
-          h("td", { className: "num", text: "–" }),
-          h("td", { className: "num", text: "–" }),
-          h("td", { className: "num available", text: row.amount.toLocaleString("ko-KR") }),
+      h("div", { className: "facility" }, [
+        h("span", { className: "facility-picture" }, [ICONS.house("icon huge")]),
+        h("div", { className: "facility-info" }, [
+          h("strong", { className: "facility-name", text: definition?.name ?? facilityId }),
+          h("span", { className: "facility-level" }, [
+            `Lv. ${facility.level}`,
+            atMax ? null : h("span", { className: "level-next", text: ` → Lv. ${facility.level + 1}` }),
+          ]),
+          h("div", { className: "effect-row" }, [
+            h("span", { text: "처리 속도" }),
+            h("span", {}, [
+              `+${speedPercent(content, facility.level)}%`,
+              atMax
+                ? null
+                : h("span", { className: "level-next", text: ` → +${speedPercent(content, facility.level + 1)}%` }),
+            ]),
+          ]),
+          h("div", { className: "effect-row" }, [h("span", { text: "작업 방식" }), h("span", { text: "자동 운영" })]),
+          h("p", { className: "muted", text: definition?.description ?? "" }),
+          h(
+            "button",
+            {
+              className: "gold-button",
+              attrs: { type: "button" },
+              disabled: atMax || busy || short,
+              on: { click: () => void controller.upgradeFacility(facilityId, facility.level) },
+            },
+            atMax
+              ? [h("span", { text: "최고 단계" })]
+              : [
+                  h("span", { className: "coin" }),
+                  h("span", { text: busy ? "강화하는 중…" : `${cost!.toLocaleString("ko-KR")} G · 강화` }),
+                ],
+          ),
+          short
+            ? h("p", {
+                className: "hint",
+                text: `골드가 ${(cost! - world.state.wallet.gold).toLocaleString("ko-KR")} G 부족해요.`,
+              })
+            : null,
         ]),
-      ),
-    ),
-  ]);
+      ]),
+    ],
+    { className: "facility-card" },
+  );
 }
 
-function protectionCard(view: WorldView, content: GameContent | null, controller: Controller) {
+function protectionCard(world: WorldView, content: GameContent, controller: Controller) {
+  const rows = holdings(world, content);
+  const guarded = world.state.production.protectedStock;
   return card(
     null,
     [
       h("div", { className: "card-head" }, [
         h("div", {}, [
           h("h2", { className: "section-title", text: "재고 보호", attrs: { id: "fw-protect" } }),
-          h("p", { className: "muted", text: "지정한 수량은 제작에 사용하지 않아요." }),
+          h("p", { className: "muted", text: "지정한 수량은 제작과 판매에 사용하지 않아요." }),
         ]),
-        featureButton(controller, "stock-protection", {
-          className: "outline-button",
-          label: "편집하기",
-          children: [ICONS.pencil("icon"), h("span", { text: "편집하기" })],
-        }),
+        h(
+          "button",
+          {
+            className: "outline-button",
+            attrs: { type: "button" },
+            on: { click: () => controller.openSheet({ kind: "protect-edit" }) },
+          },
+          [ICONS.pencil("icon"), h("span", { text: "편집하기" })],
+        ),
       ]),
-      protectionTable(view, content),
+      rows.length === 0
+        ? h("p", { className: "empty", text: "창고가 비어 있어요." })
+        : h("table", { className: "stock" }, [
+            h("thead", {}, [
+              h(
+                "tr",
+                {},
+                ["아이템", "보유 수량", "보호 재고", "예약 재고", "사용 가능"].map((label) =>
+                  h("th", { text: label, attrs: { scope: "col" } }),
+                ),
+              ),
+            ]),
+            h(
+              "tbody",
+              {},
+              rows.map((row) => {
+                const protectedAmount = guarded[row.itemId] ?? 0;
+                return h("tr", {}, [
+                  h("th", { attrs: { scope: "row" } }, [itemTile(row.itemId), row.name]),
+                  h("td", { className: "num", text: row.amount.toLocaleString("ko-KR") }),
+                  h("td", {
+                    className: `num${protectedAmount ? " protected" : ""}`,
+                    text: protectedAmount ? String(protectedAmount) : "–",
+                  }),
+                  h("td", { className: "num", text: "–" }),
+                  h("td", {
+                    className: "num available",
+                    text: Math.max(0, row.amount - protectedAmount).toLocaleString("ko-KR"),
+                  }),
+                ]);
+              }),
+            ),
+          ]),
       featureButton(controller, "auto-sell", {
         className: "toggle-row",
         label: "자동 판매",
@@ -120,8 +181,8 @@ function protectionCard(view: WorldView, content: GameContent | null, controller
   );
 }
 
-function storageCard(view: WorldView, content: GameContent | null) {
-  const rows = holdings(view, content);
+function storageCard(world: WorldView, content: GameContent, controller: Controller) {
+  const rows = holdings(world, content);
   return card(
     "창고",
     [
@@ -132,9 +193,18 @@ function storageCard(view: WorldView, content: GameContent | null) {
             { className: "storage-grid" },
             rows.map((row) =>
               h("li", { className: "storage-item" }, [
-                h("span", { className: "item-dot big" }),
+                itemTile(row.itemId, "big"),
                 h("span", { className: "storage-name", text: row.name }),
                 h("strong", { text: row.amount.toLocaleString("ko-KR") }),
+                h(
+                  "button",
+                  {
+                    className: "outline-button small",
+                    attrs: { type: "button", "aria-label": `${row.name} 팔기` },
+                    on: { click: () => controller.openSheet({ kind: "sell", itemId: row.itemId }) },
+                  },
+                  [h("span", { text: "팔기" })],
+                ),
               ]),
             ),
           ),
@@ -143,23 +213,123 @@ function storageCard(view: WorldView, content: GameContent | null) {
   );
 }
 
+/** A number picker sheet row: −10 −1 value +1 +10, kept in the DOM until confirmed. */
+function amountPicker(id: string, initial: number, min: number, max: number) {
+  let value = Math.min(max, Math.max(min, initial));
+  const output = h("output", {
+    className: "step-value big",
+    text: String(value),
+    attrs: { id, "aria-live": "polite" },
+  });
+  const step = (delta: number) =>
+    h("button", {
+      className: "step",
+      text: delta > 0 ? `+${delta}` : String(delta),
+      attrs: { type: "button", "aria-label": `${delta > 0 ? "늘리기" : "줄이기"} ${Math.abs(delta)}` },
+      on: {
+        click: () => {
+          value = Math.min(max, Math.max(min, value + delta));
+          output.textContent = String(value);
+        },
+      },
+    });
+  return {
+    node: h("div", { className: "stepper wide" }, [step(-10), step(-1), output, step(1), step(10)]),
+    read: () => value,
+  };
+}
+
+function protectSheet(state: AppState, world: WorldView, content: GameContent, controller: Controller) {
+  const range = content.production.protectedStock;
+  const rows = content.items.map((item) => {
+    const picker = amountPicker(
+      `fw-protect-${item.id}`,
+      world.state.production.protectedStock[item.id] ?? 0,
+      range.min,
+      range.max,
+    );
+    const busy = Boolean(state.busy[`protect:${item.id}`]);
+    return h("li", { className: "protect-row" }, [
+      itemTile(item.id),
+      h("span", { className: "protect-name" }, [
+        h("strong", { text: item.name }),
+        h("small", { className: "muted", text: `보유 ${world.state.inventory[item.id] ?? 0}` }),
+      ]),
+      picker.node,
+      button(busy ? "저장 중…" : "저장", () => void controller.setProtected(item.id, picker.read()), {
+        disabled: busy,
+        attrs: { "aria-label": `${item.name} 보호 수량 저장` },
+      }),
+    ]);
+  });
+  return h("div", { className: "sheet-backdrop" }, [
+    h(
+      "section",
+      {
+        className: "sheet card",
+        attrs: { role: "dialog", "aria-modal": "true", "aria-labelledby": "fw-protect-edit" },
+      },
+      [
+        h("h2", { className: "section-title", text: "재고 보호 편집", attrs: { id: "fw-protect-edit" } }),
+        h("p", { className: "muted", text: "보호한 수량은 자동 제작과 판매에 쓰지 않아요. 0이면 보호하지 않아요." }),
+        h("ul", { className: "protect-list" }, rows),
+        button("닫기", () => controller.closeSheet(), { variant: "secondary", attrs: { "data-wide": "" } }),
+      ],
+    ),
+  ]);
+}
+
+function sellSheet(state: AppState, world: WorldView, content: GameContent, controller: Controller, itemId: string) {
+  const item = content.items.find((candidate) => candidate.id === itemId);
+  const held = world.state.inventory[itemId] ?? 0;
+  const usable = Math.max(0, held - (world.state.production.protectedStock[itemId] ?? 0));
+  const picker = amountPicker("fw-sell-amount", Math.min(usable, 1), usable ? 1 : 0, usable);
+  const busy = Boolean(state.busy[`sell:${itemId}`]);
+  return h("div", { className: "sheet-backdrop" }, [
+    h(
+      "section",
+      { className: "sheet card", attrs: { role: "dialog", "aria-modal": "true", "aria-labelledby": "fw-sell" } },
+      [
+        h("h2", { className: "section-title", text: `${item?.name ?? itemId} 팔기`, attrs: { id: "fw-sell" } }),
+        h("p", {
+          className: "muted",
+          text: `1개 ${item?.sellPrice ?? 0} G · 팔 수 있는 양 ${usable}개 (보유 ${held}개, 보호분 제외)`,
+        }),
+        usable ? picker.node : h("p", { className: "empty", text: "보호분을 빼면 팔 수 있는 양이 없어요." }),
+        usable
+          ? button(busy ? "파는 중…" : "팔기", () => void controller.sell(itemId, picker.read()), {
+              disabled: busy,
+              attrs: { "data-wide": "" },
+            })
+          : null,
+        button("닫기", () => controller.closeSheet(), { variant: "secondary", attrs: { "data-wide": "" } }),
+      ],
+    ),
+  ]);
+}
+
 export function renderFacilitiesScreen(state: AppState, controller: Controller) {
   const world = state.world?.state === "ready" ? state.world.value : null;
-  const body = world
-    ? [
-        tabs(state, controller),
-        ...(state.facilitiesTab === "facilities"
-          ? [
-              card(null, [facilityCard(controller)], { className: "facility-card" }),
-              protectionCard(world, state.content, controller),
-            ]
-          : [storageCard(world, state.content)]),
-      ]
-    : [];
+  const content = state.content;
+  const ready = world && content;
+  const sheet =
+    ready && state.sheet?.kind === "protect-edit"
+      ? protectSheet(state, world, content, controller)
+      : ready && state.sheet?.kind === "sell"
+        ? sellSheet(state, world, content, controller, state.sheet.itemId)
+        : null;
   return renderFrame(state, controller, {
     top: { kind: "sub", title: "시설과 창고", back: { route: "work", label: "공방 작업" }, resources: true },
     backdrop: "forest",
-    body,
+    body: ready
+      ? [
+          tabs(state, controller),
+          ...(state.facilitiesTab === "facilities"
+            ? [facilityCard(state, content, world, controller), protectionCard(world, content, controller)]
+            : [storageCard(world, content, controller)]),
+        ]
+      : [statusLine("세계를 불러오는 중…")],
     nav: true,
+    sheet,
   });
 }

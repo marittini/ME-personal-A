@@ -28,6 +28,7 @@ export const gameApi = {
     hostApi().post<WorldView & { created: boolean; content: GameContent }>(`${ROOT}/worlds`, input),
   getState: (worldId: string) =>
     hostApi().get<WorldView & { content: GameContent }>(`${ROOT}/state?worldId=${encodeURIComponent(worldId)}`),
+  heartbeat: (worldId: string) => hostApi().post<WorldView>(`${ROOT}/heartbeat`, { worldId }),
   sendCommand: (input: CommandInput) => hostApi().post<CommandResponse>(`${ROOT}/commands`, input),
   getStorage: (worldId: string) =>
     hostApi().get<StorageUsage>(`${ROOT}/storage?worldId=${encodeURIComponent(worldId)}`),

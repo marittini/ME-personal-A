@@ -11,6 +11,87 @@ export interface WorldState {
   progress: { starterKitClaimed: boolean; starterResidentId: string | null };
   residents: Record<string, Resident>;
   pairs: Record<string, Pair>;
+  production: ProductionState;
+}
+
+export interface Rule {
+  policyId: string;
+  enabled: boolean;
+  recipeId: string;
+  targetStock: number;
+  priority: number;
+}
+
+export interface Job {
+  jobId: number;
+  recipeId: string;
+  policyId: string;
+  startedSim: number;
+  endsSim: number;
+  consumed: Record<string, number>;
+  outputs: Record<string, number>;
+}
+
+export interface Waiting {
+  reason: "materials" | "target_reached" | "no_rules";
+  itemId?: string;
+  needed?: number;
+  usable?: number;
+  protectedAmount?: number;
+}
+
+export interface FacilityState {
+  level: number;
+  mode: "auto";
+  rules: Rule[];
+  job: Job | null;
+  waiting: Waiting | null;
+}
+
+export interface ProductionReport {
+  reportId: number;
+  at: string;
+  simFrom: number;
+  simTo: number;
+  produced: Record<string, number>;
+  consumed: Record<string, number>;
+  runs: number;
+  offlineMs: number;
+}
+
+export interface ProductionState {
+  simMs: number;
+  facilities: Record<string, FacilityState>;
+  protectedStock: Record<string, number>;
+  reports: ProductionReport[];
+  reportsReadThrough: number;
+  nextJobId: number;
+  nextReportId: number;
+  activity: {
+    settledAt: string | null;
+    lastActiveAt: string | null;
+    leaseUntil: string | null;
+    absenceUsedMs: number;
+    lastAbsence: { creditedMs: number; totalMs: number } | null;
+  };
+}
+
+export interface FacilityDefinition {
+  id: string;
+  name: string;
+  field: "gather" | "grow" | "survey" | "process" | "craft";
+  order: number;
+  description: string;
+}
+
+export interface RecipeDefinition {
+  id: string;
+  name: string;
+  facilityId: string;
+  description: string;
+  inputs: Record<string, number>;
+  outputs: Record<string, number>;
+  minutes: number;
 }
 
 export type ResidentKind = "character" | "persona";
@@ -83,12 +164,26 @@ export interface ItemDefinition {
   id: string;
   name: string;
   category: "material" | "product";
+  sellPrice: number;
 }
 
 export interface GameContent {
   items: ItemDefinition[];
   starterKit: { gold: number; items: Record<string, number> };
   relationStages: Array<{ from: number; label: string }>;
+  facilities: FacilityDefinition[];
+  recipes: RecipeDefinition[];
+  production: {
+    maxLevel: number;
+    maxRules: number;
+    speedBonusPerLevel: number;
+    targetStock: { min: number; max: number };
+    protectedStock: { min: number; max: number };
+    /** upgradeCosts[level - 1]: gold from that level to the next. */
+    upgradeCosts: number[];
+    recommendedRules: Record<string, Array<{ recipeId: string; targetStock: number; priority: number }>>;
+    absenceLimitMs: number;
+  };
   residents: {
     worldSettingMax: number;
     maxImageBytes: number;

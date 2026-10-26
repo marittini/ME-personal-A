@@ -15,6 +15,7 @@ import type { Loadable } from "./dom";
 import { errorCode, errorMessage, newRequestId, newWorldId } from "./host-api";
 import { createStore, type Store } from "./store";
 import { createRegisterActions, type RegisterState } from "./register-actions";
+import { createProductionActions, type ProductionSheet, type WorkView } from "./production-actions";
 import { createResidentActions, type ResidentsView, type ResidentSheet } from "./resident-actions";
 import type {
   CommandResponse,
@@ -76,12 +77,19 @@ export interface AppState {
   /** 관계 → 변경 · 보관 mode. */
   relationsEditing: boolean;
   /** A sheet over the current screen (프로필, 페어 추가, 이전 그림, 그림 이력 정리). */
-  sheet: ResidentSheet | null;
+  sheet: Sheet | null;
   /** 주민 그림: slider values not yet applied. */
   placementDraft: Placement | null;
   /** 주민 등록 (board 05-3) while it is open. */
   register: RegisterState | null;
+  /** 공방 작업 · 시설과 창고: the shown facility and unapplied rule edits. */
+  work: WorkView;
+  /** Client time the shown world arrived; countdowns are estimated from it. */
+  worldReceivedAt: number;
 }
+
+/** Sheets over a screen. */
+export type Sheet = ResidentSheet | ProductionSheet;
 
 /** What the action modules share. */
 export interface ControllerCore {
@@ -93,6 +101,8 @@ export interface ControllerCore {
   /** Forgets a retry ID, once its action is finished for good. */
   forgetRequest(actionKey: string): void;
   showWorld(view: WorldView, content?: GameContent): void;
+  /** Keeps a newer copy of the world without re-rendering (its visible parts did not change). */
+  rememberWorld(view: WorldView): void;
   navigate(route: Route): void;
   /** Reloads 저장 공간 사용량 (after pictures change). */
   refreshStorage(): Promise<void>;
@@ -148,6 +158,8 @@ export function createController() {
     sheet: null,
     placementDraft: null,
     register: null,
+    work: { facilityId: "gather-yard", drafts: {}, selected: {} },
+    worldReceivedAt: Date.now(),
   });
   const pending = new Map<string, PendingRequest>();
 
@@ -205,9 +217,25 @@ export function createController() {
         state: "ready",
         value: { worldId: view.worldId, revision: view.revision, updatedAt: view.updatedAt, state: view.state },
       },
+      worldReceivedAt: Date.now(),
+      // Another world: its rule drafts and selections start fresh.
+      work:
+        state.world?.state === "ready" && state.world.value.worldId === view.worldId
+          ? state.work
+          : { facilityId: state.work.facilityId, drafts: {}, selected: {} },
       content: content ?? state.content,
       route: state.route === "worlds" ? "home" : state.route,
     }));
+  }
+
+  function rememberWorld(view: WorldView) {
+    store.remember({
+      world: {
+        state: "ready",
+        value: { worldId: view.worldId, revision: view.revision, updatedAt: view.updatedAt, state: view.state },
+      },
+      worldReceivedAt: Date.now(),
+    });
   }
 
   async function loadWorlds() {
@@ -289,6 +317,7 @@ export function createController() {
     requestIdFor,
     forgetRequest: (actionKey) => pending.delete(actionKey),
     showWorld,
+    rememberWorld,
     navigate,
     refreshStorage: loadStorage,
     notify: (text, kind = "info") => store.set({ notice: { kind, text } }),
@@ -298,6 +327,7 @@ export function createController() {
     store,
     ...createResidentActions(core),
     ...createRegisterActions(core),
+    ...createProductionActions(core),
 
     async start() {
       const worlds = await loadWorlds();

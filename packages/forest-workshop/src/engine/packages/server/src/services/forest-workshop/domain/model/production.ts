@@ -74,6 +74,7 @@ export const reportSchema = z
     simFrom: nonNegativeInt,
     simTo: nonNegativeInt,
     produced: z.record(z.string(), nonNegativeInt),
+    /** Inputs of the completed runs. */
     consumed: z.record(z.string(), nonNegativeInt),
     runs: nonNegativeInt,
     /** Part of this report came from time the player was away (credited absence). */

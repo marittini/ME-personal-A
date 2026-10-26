@@ -6,17 +6,13 @@ export type LockedFeature =
   | "tickets"
   | "weather"
   | "mail"
-  | "work-report"
-  | "offline-cap"
   | "stories"
   | "explore"
   | "invite"
   | "work-fields"
   | "work-mode"
-  | "work-rules"
-  | "facility-upgrade"
-  | "stock-protection"
   | "auto-sell"
+  | "assign-residents"
   | "weather-effects"
   | "auto-read"
   | "ai-guidelines"
@@ -30,17 +26,13 @@ const LOCKED: Readonly<Record<LockedFeature, { label: string; phase: "P2" | "P3"
   tickets: { label: "초대권", phase: "P3" },
   weather: { label: "현실 날씨", phase: "P5" },
   mail: { label: "우편함", phase: "P4" },
-  "work-report": { label: "작업 보고", phase: "P3" },
-  "offline-cap": { label: "미접속 누적 진행", phase: "P3" },
   stories: { label: "주민 이야기", phase: "P4" },
   explore: { label: "탐사", phase: "P4" },
   invite: { label: "초대", phase: "P3" },
-  "work-fields": { label: "분야별 작업", phase: "P3" },
-  "work-mode": { label: "자동 운영 · 지정 횟수", phase: "P3" },
-  "work-rules": { label: "운영 규칙", phase: "P3" },
-  "facility-upgrade": { label: "시설 강화", phase: "P3" },
-  "stock-protection": { label: "재고 보호 편집", phase: "P3" },
+  "work-fields": { label: "재배 · 조사 · 제작 시설", phase: "P3" },
+  "work-mode": { label: "지정 횟수 제작", phase: "P3" },
   "auto-sell": { label: "자동 판매", phase: "P3" },
+  "assign-residents": { label: "주민 배치", phase: "P3" },
   "weather-effects": { label: "날씨 효과", phase: "P5" },
   "auto-read": { label: "자동 읽기", phase: "P4" },
   "ai-guidelines": { label: "AI 지침 관리", phase: "P4" },

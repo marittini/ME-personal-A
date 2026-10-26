@@ -111,7 +111,12 @@ async function main() {
     const first = await env.commands.execute(claim("cmd-claim-0001"));
     assert.equal(first.duplicate, false);
     assert.equal(first.state.wallet.gold, STARTER_KIT.gold);
-    assert.equal(first.state.inventory["wild-berry"], STARTER_KIT.items["wild-berry"]);
+    // Since P3 the kit's berries also start the jam at once; what a running job took still came from this grant.
+    const inJobs = Object.values(first.state.production.facilities).reduce(
+      (total, facility) => total + (facility.job?.consumed["wild-berry"] ?? 0),
+      0,
+    );
+    assert.equal((first.state.inventory["wild-berry"] ?? 0) + inJobs, STARTER_KIT.items["wild-berry"]);
     assert.equal(first.revision, 2);
     const resent = await env.commands.execute(claim("cmd-claim-0001"));
     assert.equal(resent.duplicate, true);

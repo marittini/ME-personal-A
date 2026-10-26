@@ -31,6 +31,10 @@ export const STYLES = `
   display: grid;
   gap: 1rem;
 }
+.page > *,
+.card > * {
+  min-width: 0;
+}
 .header h1 { margin: 0; font-size: 1.5rem; line-height: 1.2; }
 .eyebrow { margin: 0 0 0.25rem; font-size: 0.8rem; color: var(--fw-muted); letter-spacing: 0.02em; }
 .lead { margin: 0.5rem 0 0; color: var(--fw-muted); }
@@ -82,7 +86,7 @@ export const STYLES = `
 .button:disabled { opacity: 0.6; cursor: progress; }
 .button:focus-visible, .file:focus-visible { outline: 3px solid var(--fw-accent); outline-offset: 2px; }
 .field-label { font-weight: 600; }
-.file { max-width: 100%; font: inherit; min-height: 2.75rem; }
+.file { width: 100%; max-width: 100%; font: inherit; min-height: 2.75rem; }
 .stage {
   display: flex;
   justify-content: center;

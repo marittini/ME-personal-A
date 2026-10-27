@@ -1,3 +1,9 @@
+## 0.6.0 — 2026-10-27
+- 탐사 → 이야기 탐험: each pair goes through arcs of three episodes. Episode 1 needs one resident, 2 and 3 need both; the next opens after the previous is read. Expeditions take 30–90 minutes of workshop time (the 72-hour rule applies), use up to two preparations and can be cancelled with everything returned.
+- Reading a scene for the first time asks your language model to write it from the stored plan and only the memories its residents share. A refused or failed answer stores nothing; retry the same plan at no cost.
+- The reader: emotion marks, backlog, auto, and one answer to a resident's question (it raises that resident's trust and only they remember it). Reading records what the residents learned and changes the pair a little.
+- Backups now carry the written scenes.
+
 ## 0.5.1 — 2026-10-27
 - More to make: 15 materials (pinecones, acorns, pumpkins, cotton, tea leaves, beeswax, feathers, four-leaf clovers…), 8 processed goods and 11 finished goods, with longer chains such as cotton → thread → scarf or tea → herb tea → gift box. More delivery requests use them.
 - A resident's field and talent are now decided when they are registered, read from their own character or persona text, and shown before you confirm; they no longer change afterwards. Each talent speeds up one recipe of that field or saves one input.

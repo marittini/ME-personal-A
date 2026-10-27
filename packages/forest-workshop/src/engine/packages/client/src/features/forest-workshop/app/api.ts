@@ -4,6 +4,8 @@ import type {
   BackupDocument,
   CommandResponse,
   DeliveryList,
+  StoryDocument,
+  StoryOverview,
   GameContent,
   ResidentKind,
   SourceEntry,
@@ -29,6 +31,15 @@ export const gameApi = {
     hostApi().post<WorldView & { created: boolean; content: GameContent }>(`${ROOT}/worlds`, input),
   getState: (worldId: string) =>
     hostApi().get<WorldView & { content: GameContent }>(`${ROOT}/state?worldId=${encodeURIComponent(worldId)}`),
+  getStoryOverview: (worldId: string) =>
+    hostApi().get<StoryOverview>(`${ROOT}/stories?worldId=${encodeURIComponent(worldId)}`),
+  getStory: (worldId: string, storyId: string) =>
+    hostApi().get<StoryDocument>(
+      `${ROOT}/stories/${encodeURIComponent(storyId)}?worldId=${encodeURIComponent(worldId)}`,
+    ),
+  /** Writes the episode's scene once (or returns it); may take a while — a language model call. */
+  generateStory: (worldId: string, pairId: string, episode: number) =>
+    hostApi().post<StoryDocument>(`${ROOT}/stories/generate`, { worldId, pairId, episode }),
   getDeliveries: (worldId: string) =>
     hostApi().get<DeliveryList>(`${ROOT}/deliveries?worldId=${encodeURIComponent(worldId)}`),
   heartbeat: (worldId: string) => hostApi().post<WorldView>(`${ROOT}/heartbeat`, { worldId }),

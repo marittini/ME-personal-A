@@ -10,6 +10,9 @@
 //   GET  /sources?worldId=          characters and personas that can become residents (read-only)
 //   GET  /sources/preview?worldId=&kind=&id=   the snapshot a registration would keep (원래 설정)
 //   POST /rebuild-suggestion        { worldId, source } → a 공방 세계 설정 draft from the language model; nothing saved
+//   POST /stories/generate          { worldId, pairId, episode } → the episode's scene, written once (plan §5 generation)
+//   GET  /stories?worldId=          every pair's arc and episode states (탐사 → 이야기 탐험)
+//   GET  /stories/:storyId?worldId= a stored scene
 //   GET  /deliveries?worldId=       today's 납품 의뢰 (UTC day) and which are done
 //   POST /heartbeat                 { worldId } from the visible, focused game screen → settles and renews presence
 //   POST /residents/image           multipart { worldId, residentId, uploadKey, file } → the resident's new picture
@@ -23,6 +26,7 @@ import {
 } from "../content/crew";
 import { INVITE_RULES } from "../content/invite";
 import { TALENTS } from "../content/talents";
+import { ARCS, CHOICE_TRUST } from "../content/stories";
 import { ITEMS } from "../content/items";
 import {
   FACILITIES,
@@ -50,6 +54,7 @@ import type { HostPersistence } from "../host/engine-adapter";
 import type { BackupService } from "../services/backup-service";
 import type { RebuildService } from "../services/rebuild-service";
 import type { SettlementService } from "../services/settlement-service";
+import type { StoryService } from "../services/story-service";
 import type { SourceService } from "../services/source-service";
 import type { StorageService } from "../services/storage-service";
 import { parseCommandRequest, type CommandService } from "../services/command-service";
@@ -66,6 +71,7 @@ export interface GameRouteServices {
   sources: SourceService;
   rebuild: RebuildService;
   settlement: SettlementService;
+  stories: StoryService;
   logger: RouteLogger | undefined;
 }
 
@@ -95,6 +101,11 @@ const CONTENT = {
   },
   invite: INVITE_RULES,
   talents: TALENTS,
+  // The beat (what will happen) stays on the server: conditions are shown, the story is not (plan §7.3).
+  stories: {
+    arcs: ARCS.map((arc) => ({ ...arc, episodes: arc.episodes.map(({ beat: _beat, ...episode }) => episode) })),
+    choiceTrust: CHOICE_TRUST,
+  },
   starterKit: STARTER_KIT,
   relationStages: RELATION_STAGES,
   residents: { worldSettingMax: WORLD_SETTING_MAX, placement: PLACEMENT_LIMITS, maxImageBytes: MAX_INPUT_BYTES },
@@ -126,6 +137,20 @@ export function registerGameRoutes(router: FastifyInstance, services: GameRouteS
       ...(await settlement.settle(queryWorldId(request), { active: false })),
       content: CONTENT,
     })),
+  );
+
+  router.post("/stories/generate", async (request: FastifyRequest, reply: FastifyReply) =>
+    respond(reply, logger, "story generate", async () => services.stories.generate(request.body)),
+  );
+
+  router.get("/stories", async (request: FastifyRequest, reply: FastifyReply) =>
+    respond(reply, logger, "story overview", async () => services.stories.overview(queryWorldId(request))),
+  );
+
+  router.get("/stories/:storyId", async (request: FastifyRequest, reply: FastifyReply) =>
+    respond(reply, logger, "story read", async () =>
+      services.stories.get(queryWorldId(request), (request.params as Record<string, unknown>).storyId),
+    ),
   );
 
   router.get("/deliveries", async (request: FastifyRequest, reply: FastifyReply) =>

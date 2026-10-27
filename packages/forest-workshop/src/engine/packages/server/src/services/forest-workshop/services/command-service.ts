@@ -112,7 +112,7 @@ export function createCommandService(
         if (definition.prepare && !preparedOnce) {
           if (!host) throw new FwError("sources_unavailable");
           const payload = parseCommandPayload(definition, request.payload);
-          prepared = await definition.prepare(payload, host, clock().toISOString());
+          prepared = await definition.prepare(payload, host, clock().toISOString(), request.worldId);
           preparedOnce = true;
         }
         if (definition.requiresFreshView && current.revision !== request.expectedRevision) {

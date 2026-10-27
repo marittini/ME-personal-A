@@ -103,6 +103,19 @@ const MIGRATIONS: Readonly<Record<number, (world: RawWorld) => RawWorld>> = {
       }),
     ),
   }),
+  // v6 → v7 (P4): no stories or memories yet; every resident starts at trust 0.
+  6: (world) => ({
+    ...world,
+    schemaVersion: 7,
+    residents: Object.fromEntries(
+      Object.entries((world.residents ?? {}) as Record<string, RawWorld>).map(([id, resident]) => [
+        id,
+        { ...resident, trust: 0 },
+      ]),
+    ),
+    stories: { pairs: {}, expedition: null },
+    memory: { facts: [], nextFactId: 1 },
+  }),
 };
 
 export function migrateWorld(raw: unknown): WorldState {

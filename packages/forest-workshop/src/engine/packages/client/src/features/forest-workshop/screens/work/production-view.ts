@@ -194,12 +194,12 @@ export function speedPercent(content: GameContent | null, level: number): number
 }
 
 /** Estimated real epoch ms a running job ends, from the world as it arrived. */
-export function jobEndsAt(state: AppState, world: WorldView, job: Job): number {
+export function jobEndsAt(state: AppState, world: WorldView, job: Pick<Job, "endsSim">): number {
   return state.worldReceivedAt + (job.endsSim - world.state.production.simMs);
 }
 
 /** A countdown and a progress bar that client-entry.ts updates every second without re-rendering. */
-export function jobProgress(state: AppState, world: WorldView, job: Job) {
+export function jobProgress(state: AppState, world: WorldView, job: Pick<Job, "startedSim" | "endsSim">) {
   const endsAt = jobEndsAt(state, world, job);
   const total = job.endsSim - job.startedSim;
   const fill = h("span", {

@@ -3,6 +3,7 @@
 // service (services/command-service.ts) can retry it safely against a fresher world.
 import type { z } from "zod";
 import type { ResidentKind, SourceSnapshot } from "../model/residents";
+import type { StoryDocument } from "../model/story-document";
 import type { WorldState } from "../world-model";
 
 export interface CommandContext {
@@ -22,6 +23,8 @@ export interface CommandContext {
 export interface CommandHost {
   /** Reads a character or persona and returns the snapshot kept on the resident. Never writes the source. */
   readSource(kind: ResidentKind, sourceId: string, now: string): Promise<SourceSnapshot>;
+  /** Reads a written scene (`fw-story`); null when it has not been written. */
+  readStory?(worldId: string, storyId: string): Promise<StoryDocument | null>;
 }
 
 export interface CommandOutcome {
@@ -45,7 +48,7 @@ export interface CommandDefinition<Payload> {
    */
   internal?: boolean;
   /** Host reads done once, before the rule and outside any transaction (plan §6: no I/O inside a transaction). */
-  prepare?(payload: Payload, host: CommandHost, now: string): Promise<unknown>;
+  prepare?(payload: Payload, host: CommandHost, now: string, worldId: string): Promise<unknown>;
   apply(state: WorldState, payload: Payload, context: CommandContext): CommandOutcome;
 }
 

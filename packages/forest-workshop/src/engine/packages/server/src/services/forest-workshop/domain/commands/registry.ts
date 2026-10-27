@@ -27,6 +27,7 @@ import {
   setResidentPlacement,
 } from "./resident-images";
 import { chooseStarter, registerResident, updateResident } from "./residents";
+import { cancelExpedition, chooseAnswer, departExpedition, markStoryRead } from "./stories";
 import { updateSettings } from "./settings";
 
 const DEFINITIONS = [
@@ -57,6 +58,10 @@ const DEFINITIONS = [
   drawInvites,
   setWish,
   exchangeTokens,
+  departExpedition,
+  cancelExpedition,
+  chooseAnswer,
+  markStoryRead,
 ] as unknown as ReadonlyArray<CommandDefinition<never>>;
 
 const REGISTRY = new Map(DEFINITIONS.map((definition) => [definition.type, definition]));

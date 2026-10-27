@@ -45,6 +45,15 @@ export type FwErrorCode =
   | "max_breakthrough"
   | "order_not_found"
   | "order_done"
+  // Stories (P4)
+  | "story_not_found"
+  | "story_locked"
+  | "story_not_ready"
+  | "expedition_busy"
+  | "expedition_not_found"
+  | "resident_busy"
+  | "context_too_large"
+  | "story_generation_failed"
   // Text generation
   | "lm_unavailable"
   | "generation_failed"
@@ -90,6 +99,14 @@ const STATUS: Record<FwErrorCode, number> = {
   max_breakthrough: 409,
   order_not_found: 404,
   order_done: 409,
+  story_not_found: 404,
+  story_locked: 409,
+  story_not_ready: 409,
+  expedition_busy: 409,
+  expedition_not_found: 404,
+  resident_busy: 409,
+  context_too_large: 422,
+  story_generation_failed: 502,
   lm_unavailable: 503,
   generation_failed: 502,
   unsupported_schema: 422,
@@ -135,6 +152,16 @@ const MESSAGES: Record<FwErrorCode, string> = {
   max_breakthrough: "이미 최대 돌파한 주민입니다.",
   order_not_found: "오늘의 납품 의뢰가 아닙니다. 목록을 새로 불러와 주세요.",
   order_done: "오늘 이미 납품한 의뢰입니다.",
+  story_not_found: "이야기를 찾을 수 없습니다.",
+  story_locked: "아직 출발할 수 없는 이야기입니다. 조건을 확인해 주세요.",
+  story_not_ready: "이야기를 아직 쓰지 않았습니다. 이야기 읽기를 다시 눌러 주세요.",
+  expedition_busy: "다른 탐험이 진행 중입니다. 끝난 뒤 출발할 수 있습니다.",
+  expedition_not_found: "진행 중인 탐험이 없습니다.",
+  resident_busy: "탐험에 나간 주민은 돌아올 때까지 배치할 수 없습니다.",
+  context_too_large:
+    "연결된 언어 모델의 컨텍스트가 작아 장면을 쓸 수 없습니다. 더 큰 컨텍스트의 연결을 골라 주세요. 저장된 내용은 바뀌지 않았습니다.",
+  story_generation_failed:
+    "이야기를 쓰지 못했습니다. 같은 이야기로 다시 시도할 수 있어요. 탐험을 다시 떠나거나 준비물을 다시 쓰지 않아요.",
   lm_unavailable: "글을 제안할 언어 모델 연결이 없습니다. 엔진 설정에서 연결을 고르거나 직접 써 주세요.",
   generation_failed: "제안을 받지 못했습니다. 다시 시도하거나 직접 써 주세요. 저장된 내용은 바뀌지 않았습니다.",
   unsupported_schema: "이 저장 데이터는 더 새로운 패키지 버전에서 만들어졌습니다. 패키지를 업데이트해 주세요.",

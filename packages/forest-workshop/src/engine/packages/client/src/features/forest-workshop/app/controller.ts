@@ -6,7 +6,7 @@
 //
 // Module map: this file holds the shared core (store, request tracking, commands, navigation) and the world, settings
 // and backup actions. Residents, pairs and pictures live in resident-actions.ts; 주민 등록 in register-actions.ts;
-// production in production-actions.ts; 초대 and 납품 in invite-actions.ts. Each receives the core and adds its actions
+// production in production-actions.ts; 초대 and 납품 in invite-actions.ts; 탐사 and 이야기 in story-actions.ts. Each receives the core and adds its actions
 // to the controller.
 import { gameApi } from "./api";
 import { previewBackup, type BackupSummary } from "./backup-preview";
@@ -19,6 +19,7 @@ import { createRegisterActions, type RegisterState } from "./register-actions";
 import { createProductionActions, type ProductionSheet, type WorkView } from "./production-actions";
 import { createResidentActions, type ResidentsView, type ResidentSheet } from "./resident-actions";
 import { createInviteActions, type InviteSheet, type InviteTab } from "./invite-actions";
+import { createStoryActions, type ExploreView, type ReaderState } from "./story-actions";
 import type {
   CommandResponse,
   DeliveryList,
@@ -42,7 +43,9 @@ export type Route =
   | "relations"
   | "register"
   | "resident-image"
-  | "invite";
+  | "invite"
+  | "explore"
+  | "story";
 
 /** A backup file picked for restore, shown as a preview until the player confirms (mockup 05 · 복원 미리보기). */
 export interface RestoreSelection {
@@ -94,6 +97,10 @@ export interface AppState {
   inviteTab: InviteTab;
   /** Today's 납품 의뢰, loaded when 초대권 받기 opens. */
   deliveries: Loadable<DeliveryList> | null;
+  /** 탐사 (board 02-1): tab, pair and the story overview. */
+  explore: ExploreView;
+  /** 공방 이야기 (board 02-2) while a scene is open. */
+  reader: ReaderState | null;
 }
 
 /** Sheets over a screen. */
@@ -169,6 +176,8 @@ export function createController() {
     work: { facilityId: "gather-yard", drafts: {}, selected: {}, queueRecipe: {} },
     inviteTab: "invite",
     deliveries: null,
+    explore: { tab: "story", pairId: null, overview: null },
+    reader: null,
     worldReceivedAt: Date.now(),
   });
   const pending = new Map<string, PendingRequest>();
@@ -339,6 +348,7 @@ export function createController() {
     ...createRegisterActions(core),
     ...createProductionActions(core),
     ...createInviteActions(core),
+    ...createStoryActions(core),
 
     async start() {
       const worlds = await loadWorlds();

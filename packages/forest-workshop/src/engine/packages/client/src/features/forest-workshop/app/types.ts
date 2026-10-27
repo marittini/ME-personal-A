@@ -15,6 +15,98 @@ export interface WorldState {
   production: ProductionState;
   invite: InviteState;
   deliveries: { day: string | null; done: string[] };
+  stories: {
+    pairs: Record<string, { current: ArcProgress | null; completed: ArcProgress[] }>;
+    expedition: Expedition | null;
+  };
+  memory: { facts: Fact[]; nextFactId: number };
+}
+
+export interface EpisodeProgress {
+  state: "idle" | "running" | "unlocked" | "read";
+  storyId: string;
+  unlockedAt: string | null;
+  readAt: string | null;
+  choice: { optionId: string; at: string } | null;
+}
+
+export interface ArcProgress {
+  arcId: string;
+  leadId: string;
+  startedAt: string;
+  episodes: [EpisodeProgress, EpisodeProgress, EpisodeProgress];
+}
+
+export interface Expedition {
+  pairId: string;
+  episode: number;
+  participants: string[];
+  startedSim: number;
+  endsSim: number;
+  startedAt: string;
+  preparations: Record<string, number>;
+}
+
+export interface Fact {
+  factId: number;
+  text: string;
+  factType: "event" | "feeling" | "player";
+  knowerIds: string[];
+  subjectIds: string[];
+  visibility: "knowers" | "public";
+  pairId: string | null;
+  storyId: string | null;
+  occurredAt: string;
+  status: "active" | "corrected" | "invalidated";
+  supersedes: number | null;
+}
+
+export type Emotion = "none" | "joy" | "calm" | "surprise" | "worry" | "thinking" | "shy";
+
+export type Segment =
+  | { kind: "line"; speakerId: string; text: string; emotion: Emotion }
+  | { kind: "narration"; text: string }
+  | { kind: "choice"; askerId: string; question: string; options: Array<{ optionId: string; text: string }> };
+
+export interface StoryDocument {
+  storyId: string;
+  pairId: string;
+  arcId: string;
+  episode: number;
+  title: string;
+  place: string;
+  participants: string[];
+  segments: Segment[];
+  memories: Array<{ text: string; factType: "event" | "feeling"; knowerIds: string[] }>;
+  generatedAt: string;
+}
+
+export type EpisodeStatus = "locked" | "available" | "running" | "unlocked" | "read";
+
+export interface EpisodeView {
+  index: number;
+  title: string;
+  cast: "lead" | "pair";
+  minutes: number;
+  preparations: Record<string, number>;
+  status: EpisodeStatus;
+  reasons: string[];
+  participants: string[];
+  storyId: string | null;
+  written: boolean;
+}
+
+export interface PairStoryView {
+  pairId: string;
+  leadId: string | null;
+  arc: { id: string; title: string; place: string; discovery: string };
+  episodes: EpisodeView[];
+  completed: Array<{ arcId: string; title: string; storyIds: string[] }>;
+}
+
+export interface StoryOverview {
+  revision: number;
+  pairs: PairStoryView[];
 }
 
 export type FieldId = "gather" | "grow" | "survey" | "process" | "craft";
@@ -202,6 +294,8 @@ export interface Resident {
   /** 전문 분야 and 특기, decided at registration. */
   field: FieldId;
   talentId: string;
+  /** The player's trust with this resident; not a romance state. */
+  trust: number;
   breakthrough: number;
   registeredAt: string;
   image: { current: ResidentImage | null; history: ResidentImage[]; placement: Placement };
@@ -281,6 +375,22 @@ export interface GameContent {
     setBonusMax: number;
   };
   talents: TalentDefinition[];
+  stories: {
+    arcs: Array<{
+      id: string;
+      title: string;
+      place: string;
+      discovery: string;
+      episodes: Array<{
+        title: string;
+        cast: "lead" | "pair";
+        minutes: number;
+        preparations: Record<string, number>;
+        relation: { familiarity: number; ease: number };
+      }>;
+    }>;
+    choiceTrust: number;
+  };
   invite: {
     ticketsPerDraw: number;
     multiDraw: number;

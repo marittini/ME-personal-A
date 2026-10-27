@@ -24,6 +24,8 @@ import { registerGameRoutes } from "./http/game-routes";
 import { PACKAGE_VERSION } from "./package-info";
 import { createBackupService } from "./services/backup-service";
 import { createCommandService } from "./services/command-service";
+import { createStoryService } from "./services/story-service";
+import { findStory } from "./store/story-repository";
 import { createRebuildService } from "./services/rebuild-service";
 import { createSettlementService } from "./services/settlement-service";
 import { createSourceService } from "./services/source-service";
@@ -47,6 +49,12 @@ export async function activate({ app, api }: ActivationContext) {
   if (missing.length) throw new Error(`Forest Workshop needs a newer Marinara Engine (missing ${missing.join(", ")})`);
   const persistence = requirePersistence(runtime);
   const sources = createSourceService(runtime, persistence);
+  const stories = createStoryService(runtime, persistence);
+  // Host reads commands may need before their rule: the source of a registration, a written scene.
+  const commandHost = {
+    ...sources.host,
+    readStory: (worldId: string, storyId: string) => findStory(persistence.documents, worldId, storyId),
+  };
   const services = {
     app,
     persistence,
@@ -54,7 +62,8 @@ export async function activate({ app, api }: ActivationContext) {
     rebuild: createRebuildService(runtime, sources),
     worlds: createWorldService(persistence),
     settlement: createSettlementService(persistence),
-    commands: createCommandService(persistence, undefined, sources.host),
+    commands: createCommandService(persistence, undefined, commandHost),
+    stories,
     backups: createBackupService(persistence, PACKAGE_VERSION),
     storage: createStorageService(persistence),
     logger: runtime.logger,

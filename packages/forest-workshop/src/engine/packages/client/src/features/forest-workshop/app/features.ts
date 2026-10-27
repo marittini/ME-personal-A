@@ -5,8 +5,7 @@
 export type LockedFeature =
   | "weather"
   | "mail"
-  | "stories"
-  | "explore"
+  | "survey-patrol"
   | "weather-effects"
   | "auto-read"
   | "ai-guidelines"
@@ -14,17 +13,16 @@ export type LockedFeature =
   | "pair-memory"
   | "pair-guidelines";
 
-const LOCKED: Readonly<Record<LockedFeature, { label: string; phase: "P4" | "P5" }>> = {
+const LOCKED: Readonly<Record<LockedFeature, { label: string; phase: "P4b" | "P5" }>> = {
   weather: { label: "현실 날씨", phase: "P5" },
-  mail: { label: "우편함", phase: "P4" },
-  stories: { label: "주민 이야기", phase: "P4" },
-  explore: { label: "탐사", phase: "P4" },
+  mail: { label: "우편함", phase: "P4b" },
+  "survey-patrol": { label: "조사 · 순찰", phase: "P4b" },
   "weather-effects": { label: "날씨 효과", phase: "P5" },
-  "auto-read": { label: "자동 읽기", phase: "P4" },
-  "ai-guidelines": { label: "AI 지침 관리", phase: "P4" },
-  memory: { label: "기억 관리", phase: "P4" },
-  "pair-memory": { label: "페어 기억 보기", phase: "P4" },
-  "pair-guidelines": { label: "페어 지침 관리", phase: "P4" },
+  "auto-read": { label: "자동 읽기", phase: "P4b" },
+  "ai-guidelines": { label: "AI 지침 관리", phase: "P4b" },
+  memory: { label: "기억 관리", phase: "P4b" },
+  "pair-memory": { label: "페어 기억 보기", phase: "P4b" },
+  "pair-guidelines": { label: "페어 지침 관리", phase: "P4b" },
 };
 
 export function isLocked(feature: LockedFeature): boolean {

@@ -526,7 +526,8 @@ async function main() {
   {
     const { backup } = await env.backups.exportWorld(WORLD, async (image) => pictures.get(image.reference)!);
     const json = JSON.parse(JSON.stringify(backup));
-    assert.equal(json.formatVersion, 2);
+    assert.equal(json.formatVersion, 3);
+    assert.deepEqual(json.stories, [], "no scenes written yet");
     const original = (await env.worlds.get(WORLD)).state;
     const referenced = new Set(
       Object.values(original.residents).flatMap((r) =>

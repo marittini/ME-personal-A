@@ -8,7 +8,8 @@
 // which gives them new IDs; the world is rewritten to the new references and saved. If the save fails, the
 // pictures stored for it are removed again, so a failed restore leaves nothing behind.
 //
-// Format versions: 1 (P1, no pictures, assets must be empty) is still read; 2 adds assets.
+// Format versions: 1 (P1, no pictures, assets must be empty) and 2 (assets) are still read; 3 adds `stories`, the
+// written scenes (`fw-story` documents), which the world's story progress points to.
 import { z } from "zod";
 import { FwError } from "../domain/errors";
 import { assertWorldId, sha256Hex } from "../domain/ids";
@@ -17,11 +18,14 @@ import { presentActivity } from "../domain/production/activity";
 import { GALLERY_REFERENCE, residentImageReferences, type ResidentImage } from "../domain/model/residents";
 import { worldStateSchema, type WorldState } from "../domain/world-model";
 import type { HostPersistence } from "../host/engine-adapter";
+import { storyDocumentSchema, type StoryDocument } from "../domain/model/story-document";
+import { createStory, listStories } from "../store/story-repository";
 import { createWorldDocument, findWorld, loadWorld } from "../store/world-repository";
 import type { WorldView } from "./world-service";
 
 export const BACKUP_FORMAT = "forest-workshop-backup";
-export const BACKUP_FORMAT_VERSION = 2;
+export const BACKUP_FORMAT_VERSION = 3;
+export const MAX_BACKUP_STORIES = 1000;
 /** 100 residents × (current + 3 history pictures). */
 export const MAX_BACKUP_ASSETS = 400;
 
@@ -57,6 +61,17 @@ const backupEnvelopeSchema = z.discriminatedUnion("formatVersion", [
       assets: z.array(assetSchema).max(MAX_BACKUP_ASSETS),
     })
     .strict(),
+  z
+    .object({
+      format: z.literal(BACKUP_FORMAT),
+      formatVersion: z.literal(3),
+      packageVersion: z.string().max(32),
+      exportedAt: z.string().datetime(),
+      world: z.unknown(),
+      assets: z.array(assetSchema).max(MAX_BACKUP_ASSETS),
+      stories: z.array(z.unknown()).max(MAX_BACKUP_STORIES),
+    })
+    .strict(),
 ]);
 
 export interface BackupDocument {
@@ -66,6 +81,7 @@ export interface BackupDocument {
   exportedAt: string;
   world: WorldState;
   assets: BackupAsset[];
+  stories: StoryDocument[];
 }
 
 /** Reads a stored picture's bytes (the gallery in production, a map in tests). */
@@ -144,6 +160,7 @@ export function createBackupService(
           exportedAt,
           world: world.state,
           assets,
+          stories: await listStories(documents, world.state.worldId),
         },
       };
     },
@@ -173,6 +190,13 @@ export function createBackupService(
           throw new FwError("invalid_backup", { details: { brokenAsset: asset.reference } });
         }
         assets.set(asset.reference, { asset, bytes });
+      }
+      const rawStories = envelope.data.formatVersion === 3 ? envelope.data.stories : [];
+      const stories: StoryDocument[] = [];
+      for (const raw of rawStories) {
+        const parsed = storyDocumentSchema.safeParse({ ...(raw as object), worldId: newWorldId });
+        if (!parsed.success) throw new FwError("invalid_backup", { details: { brokenStory: true } });
+        stories.push(parsed.data);
       }
       const needed = uniqueImages(original);
       const missing = needed.find((image) => !assets.has(image.reference));
@@ -207,6 +231,9 @@ export function createBackupService(
           stored.push(target.reference);
           mapping.set(image.reference, target);
         }
+        // Scenes first: a world that exists always finds its scenes (a failed world save leaves only scenes that a
+        // retried restore reuses).
+        for (const story of stories) await createStory(documents, story);
         const now = clock().toISOString();
         // The restored world starts its clock now: the time between the backup and the restore is not credited.
         const state = remapImages(

@@ -64,6 +64,7 @@ export const registerResident = defineCommand({
       field: talent.field,
       talentId: talent.talentId,
       breakthrough: 0,
+      trust: 0,
       registeredAt: context.now,
       image: { current: null, history: [], placement: DEFAULT_PLACEMENT },
       changes: [{ at: context.now, kind: "registered", detail: excerpt(payload.worldSetting) }],

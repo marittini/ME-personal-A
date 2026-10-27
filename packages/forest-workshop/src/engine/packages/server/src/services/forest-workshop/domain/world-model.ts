@@ -2,18 +2,21 @@
 // it, every load is validated against it, and a backup is checked with it before anything is written.
 // Each phase adds its parts through a schema migration (domain/migrations.ts): v2 added residents and pairs (P2),
 // v3 made pairs any two residents, v4 added production (P3a), v5 the rest of P3 (fields, placement, 지정 횟수, 자동 판매,
-// 초대, 납품), v6 a field and talent on every resident, decided at registration.
+// 초대, 납품), v6 a field and talent on every resident, decided at registration, v7 stories, the memory ledger and
+// the player's trust (P4).
 import { z } from "zod";
 import { isKnownItem } from "../content/items";
 import { FACILITIES, queueSlots, recipeDefinition } from "../content/production";
 import { talentDefinition } from "../content/talents";
 import { deliveryStateSchema, initialInvite, inviteStateSchema } from "./model/invite";
+import { memorySchema } from "./model/memory";
+import { storiesStateSchema } from "./model/stories";
 import { MAX_PAIRS, pairSchema } from "./model/pairs";
 import { productionSchema } from "./model/production";
 import { initialProduction } from "./production/initial";
 import { MAX_RESIDENTS, residentSchema } from "./model/residents";
 
-export const CURRENT_SCHEMA_VERSION = 6;
+export const CURRENT_SCHEMA_VERSION = 7;
 
 const nonNegativeInt = z.number().int().min(0).max(Number.MAX_SAFE_INTEGER);
 const displayText = (max: number) =>
@@ -53,6 +56,8 @@ const worldShape = z
     production: productionSchema,
     invite: inviteStateSchema,
     deliveries: deliveryStateSchema,
+    stories: storiesStateSchema,
+    memory: memorySchema,
   })
   .strict();
 
@@ -120,6 +125,24 @@ export const worldStateSchema = worldShape.superRefine((world, context) => {
   }
   if (!Object.keys(world.production.protectedStock).every(isKnownItem)) issue(["production"], "protected item");
   if (!Object.keys(world.production.autoSell).every(isKnownItem)) issue(["production"], "auto-sell item");
+  for (const [pairId] of Object.entries(world.stories.pairs)) {
+    if (!world.pairs[pairId]) issue(["stories", pairId], "unknown pair");
+  }
+  const expedition = world.stories.expedition;
+  if (expedition) {
+    if (!world.pairs[expedition.pairId]) issue(["stories", "expedition"], "unknown pair");
+    if (!expedition.participants.every((id) => world.residents[id]?.recruited)) {
+      issue(["stories", "expedition"], "participants");
+    }
+    for (const facility of Object.values(world.production.facilities)) {
+      if (facility.residentId && expedition.participants.includes(facility.residentId)) {
+        issue(["stories", "expedition"], "participant placed in a facility");
+      }
+    }
+  }
+  for (const fact of world.memory.facts) {
+    if (!fact.knowerIds.every((id) => world.residents[id])) issue(["memory", fact.factId], "unknown knower");
+  }
   const wish = world.invite.wishResidentId;
   if (wish !== null && !world.residents[wish]) issue(["invite", "wishResidentId"], "unknown resident");
 });
@@ -147,6 +170,8 @@ export function createWorldState(input: NewWorldInput): WorldState {
     production: initialProduction(input.worldId),
     invite: initialInvite(),
     deliveries: { day: null, done: [] },
+    stories: { pairs: {}, expedition: null },
+    memory: { facts: [], nextFactId: 1 },
   });
 }
 

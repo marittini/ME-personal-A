@@ -127,6 +127,8 @@ export const residentSchema = z
     talentId: z.string().min(1).max(64),
     /** 돌파 0–5, from inviting a resident who already came (plan §7.2-F). */
     breakthrough: z.number().int().min(0).max(MAX_BREAKTHROUGH),
+    /** The player's trust with this resident (plan §7.1), separate from any pair's values. Not a romance state. */
+    trust: z.number().int().min(0).max(100),
     registeredAt: isoTime,
     image: z
       .object({

@@ -24,11 +24,13 @@ export function assertRequestId(value: unknown, label = "요청 번호"): string
 export const DOCUMENT_KIND = {
   world: "fw-world",
   command: "fw-command",
+  story: "fw-story",
 } as const;
 
 export const documentId = {
   world: (worldId: string) => `fw-world-${worldId}`,
   command: (worldId: string, commandId: string) => `fw-command-${worldId}-${commandId}`,
+  story: (worldId: string, storyId: string) => `fw-story-${worldId}-${storyId}`,
 };
 
 /** JSON with object keys sorted, so equal values always hash the same regardless of key order. */

@@ -36,6 +36,7 @@ import { presentActivity } from "../packages/forest-workshop/src/engine/packages
 import { crewBonuses } from "../packages/forest-workshop/src/engine/packages/server/src/services/forest-workshop/domain/production/crew";
 import { settleWorld } from "../packages/forest-workshop/src/engine/packages/server/src/services/forest-workshop/domain/production/settle";
 import {
+  CURRENT_SCHEMA_VERSION,
   createWorldState,
   worldStateSchema,
   type WorldState,
@@ -69,6 +70,7 @@ function resident(n: number, recruited: boolean, extra: Partial<Resident> = {}):
     field: "gather",
     talentId: "berry-eye",
     breakthrough: 0,
+    trust: 0,
     registeredAt: iso(T0),
     image: { current: null, history: [], placement: DEFAULT_PLACEMENT },
     changes: [],
@@ -546,6 +548,8 @@ async function main() {
     v4.wallet = { gold: 5 };
     delete v4.invite;
     delete v4.deliveries;
+    delete v4.stories;
+    delete v4.memory;
     const production = v4.production as Record<string, unknown>;
     const facilities = production.facilities as Record<string, Record<string, unknown>>;
     for (const id of ["grow-plot", "survey-desk", "craft-bench"]) delete facilities[id];
@@ -562,9 +566,10 @@ async function main() {
       delete r.field;
       delete r.talentId;
       delete r.breakthrough;
+      delete r.trust;
     }
     const migrated = migrateWorld(v4);
-    assert.equal(migrated.schemaVersion, 6);
+    assert.equal(migrated.schemaVersion, CURRENT_SCHEMA_VERSION);
     assert.equal(migrated.wallet.tickets, 3);
     assert.equal(migrated.production.facilities["process-bench"]!.job?.source, "rule");
     assert.deepEqual(

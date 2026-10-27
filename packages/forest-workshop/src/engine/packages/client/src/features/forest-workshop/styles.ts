@@ -720,6 +720,9 @@ label.menu-row:focus-within { outline: 3px solid var(--fw-accent); outline-offse
 .form { gap: 0.55em; }
 .form .button { margin-top: 0.4em; }
 .field-label { font-weight: 900; }
+.restore-details > summary { cursor: pointer; min-height: 2.75em; }
+.restore-details[open] > .restore { margin-top: 0.75em; }
+.invite-empty { display: grid; gap: 0.65em; justify-items: start; }
 
 /* ── Sheets (시작 꾸러미 and the resident sheets) ─────────────────────── */
 .sheet-backdrop { position: absolute; inset: 0; z-index: 10; display: flex; align-items: flex-end; justify-content: center; padding: 0.75em; background: rgba(48, 29, 16, 0.5); }

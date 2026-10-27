@@ -36,5 +36,5 @@ export function lockedPhase(feature: LockedFeature): string {
 /** The sentence a tap on a locked element shows. */
 export function lockedMessage(feature: LockedFeature): string {
   const entry = LOCKED[feature];
-  return entry ? `${entry.label} 기능은 준비 중이에요. 개발 ${entry.phase} 단계에서 열려요.` : "";
+  return entry ? `${entry.label} 기능은 아직 준비 중이에요.` : "";
 }

@@ -121,19 +121,17 @@ function createForm(state: AppState, controller: Controller) {
 
 export function renderWorldsScreen(state: AppState, controller: Controller) {
   const open = state.world?.state === "ready";
+  const firstWorld = state.worlds.state === "ready" && state.worlds.value.length === 0;
+  const restore = h("details", { className: "card restore-details", attrs: { open: state.restore ? "" : undefined } }, [
+    h("summary", { className: "section-title", text: "백업에서 복원" }),
+    renderRestorePanel(state, controller, "fw-worlds-restore"),
+  ]);
   return renderFrame(state, controller, {
     top: open
       ? { kind: "sub", title: "세계 고르기", back: { route: "backup", label: "저장·백업" }, resources: false }
       : { kind: "sub", title: "숲결 공방", resources: false },
     backdrop: "wood",
-    body: [
-      worldList(state, controller),
-      createForm(state, controller),
-      card("백업에서 복원", [renderRestorePanel(state, controller, "fw-worlds-restore")], {
-        id: "fw-worlds-restore-title",
-        className: "menu",
-      }),
-    ],
+    body: [firstWorld ? null : worldList(state, controller), createForm(state, controller), restore],
     nav: false,
   });
 }

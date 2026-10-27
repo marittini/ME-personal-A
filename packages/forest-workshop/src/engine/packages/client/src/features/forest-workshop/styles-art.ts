@@ -15,6 +15,7 @@ const seasonBases = SEASONS.map(
 export const ART_STYLES = `
 /* Season backdrop (portrait). It scrolls with the page so the column keeps its full width on tall phones. */
 ${seasonBases}
+.art-base.backdrop-forest .scroll:has(.scene img.scene-art) { background: var(--fw-page); }
 
 /* Item, facility and emotion pictures: drawn straight on the panel like the mockups, no tile frame around them. */
 .item-tile { width: 2em; height: 2em; }
@@ -43,7 +44,7 @@ img.emotion-bubble.emotion-art { min-width: 0; width: 2.6em; height: 2.6em; padd
 /* 홈 (board 01-1): the workshop scene fills the top of the screen and the sign, money and 날씨 sit on it. */
 .column:has(> .scene img.scene-art) { position: relative; }
 .column:has(> .scene img.scene-art) > .top-home { position: absolute; z-index: 3; top: 0; left: 0; right: 0; }
-.scene:has(img.scene-art) { aspect-ratio: 390 / 470; min-height: 22em; margin-bottom: -1.8em; }
+.scene:has(img.scene-art) { aspect-ratio: 390 / 470; min-height: 22em; margin-bottom: 0; }
 
 /* Wooden sign (title-sign.webp) on every screen; the DOM title sits in its empty middle (textSafeRect 22–78 % × 36–74 %). */
 .art-sign .sign {

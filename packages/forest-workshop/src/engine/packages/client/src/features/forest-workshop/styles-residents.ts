@@ -102,7 +102,12 @@ export const RESIDENT_STYLES = `
 .compare-box .button { justify-self: end; }
 .compare-title { display: flex; align-items: center; gap: 0.35em; font-weight: 900; }
 .source-field { display: grid; gap: 0.1em; }
-.source-field p { white-space: pre-wrap; max-height: 9em; overflow-y: auto; font-size: calc(var(--fs) * 0.9); }
+.source-field p { white-space: pre-wrap; font-size: calc(var(--fs) * 0.9); }
+.source-details { display: block; }
+.source-details summary { cursor: pointer; min-height: 2.75em; }
+.source-details[open] > :not(summary) { margin-top: 0.6em; }
+.sheet-head { flex-wrap: wrap; }
+.sheet-head .section-title { flex: 1 1 10em; }
 .change-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 0.3em; max-height: 14em; overflow-y: auto; }
 .change-row { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0 0.6em; padding: 0.4em 0.6em; border-radius: 0.6em; background: var(--fw-surface-3); font-size: calc(var(--fs) * 0.85); }
 .change-kind { font-weight: 800; }

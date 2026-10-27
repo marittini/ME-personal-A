@@ -3,31 +3,12 @@
 // the 종표 교환 card (n / 5 · 원하는 주민 선택). [종표 교환] lists the registered residents to choose from.
 // Every registered resident has the same chance (no grades); the server rolls and decides (plan §7.2-F).
 import type { AppState, Controller } from "../../app/controller";
-import { h, statusLine } from "../../app/dom";
+import { button, h, statusLine } from "../../app/dom";
 import type { GameContent, Resident, WorldView } from "../../app/types";
 import { card, renderFrame } from "../chrome/frame";
 import { ICONS } from "../chrome/icons";
 import { kindTag, residentAvatar } from "../residents/resident-figure";
 import { renderInviteSheet } from "./invite-sheets";
-
-const SVG_NS = "http://www.w3.org/2000/svg";
-
-/** The envelope with the leaf seal (flat, ink-outlined; the painted scene arrives with P5 assets). */
-function envelope() {
-  const svg = document.createElementNS(SVG_NS, "svg");
-  svg.setAttribute("viewBox", "0 0 240 150");
-  svg.setAttribute("class", "invite-envelope");
-  svg.setAttribute("aria-hidden", "true");
-  svg.innerHTML = `
-    <rect x="22" y="30" width="196" height="110" rx="10" fill="#fbf1da" stroke="#4b2e1a" stroke-width="5"/>
-    <path d="M22 40 L120 100 L218 40" fill="none" stroke="#4b2e1a" stroke-width="5" stroke-linejoin="round"/>
-    <path d="M22 132 L95 86 M218 132 L145 86" fill="none" stroke="#4b2e1a" stroke-width="4" stroke-linecap="round"/>
-    <circle cx="120" cy="98" r="24" fill="#5a9a44" stroke="#4b2e1a" stroke-width="5"/>
-    <path d="M120 112c0-12 0-18 0-26M120 98c-7-2-10-7-10-13 6 1 10 5 10 13zM120 94c6-2 9-7 9-12-6 1-9 5-9 12z"
-      fill="#dcebc4" stroke="#4b2e1a" stroke-width="3" stroke-linejoin="round"/>
-    <path d="M30 24c6-10 18-10 24-2-8 2-16 4-24 2zM190 22c8-8 18-6 22 2-8 1-15 1-22-2z" fill="#5a9a44" stroke="#4b2e1a" stroke-width="3"/>`;
-  return svg;
-}
 
 export function inviteCounters(state: AppState, controller: Controller) {
   const world = state.world?.state === "ready" ? state.world.value : null;
@@ -103,7 +84,6 @@ function inviteBody(state: AppState, world: WorldView, content: GameContent, con
   const tokens = world.state.wallet.tokens;
   const need = content.invite.tokensPerExchange;
   return [
-    h("div", { className: "invite-stage" }, [envelope()]),
     card(null, [
       h(
         "button",
@@ -125,9 +105,15 @@ function inviteBody(state: AppState, world: WorldView, content: GameContent, con
         ],
       ),
       residents.length === 0
-        ? h("p", { className: "empty", text: "초대할 주민이 없어요. 주민 화면에서 먼저 주민을 불러와 주세요." })
+        ? h("div", { className: "invite-empty" }, [
+            h("p", { className: "empty", text: "초대할 주민이 없어요. 먼저 캐릭터나 페르소나를 불러와 주세요." }),
+            button("주민 불러오기", () => controller.navigate("residents")),
+          ])
         : world.state.progress.starterResidentId === null
-          ? h("p", { className: "empty", text: "시작 주민을 먼저 정하면 초대할 수 있어요." })
+          ? h("div", { className: "invite-empty" }, [
+              h("p", { className: "empty", text: "시작 주민을 먼저 정하면 초대할 수 있어요." }),
+              button("주민 화면으로", () => controller.navigate("residents")),
+            ])
           : null,
       h("div", { className: "draw-row" }, [
         drawButton(state, world, content, 1, controller),
@@ -136,9 +122,11 @@ function inviteBody(state: AppState, world: WorldView, content: GameContent, con
       h("p", {
         className: "hint center",
         text:
-          waiting > 0
-            ? `아직 오지 않은 주민 ${waiting}명 · 늦어도 ${Math.max(1, guaranteeIn)}번째 초대에는 새 주민을 만나요.`
-            : "모두 공방에 왔어요. 다시 만나면 돌파, 최대 돌파 뒤에는 종표가 돼요.",
+          residents.length === 0
+            ? "등록한 주민 중에서 새로운 인연을 만날 수 있어요."
+            : waiting > 0
+              ? `아직 오지 않은 주민 ${waiting}명 · 늦어도 ${Math.max(1, guaranteeIn)}번째 초대에는 새 주민을 만나요.`
+              : "모두 공방에 왔어요. 다시 만나면 돌파, 최대 돌파 뒤에는 종표가 돼요.",
       }),
       h("div", { className: "link-row" }, [
         h(

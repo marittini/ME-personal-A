@@ -45,6 +45,8 @@ img.emotion-bubble.emotion-art { min-width: 0; width: 2.6em; height: 2.6em; padd
 .column:has(> .scene img.scene-art) { position: relative; }
 .column:has(> .scene img.scene-art) > .top-home { position: absolute; z-index: 3; top: 0; left: 0; right: 0; }
 .scene:has(img.scene-art) { aspect-ratio: 390 / 470; min-height: 22em; margin-bottom: 0; }
+.home-layout .scene:has(img.scene-art) { min-height: 0; aspect-ratio: auto; margin: 0; }
+@media (max-height: 480px) { .home-layout .scene:has(img.scene-art) { min-height: 12em; } }
 
 /* Wooden sign (title-sign.webp) on every screen; the DOM title sits in its empty middle (textSafeRect 22–78 % × 36–74 %). */
 .art-sign .sign {

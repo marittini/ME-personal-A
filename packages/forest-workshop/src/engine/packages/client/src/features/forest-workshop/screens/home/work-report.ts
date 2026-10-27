@@ -29,6 +29,29 @@ function headline(world: WorldView): string {
   return "공방이 쉬고 있어요";
 }
 
+/** A compact entry to the existing full report, sized for the home viewport. */
+export function compactWorkReport(world: WorldView, controller: Controller) {
+  const count = unread(world).length;
+  return h(
+    "button",
+    {
+      className: "home-summary work-summary",
+      attrs: {
+        type: "button",
+        "aria-label": `${headline(world)} · ${count ? `새 보고 ${count}개` : "새 보고 없음"} · 작업 보고 열기`,
+      },
+      on: { click: () => controller.openSheet({ kind: "work-report" }) },
+    },
+    [
+      h("span", { className: "home-summary-copy" }, [
+        h("strong", { text: headline(world) }),
+        h("span", { text: count ? `새 작업 보고 ${count}개` : "작업 보고 보기" }),
+      ]),
+      ICONS.chevron("icon"),
+    ],
+  );
+}
+
 export function workReportCard(world: WorldView, content: GameContent | null, controller: Controller) {
   const news = unread(world);
   const produced = Object.entries(sum(news, "produced")).sort(([, a], [, b]) => b - a);

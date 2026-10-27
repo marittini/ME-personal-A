@@ -16,6 +16,8 @@ export interface Frame {
   hero?: Child;
   body: Child[];
   nav: boolean;
+  /** A viewport-fitted home scene with its compact controls. */
+  homeLayout?: boolean;
   sheet?: Child;
 }
 
@@ -40,7 +42,7 @@ export function renderFrame(state: AppState, controller: Controller, frame: Fram
   return h(
     "div",
     {
-      className: `shell backdrop-${frame.backdrop} season-${currentSeason(state)}${artClasses(state)}${frame.nav ? " has-nav" : ""}${state.notice ? " has-notice" : ""}`,
+      className: `shell backdrop-${frame.backdrop} season-${currentSeason(state)}${artClasses(state)}${frame.nav ? " has-nav" : ""}${frame.homeLayout ? " home-layout" : ""}${state.notice ? " has-notice" : ""}`,
     },
     [
       h("div", { className: "scroll" }, [

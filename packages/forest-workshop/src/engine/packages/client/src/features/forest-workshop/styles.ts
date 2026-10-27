@@ -392,6 +392,29 @@ button.counter { cursor: pointer; }
 .tab.current .tab-icon { color: var(--fw-accent); }
 .tab.is-locked .tab-glyph { opacity: 0.5; }
 
+/* Home fits the available host viewport; detail sheets keep the full existing content. */
+.home-layout .scroll { overflow: hidden; }
+.home-layout .column { height: 100%; min-height: 0; position: relative; }
+.home-layout .top-home { position: absolute; inset: 0 0 auto; z-index: 3; }
+.home-layout .scene { flex: 1 1 auto; min-height: 0; aspect-ratio: auto; margin: 0; }
+.home-layout .scene-stage { bottom: 0.65em; }
+.home-layout .scene-caption { bottom: 0.2em; }
+.home-layout .page { flex: none; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0.4em; padding: 0.4em 0.6em 0.55em; }
+.home-summary, .home-layout .strip.story, .home-layout .strip.offline {
+  min-width: 0; min-height: 3.2em; padding: 0.4em 0.6em; border: var(--line-in) solid var(--ink);
+  border-radius: 0.8em; background: var(--fw-surface); color: var(--fw-text); font: inherit; cursor: pointer;
+}
+.home-summary { display: flex; align-items: center; justify-content: space-between; gap: 0.3em; text-align: left; }
+.home-summary-copy { display: grid; min-width: 0; line-height: 1.25; }
+.home-summary-copy strong, .home-layout .story-text strong { font-size: calc(var(--fs) * 0.86); }
+.home-summary-copy span, .home-layout .story-text span { color: var(--fw-muted); font-size: calc(var(--fs) * 0.75); }
+.home-layout .strip.story { justify-content: space-between; text-align: left; gap: 0.25em; }
+.home-layout .story-art { display: none; }
+.home-layout .round-arrow { width: 1.5em; height: 1.5em; border: 0; background: none; color: var(--ink); }
+.home-layout .strip.offline { grid-column: 1 / -1; min-height: 2.75em; font-size: calc(var(--fs) * 0.8); }
+.fullscreen-toggle { min-height: 2.75em; padding: 0.35em 0.65em; border: var(--line-in) solid var(--ink); border-radius: 0.7em; background: var(--fw-surface); color: var(--fw-text); font: inherit; font-size: calc(var(--fs) * 0.8); font-weight: 800; cursor: pointer; }
+@media (max-height: 480px) { .home-layout .scroll { overflow-y: auto; } .home-layout .column { height: auto; min-height: 100%; } .home-layout .scene { flex: none; min-height: 12em; } }
+
 /* ── 홈 (01-1) ─────────────────────────────────────────────────────────── */
 .top-home { padding-bottom: 0; }
 .chip-button.weather { color: var(--fw-text); }

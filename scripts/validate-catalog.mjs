@@ -54,6 +54,11 @@ const { catalog, catalogsByMajor, legacyCatalog, previewCatalogsByMajor, preview
 const MIN_ENGINE_VERSION = "2.3.0";
 const REQUIRED_MAX_ENGINE_EXCLUSIVE = "4.0.0";
 const ENGINE_CAPABILITY_API = Object.freeze({ major: 1, minor: 9 });
+// Packages owned by this fork (marittini/ME-personal-A) publish their artifact, cover and documentation from the fork.
+// The rule is limited to these ids: every official package keeps the canonical Pasta-Devs URLs checked below.
+const FORK_OWNED_PACKAGE_IDS = new Set(["forest-workshop"]);
+const FORK_RAW_ROOT = "https://raw.githubusercontent.com/marittini/ME-personal-A/main";
+const FORK_BLOB_ROOT = "https://github.com/marittini/ME-personal-A/blob/main";
 if (catalog.schemaVersion !== 1 || !Array.isArray(catalog.packages)) throw new Error("Invalid catalog envelope");
 // Held-back packages (catalog-incomplete.mjs) keep their source, payload, and
 // artifact in the tree, but each tier must land in exactly one place: an
@@ -559,11 +564,20 @@ for (const entry of catalog.packages) {
     throw new Error(`Expected ${manifest.id} in ${expectedCategory}, found ${category}`);
   }
   if (!documentationUrl) throw new Error(`Missing documentation URL for ${manifest.id}`);
-  if (iconUrl !== catalogArtworkUrl(manifest.id)) {
+  const forkOwned = FORK_OWNED_PACKAGE_IDS.has(manifest.id);
+  const expectedIconUrl = forkOwned
+    ? `${FORK_RAW_ROOT}/${catalogArtworkRelativePath(manifest.id)}`
+    : catalogArtworkUrl(manifest.id);
+  if (iconUrl !== expectedIconUrl) {
     throw new Error(`Missing or invalid catalog artwork URL for ${manifest.id}`);
   }
+  if (forkOwned && documentationUrl !== `${FORK_BLOB_ROOT}/packages/${manifest.id}/README.md`) {
+    throw new Error(`Documentation URL for fork-owned ${manifest.id} must point at its README in the fork`);
+  }
   const expectedArtifactName = packageArtifactName(manifest.id, manifest.version);
-  const expectedArtifactUrl = `https://raw.githubusercontent.com/Pasta-Devs/Marinara-Agents/main/artifacts/${expectedArtifactName}`;
+  const expectedArtifactUrl = forkOwned
+    ? `${FORK_RAW_ROOT}/artifacts/${expectedArtifactName}`
+    : `https://raw.githubusercontent.com/Pasta-Devs/Marinara-Agents/main/artifacts/${expectedArtifactName}`;
   if (artifact.url !== expectedArtifactUrl) {
     throw new Error(`Artifact URL for ${manifest.id} must be ${expectedArtifactUrl}`);
   }
@@ -925,8 +939,8 @@ const agentOnly = publishedCatalog.packages.filter(
   (entry) => !isRulesetPackage(entry.manifest) && !entry.manifest.entrypoints.server,
 ).length;
 const features = publishedCatalog.packages.length - agentOnly - rulesets;
-if (publishedCatalog.packages.length !== 41 || agentOnly !== 26 || features !== 15 || rulesets !== 0) {
-  throw new Error(`Expected 26 agents, 15 features, and 0 rulesets, found ${agentOnly}, ${features}, and ${rulesets}`);
+if (publishedCatalog.packages.length !== 42 || agentOnly !== 26 || features !== 16 || rulesets !== 0) {
+  throw new Error(`Expected 26 agents, 16 features, and 0 rulesets, found ${agentOnly}, ${features}, and ${rulesets}`);
 }
 console.log(
   `Catalog valid: ${publishedCatalog.packages.length} packages (${agentOnly} agents, ${features} features, ${rulesets} rulesets).`,

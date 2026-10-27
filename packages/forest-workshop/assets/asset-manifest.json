@@ -1,0 +1,1995 @@
+{
+  "schemaVersion": 1,
+  "packVersion": "1.1.0",
+  "packageId": "forest-workshop",
+  "referenceCodeCommit": "570a64bc7dfd35436ca97a6c6f081214df970009",
+  "notes": [
+    "Complete 82-image pack: previous 57 preserved byte-for-byte plus 25 new images.",
+    "All images are individually AI-generated; no free asset packs.",
+    "Art only; gameplay and gift systems still require implementation."
+  ],
+  "assets": {
+    "backgrounds/workshop-base-autumn": {
+      "path": "backgrounds/workshop-base-autumn.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 853586,
+      "sha256": "2b5f02f155f932d4d2377d7aecdd093340bc53135c05e7f9c01559f3d421b818",
+      "hasTransparency": false,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1024,
+        1536
+      ],
+      "preparedCrop": [
+        0,
+        0,
+        1024,
+        1536
+      ]
+    },
+    "facilities/gather-yard": {
+      "path": "facilities/gather-yard.webp",
+      "width": 512,
+      "height": 435,
+      "bytes": 109500,
+      "sha256": "7e368bbd74cfa4b82d1ae696f20c7c8e6fe4afb95d66340ce09498910f9dc530",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        27,
+        137,
+        1229,
+        1150
+      ]
+    },
+    "facilities/grow-plot": {
+      "path": "facilities/grow-plot.webp",
+      "width": 512,
+      "height": 438,
+      "bytes": 112346,
+      "sha256": "f7027c0704fe9fc1af3f1cdaf1ab5573bfd2f9b0a238bfc87f0c9688b42e379d",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        28,
+        121,
+        1233,
+        1143
+      ]
+    },
+    "facilities/survey-desk": {
+      "path": "facilities/survey-desk.webp",
+      "width": 512,
+      "height": 512,
+      "bytes": 141174,
+      "sha256": "9782e3a6f9a2316dbf4acf4f0d2320edd646e6ad8c23d76c05a489090f33bd40",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        35,
+        25,
+        1240,
+        1230
+      ]
+    },
+    "facilities/process-bench": {
+      "path": "facilities/process-bench.webp",
+      "width": 474,
+      "height": 512,
+      "bytes": 122012,
+      "sha256": "9d17cb80fd9bfd7f0d1713bd88aa8080f08430df02fb64474f94d9af08e04235",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        78,
+        5,
+        1195,
+        1217
+      ]
+    },
+    "facilities/craft-bench": {
+      "path": "facilities/craft-bench.webp",
+      "width": 512,
+      "height": 457,
+      "bytes": 114090,
+      "sha256": "fceffa34eeae7354d662fd74cd1ba80ee6e7398e15752cb0cd6668311a565b56",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        62,
+        139,
+        1203,
+        1151
+      ]
+    },
+    "ui/paper-panel": {
+      "path": "ui/paper-panel.webp",
+      "width": 768,
+      "height": 479,
+      "bytes": 50756,
+      "sha256": "e6a0a4bc2b0e57093ecadca280e0c7ca7966dd5dd2646d9cace1b09a5bfe7dee",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1536,
+        1024
+      ],
+      "preparedCrop": [
+        10,
+        50,
+        1527,
+        968
+      ],
+      "nineSlice": {
+        "sourceInsetsPx": {
+          "top": 105,
+          "right": 154,
+          "bottom": 105,
+          "left": 154
+        },
+        "recommendedBorderCssPx": 32,
+        "mode": "stretch"
+      },
+      "contentPaddingCssPx": 24
+    },
+    "ui/wood-panel": {
+      "path": "ui/wood-panel.webp",
+      "width": 768,
+      "height": 488,
+      "bytes": 81384,
+      "sha256": "ef602355494000983ade38987ea79abe45c5ac2762061e0e2969b6b2850f7d3a",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1536,
+        1024
+      ],
+      "preparedCrop": [
+        18,
+        27,
+        1521,
+        955
+      ],
+      "nineSlice": {
+        "sourceInsetsPx": {
+          "top": 107,
+          "right": 154,
+          "bottom": 107,
+          "left": 154
+        },
+        "recommendedBorderCssPx": 32,
+        "mode": "stretch"
+      },
+      "contentPaddingCssPx": 24
+    },
+    "ui/title-sign": {
+      "path": "ui/title-sign.webp",
+      "width": 768,
+      "height": 359,
+      "bytes": 92654,
+      "sha256": "c089ae4b2aa67ea95c8a8f82630e5a28fca83554b9708ee098634190160272af",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1536,
+        1024
+      ],
+      "preparedCrop": [
+        0,
+        165,
+        1536,
+        843
+      ],
+      "textSafeRectNormalized": {
+        "x": 0.22,
+        "y": 0.36,
+        "width": 0.56,
+        "height": 0.38
+      }
+    },
+    "ui/primary-button": {
+      "path": "ui/primary-button.webp",
+      "width": 768,
+      "height": 207,
+      "bytes": 57330,
+      "sha256": "26af8640fd39cb2c1fd33438c5135708e782c95b498d3f89d1f8e88bb346a84f",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1536,
+        1024
+      ],
+      "preparedCrop": [
+        2,
+        329,
+        1534,
+        687
+      ],
+      "nineSlice": {
+        "sourceInsetsPx": {
+          "top": 70,
+          "right": 138,
+          "bottom": 70,
+          "left": 138
+        },
+        "recommendedBorderCssPx": 16,
+        "mode": "stretch"
+      },
+      "contentPaddingCssPx": {
+        "block": 12,
+        "inline": 36
+      }
+    },
+    "emotions/affection": {
+      "path": "emotions/affection.webp",
+      "width": 256,
+      "height": 230,
+      "bytes": 11798,
+      "sha256": "2c02390b5cfc2e4bceac23d500302eeacdd8ab906488304d861ba999cab10474",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        210,
+        233,
+        1090,
+        1019
+      ]
+    },
+    "emotions/fluster": {
+      "path": "emotions/fluster.webp",
+      "width": 226,
+      "height": 256,
+      "bytes": 13860,
+      "sha256": "18e064de2f4d31e82b9b51ad5288c09fac353102c166e2026e79fbdb4cc5617b",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        349,
+        287,
+        1015,
+        1047
+      ]
+    },
+    "emotions/annoyance": {
+      "path": "emotions/annoyance.webp",
+      "width": 256,
+      "height": 253,
+      "bytes": 20262,
+      "sha256": "99764dc0dfab06d0e14a6c910d2f578dfae4aee0fe532fe7bac61307df578f27",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        214,
+        213,
+        1051,
+        1041
+      ]
+    },
+    "emotions/curiosity": {
+      "path": "emotions/curiosity.webp",
+      "width": 195,
+      "height": 256,
+      "bytes": 13786,
+      "sha256": "e4aea7758033150da7890fbf09635c10f11ec43a1f2becf244dfee0b462af69e",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        244,
+        145,
+        996,
+        1147
+      ]
+    },
+    "emotions/joy": {
+      "path": "emotions/joy.webp",
+      "width": 256,
+      "height": 236,
+      "bytes": 16174,
+      "sha256": "0166646b34341b1f8c35a557e17d40977e2a15bf14843770ad410ec243e4d031",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        173,
+        236,
+        1068,
+        1057
+      ]
+    },
+    "emotions/inspiration": {
+      "path": "emotions/inspiration.webp",
+      "width": 256,
+      "height": 252,
+      "bytes": 17024,
+      "sha256": "85d1a81524815d99451ddd29e9aeb46a98cf251358ba4b604282d9c706342151",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        215,
+        238,
+        1039,
+        1048
+      ]
+    },
+    "backgrounds/workshop-scene-autumn": {
+      "path": "backgrounds/workshop-scene-autumn.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 954590,
+      "sha256": "437037f465629b5d2e723d8068b55a8f638026ab200e6b0e3f75359c9c7899d3",
+      "hasTransparency": false,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1536,
+        1024
+      ],
+      "preparedCrop": [
+        0,
+        0,
+        1536,
+        1024
+      ],
+      "residentFeetAnchorsNormalized": [
+        {
+          "x": 0.35,
+          "y": 0.9
+        },
+        {
+          "x": 0.65,
+          "y": 0.9
+        }
+      ],
+      "recommendedObjectPosition": "50% 60%"
+    },
+    "items/wild-berry": {
+      "path": "items/wild-berry.webp",
+      "width": 256,
+      "height": 239,
+      "bytes": 25734,
+      "sha256": "0b4b85ba7de277ad6d2766411a7a0efc19bd5a62e1d5bc912d5e173e1ab80935",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        162,
+        184,
+        1147,
+        1099
+      ]
+    },
+    "items/pinecone": {
+      "path": "items/pinecone.webp",
+      "width": 256,
+      "height": 256,
+      "bytes": 27748,
+      "sha256": "5176345c869afb668922c17a4f5a26709b70e673fe9f24e315ee43649f3462fb",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        156,
+        158,
+        1113,
+        1114
+      ]
+    },
+    "items/acorn": {
+      "path": "items/acorn.webp",
+      "width": 256,
+      "height": 228,
+      "bytes": 26406,
+      "sha256": "ede31a2c9f21fef2fb8ff1d0d16edfc147345408bc4557a68c6539bd8e46f3b3",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        105,
+        151,
+        1151,
+        1075
+      ]
+    },
+    "items/cotton": {
+      "path": "items/cotton.webp",
+      "width": 240,
+      "height": 256,
+      "bytes": 19216,
+      "sha256": "bf8c2d5452e8ae034233883bc321cf21d47b491cce36529a817f77db759152c1",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        192,
+        141,
+        1115,
+        1127
+      ]
+    },
+    "items/beeswax": {
+      "path": "items/beeswax.webp",
+      "width": 256,
+      "height": 208,
+      "bytes": 19160,
+      "sha256": "03cfe9e32b1fcd1d73e3652f2ba9fe74f99ee854aebd34e28e300f48a5a3dc34",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        131,
+        226,
+        1151,
+        1046
+      ]
+    },
+    "items/clover": {
+      "path": "items/clover.webp",
+      "width": 243,
+      "height": 256,
+      "bytes": 23402,
+      "sha256": "33ff9b24556d46b941ff03c87e9b5e417170fcb160e512073a57c1ef6dd54457",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        197,
+        172,
+        1075,
+        1098
+      ]
+    },
+    "items/berry-jam": {
+      "path": "items/berry-jam.webp",
+      "width": 256,
+      "height": 245,
+      "bytes": 29318,
+      "sha256": "bbacfe28e2f3c59ff9fbd4782425a6ad441de47565124a131f0b234d276c77ce",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        128,
+        134,
+        1181,
+        1139
+      ]
+    },
+    "items/dried-herb": {
+      "path": "items/dried-herb.webp",
+      "width": 256,
+      "height": 247,
+      "bytes": 29484,
+      "sha256": "8dea9ef3fdcd7c9842729f9e735db08422c4fb366e6154c08bf4107e7f21ae68",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        155,
+        131,
+        1184,
+        1124
+      ]
+    },
+    "items/herb-sachet": {
+      "path": "items/herb-sachet.webp",
+      "width": 248,
+      "height": 256,
+      "bytes": 26924,
+      "sha256": "4f7526fd838a72a8c302e4f927dd4d5134893c0243ebd0ff518621b9941eab3a",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        199,
+        175,
+        1079,
+        1083
+      ]
+    },
+    "items/berry-pie": {
+      "path": "items/berry-pie.webp",
+      "width": 256,
+      "height": 212,
+      "bytes": 25994,
+      "sha256": "30e3eeade3aa25a1a028861b116a533cb282435515f6e06e8f862a017fc52523",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        94,
+        191,
+        1177,
+        1078
+      ]
+    },
+    "items/wooden-tray": {
+      "path": "items/wooden-tray.webp",
+      "width": 256,
+      "height": 164,
+      "bytes": 15344,
+      "sha256": "b97dde01d0ecb1672de65b111c14be26a6983433ed5e2dbf8dd0fd77ed60f5c4",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        66,
+        349,
+        1189,
+        1047
+      ]
+    },
+    "items/beeswax-candle": {
+      "path": "items/beeswax-candle.webp",
+      "width": 198,
+      "height": 256,
+      "bytes": 18232,
+      "sha256": "154ef88fc6cd33673f8675c6668d512c49f2a75fa1a44a49b66931810431c5ab",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        289,
+        69,
+        1141,
+        1185
+      ]
+    },
+    "items/knit-scarf": {
+      "path": "items/knit-scarf.webp",
+      "width": 256,
+      "height": 240,
+      "bytes": 29550,
+      "sha256": "b5f374d96750ba43124492410b34172dfd5f8874b75d11abac60da90acca0561",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        84,
+        140,
+        1170,
+        1155
+      ]
+    },
+    "items/flower-wreath": {
+      "path": "items/flower-wreath.webp",
+      "width": 256,
+      "height": 240,
+      "bytes": 32690,
+      "sha256": "3edc31d5cdda5ab2c4911f079e1b2b691a5de3ed7012b7b40b7e7eb81aeb8267",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        93,
+        118,
+        1157,
+        1112
+      ]
+    },
+    "items/honey-cake": {
+      "path": "items/honey-cake.webp",
+      "width": 231,
+      "height": 256,
+      "bytes": 24764,
+      "sha256": "dd50d7e29ac84cfeebf30422ae5ad60294d745d311c1f6ce4ef194d5a14cfe51",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        123,
+        56,
+        1159,
+        1209
+      ]
+    },
+    "items/birdhouse": {
+      "path": "items/birdhouse.webp",
+      "width": 243,
+      "height": 256,
+      "bytes": 26928,
+      "sha256": "b968347ec7d242e1ed47e881c019f7d98345f7e04963e0bb911bdef5af213b1f",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        155,
+        148,
+        1101,
+        1147
+      ]
+    },
+    "items/acorn-cookie": {
+      "path": "items/acorn-cookie.webp",
+      "width": 256,
+      "height": 228,
+      "bytes": 23968,
+      "sha256": "7d09bc370e1b2d09c59594fc4b852a4387b4349ebe214a7f4b60df70c9c477f5",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        115,
+        181,
+        1150,
+        1098
+      ]
+    },
+    "items/tea-gift": {
+      "path": "items/tea-gift.webp",
+      "width": 256,
+      "height": 253,
+      "bytes": 28436,
+      "sha256": "65d0dfa919a8e9f16f35d6c9446330eb29251c21c8ed316e3b32e9282ad2d866",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        83,
+        110,
+        1179,
+        1192
+      ]
+    },
+    "backgrounds/workshop-base-spring": {
+      "path": "backgrounds/workshop-base-spring.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 870034,
+      "sha256": "f66f8251d601a67f59dc8f6a7ec0946b688dcfc06528feca1f8d5a84beaed5b4",
+      "hasTransparency": false,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1024,
+        1536
+      ],
+      "preparedCrop": [
+        0,
+        0,
+        1024,
+        1536
+      ]
+    },
+    "backgrounds/workshop-scene-spring": {
+      "path": "backgrounds/workshop-scene-spring.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 928250,
+      "sha256": "a5a806ae7275d69f7438c5f2291fcbffbf790e67e4e03f59c62078559b6c501a",
+      "hasTransparency": false,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1536,
+        1024
+      ],
+      "preparedCrop": [
+        0,
+        0,
+        1536,
+        1024
+      ],
+      "residentFeetAnchorsNormalized": [
+        {
+          "x": 0.35,
+          "y": 0.9
+        },
+        {
+          "x": 0.65,
+          "y": 0.9
+        }
+      ],
+      "recommendedObjectPosition": "50% 60%"
+    },
+    "backgrounds/workshop-base-summer": {
+      "path": "backgrounds/workshop-base-summer.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 839656,
+      "sha256": "78b6db6a45aff499154c937720ae9a8f0a08d5e3c0d3727567d99e664e87d41c",
+      "hasTransparency": false,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1024,
+        1536
+      ],
+      "preparedCrop": [
+        0,
+        0,
+        1024,
+        1536
+      ]
+    },
+    "backgrounds/workshop-scene-summer": {
+      "path": "backgrounds/workshop-scene-summer.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 953940,
+      "sha256": "2af1c8fb53bd78819a7d75b8207a4cf650c76e99c7e7ec438002105406e4db8e",
+      "hasTransparency": false,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1536,
+        1024
+      ],
+      "preparedCrop": [
+        0,
+        0,
+        1536,
+        1024
+      ],
+      "residentFeetAnchorsNormalized": [
+        {
+          "x": 0.35,
+          "y": 0.9
+        },
+        {
+          "x": 0.65,
+          "y": 0.9
+        }
+      ],
+      "recommendedObjectPosition": "50% 60%"
+    },
+    "backgrounds/workshop-base-winter": {
+      "path": "backgrounds/workshop-base-winter.webp",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 844482,
+      "sha256": "4f7b9a196f26f02983f179468501d510c0289d547f93ffb4d0a85b8ce3b7a114",
+      "hasTransparency": false,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1024,
+        1536
+      ],
+      "preparedCrop": [
+        0,
+        0,
+        1024,
+        1536
+      ]
+    },
+    "backgrounds/workshop-scene-winter": {
+      "path": "backgrounds/workshop-scene-winter.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 907100,
+      "sha256": "7b8e9bf24f5c99b743fd5de06502b07958f62910d57c23eabbe1848e37946efe",
+      "hasTransparency": false,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1536,
+        1024
+      ],
+      "preparedCrop": [
+        0,
+        0,
+        1536,
+        1024
+      ],
+      "residentFeetAnchorsNormalized": [
+        {
+          "x": 0.35,
+          "y": 0.9
+        },
+        {
+          "x": 0.65,
+          "y": 0.9
+        }
+      ],
+      "recommendedObjectPosition": "50% 60%"
+    },
+    "items/herb": {
+      "path": "items/herb.webp",
+      "width": 250,
+      "height": 256,
+      "bytes": 32408,
+      "sha256": "7b8dc712c1bb2fe39d6643d1ff7923c5b9d3a3eead33834c2d92f3bcc937363f",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        110,
+        75,
+        1174,
+        1167
+      ]
+    },
+    "items/wood": {
+      "path": "items/wood.webp",
+      "width": 256,
+      "height": 203,
+      "bytes": 23792,
+      "sha256": "0470eeaee6725d2dfd184e97acef97e18dd10f73964148b9ac6f07d3000ad3bf",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        62,
+        210,
+        1199,
+        1101
+      ]
+    },
+    "items/wheat": {
+      "path": "items/wheat.webp",
+      "width": 220,
+      "height": 256,
+      "bytes": 25238,
+      "sha256": "72af3723166c2d047fb92138103010b58fb2b50c064a5afddb1b292455d984a3",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        170,
+        57,
+        1142,
+        1196
+      ]
+    },
+    "items/flower": {
+      "path": "items/flower.webp",
+      "width": 228,
+      "height": 256,
+      "bytes": 25430,
+      "sha256": "9aac8c05fcfd7525a2d7f030049ab1d4c287fcb82e0d3597207586ececccaf47",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        177,
+        112,
+        1104,
+        1159
+      ]
+    },
+    "items/pumpkin": {
+      "path": "items/pumpkin.webp",
+      "width": 251,
+      "height": 256,
+      "bytes": 24422,
+      "sha256": "8eeb97fbfda2a8587b4127cdb90c2c08dc1d954b10b67d8d5bfd0459fa97c4e7",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        185,
+        167,
+        1109,
+        1110
+      ]
+    },
+    "items/tea-leaf": {
+      "path": "items/tea-leaf.webp",
+      "width": 254,
+      "height": 256,
+      "bytes": 22330,
+      "sha256": "047c89b066fc14be3feb9ba9ec9b311286d4723475aa25046aad5c4a202bfa92",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        153,
+        130,
+        1147,
+        1133
+      ]
+    },
+    "items/honey": {
+      "path": "items/honey.webp",
+      "width": 256,
+      "height": 252,
+      "bytes": 31792,
+      "sha256": "11ff402d6f76b85ad036357bd5682b72d1cb60c75c96ab2f1569f6aec5955f5a",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        180,
+        165,
+        1140,
+        1110
+      ]
+    },
+    "items/mushroom": {
+      "path": "items/mushroom.webp",
+      "width": 256,
+      "height": 235,
+      "bytes": 25432,
+      "sha256": "22a17dc36f40c9bb8c666f0caaf7064004dc660307ae7fa4ba8d7d06350a864d",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        126,
+        160,
+        1165,
+        1111
+      ]
+    },
+    "items/feather": {
+      "path": "items/feather.webp",
+      "width": 243,
+      "height": 256,
+      "bytes": 22216,
+      "sha256": "514f2221509e194479a63b8fecd530b620f29794953eda54dace9e70235e2e9b",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        212,
+        156,
+        1134,
+        1128
+      ]
+    },
+    "items/flour": {
+      "path": "items/flour.webp",
+      "width": 256,
+      "height": 234,
+      "bytes": 27308,
+      "sha256": "4f44b62fc02c79188a636b7b74d0c9462dbf0db11648d70d097144412e062887",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        57,
+        107,
+        1196,
+        1145
+      ]
+    },
+    "items/plank": {
+      "path": "items/plank.webp",
+      "width": 256,
+      "height": 218,
+      "bytes": 23184,
+      "sha256": "f345e1a2d3ea2f4a437a78a90adfa672296e053acf1079455a2fd87eb22c74b6",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        95,
+        212,
+        1212,
+        1154
+      ]
+    },
+    "items/thread": {
+      "path": "items/thread.webp",
+      "width": 251,
+      "height": 256,
+      "bytes": 27340,
+      "sha256": "0becd75105482304524066ab3f3dd4c6c041fd04299d1c0da282a9dadd92ee24",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        275,
+        201,
+        1132,
+        1077
+      ]
+    },
+    "items/herb-tea": {
+      "path": "items/herb-tea.webp",
+      "width": 256,
+      "height": 212,
+      "bytes": 26076,
+      "sha256": "f20c24014bb5073991aba6590c0e9572259c554c81331d8c64d567afb8f32631",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        76,
+        179,
+        1216,
+        1115
+      ]
+    },
+    "items/pumpkin-puree": {
+      "path": "items/pumpkin-puree.webp",
+      "width": 256,
+      "height": 226,
+      "bytes": 24518,
+      "sha256": "5727675d3b031a0f74f17cee35c5a80a81763888cf1a922eef028a082cba016b",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        142,
+        212,
+        1112,
+        1062
+      ]
+    },
+    "items/acorn-flour": {
+      "path": "items/acorn-flour.webp",
+      "width": 256,
+      "height": 222,
+      "bytes": 26558,
+      "sha256": "ce879a3369a2f924a968879072e3698b7ea384c2859cbb32f36cb3b3a87fd241",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        153,
+        220,
+        1129,
+        1058
+      ]
+    },
+    "items/pumpkin-soup": {
+      "path": "items/pumpkin-soup.webp",
+      "width": 256,
+      "height": 192,
+      "bytes": 21944,
+      "sha256": "bfc6caa2f3c11470f07cfa47b26a4224fc2ff1d1c272e593f047af1fda678263",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        39,
+        216,
+        1219,
+        1084
+      ]
+    },
+    "items/apple": {
+      "path": "items/apple.webp",
+      "width": 256,
+      "height": 256,
+      "bytes": 21222,
+      "sha256": "953151e9d33cc78f23a88c363325ad038de1f3012f94c1ac8f5d31c971e541f1",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        54,
+        202,
+        1229,
+        1084
+      ]
+    },
+    "items/reed": {
+      "path": "items/reed.webp",
+      "width": 256,
+      "height": 256,
+      "bytes": 28992,
+      "sha256": "380a816c00635a142765aa4400461d1f65d6d5a050165d813292b93891c4d96b",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        123,
+        18,
+        1193,
+        1233
+      ]
+    },
+    "items/carrot": {
+      "path": "items/carrot.webp",
+      "width": 256,
+      "height": 256,
+      "bytes": 29304,
+      "sha256": "368a716597bc074d2043a005fdfc3f2406ab1807e5cd59dff465b7669e610e0b",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        126,
+        56,
+        1234,
+        1198
+      ]
+    },
+    "items/flax": {
+      "path": "items/flax.webp",
+      "width": 256,
+      "height": 256,
+      "bytes": 30482,
+      "sha256": "e2d5a98bc844275171f314913d97986042cca9e364a7ea6fe19b746bb671f5e1",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        81,
+        79,
+        1183,
+        1176
+      ]
+    },
+    "items/clay": {
+      "path": "items/clay.webp",
+      "width": 256,
+      "height": 256,
+      "bytes": 18976,
+      "sha256": "f175348a4adef5baa0118384e9af330b98db4fffcd1a74b3dfd9d6dbdd3b4c32",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        38,
+        125,
+        1218,
+        1143
+      ]
+    },
+    "items/salt": {
+      "path": "items/salt.webp",
+      "width": 256,
+      "height": 256,
+      "bytes": 25360,
+      "sha256": "eb496b4a392b03e77acf101a8af5619dcc55644864c42f7a42e021b27e9381ef",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        70,
+        142,
+        1185,
+        1111
+      ]
+    },
+    "items/dried-apple": {
+      "path": "items/dried-apple.webp",
+      "width": 256,
+      "height": 256,
+      "bytes": 25202,
+      "sha256": "057af8fd8ec1b5c9b7cd83dacc2d71d9049fa4ee0466c827747966b6f85f47a9",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        65,
+        196,
+        1192,
+        1054
+      ]
+    },
+    "items/apple-jam": {
+      "path": "items/apple-jam.webp",
+      "width": 256,
+      "height": 256,
+      "bytes": 32418,
+      "sha256": "bce7095630b39badb8271d2ff767233c7f7b2b3b9bd006f624bf978b95d9f3aa",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        33,
+        23,
+        1249,
+        1228
+      ]
+    },
+    "items/linen": {
+      "path": "items/linen.webp",
+      "width": 256,
+      "height": 256,
+      "bytes": 21336,
+      "sha256": "8d760aae29cd134fbb595ceb29438e86dd7d7f67228f5e5e1ed8304781ec2506",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        37,
+        169,
+        1226,
+        1091
+      ]
+    },
+    "items/reed-cord": {
+      "path": "items/reed-cord.webp",
+      "width": 256,
+      "height": 256,
+      "bytes": 24990,
+      "sha256": "14054d5c9bd8b67031bc3ef193f9a88014419a2c8ad33395ba3c8bb1f0c1a91e",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        117,
+        230,
+        1177,
+        1002
+      ]
+    },
+    "items/prepared-clay": {
+      "path": "items/prepared-clay.webp",
+      "width": 256,
+      "height": 256,
+      "bytes": 15816,
+      "sha256": "5f982f1f52f3c00c0addf70a303baa5a03cacbe4fdf7979cbb44f1e37e6b2cc5",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        40,
+        236,
+        1223,
+        1115
+      ]
+    },
+    "items/herb-salt": {
+      "path": "items/herb-salt.webp",
+      "width": 256,
+      "height": 256,
+      "bytes": 29132,
+      "sha256": "ec064524dd78fad913a49328dee2c2a01110159863718b7521b15b59e1252370",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        119,
+        186,
+        1134,
+        1085
+      ]
+    },
+    "items/apple-bread": {
+      "path": "items/apple-bread.webp",
+      "width": 256,
+      "height": 256,
+      "bytes": 29050,
+      "sha256": "43de980b991086fadba63bac0271bd587742fa3e355069a070a72c3cbdfc830f",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        58,
+        135,
+        1218,
+        1168
+      ]
+    },
+    "items/carrot-potage": {
+      "path": "items/carrot-potage.webp",
+      "width": 256,
+      "height": 256,
+      "bytes": 27452,
+      "sha256": "7cf3f87e20b4bdb28c93bc84787a1672d3682844080460f3977e2e84bde75631",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        90,
+        120,
+        1162,
+        1140
+      ]
+    },
+    "items/mushroom-skewer": {
+      "path": "items/mushroom-skewer.webp",
+      "width": 256,
+      "height": 256,
+      "bytes": 23894,
+      "sha256": "4d37503faf0c26bac5e7778f2c5d1e95aaa6bf1e9d2176ae435439151511f9c1",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        50,
+        118,
+        1231,
+        1131
+      ]
+    },
+    "items/linen-handkerchief": {
+      "path": "items/linen-handkerchief.webp",
+      "width": 256,
+      "height": 256,
+      "bytes": 18232,
+      "sha256": "8007366e52bb0f2c45ed56fc2f82626f423719ea6142254b5f31b237ca7fa885",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        45,
+        163,
+        1236,
+        1107
+      ]
+    },
+    "items/herb-pillow": {
+      "path": "items/herb-pillow.webp",
+      "width": 256,
+      "height": 256,
+      "bytes": 26472,
+      "sha256": "fa1ec884e512290db5a111bf97da04258c6d094e7218eef283684b9117844a61",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        72,
+        87,
+        1210,
+        1173
+      ]
+    },
+    "items/reed-basket": {
+      "path": "items/reed-basket.webp",
+      "width": 256,
+      "height": 256,
+      "bytes": 28050,
+      "sha256": "9d93550b6ab7ddb55ccb7068417bc76f484992b5d6e2e35cb82a9a203289d7c0",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        110,
+        57,
+        1154,
+        1198
+      ]
+    },
+    "items/wooden-spoon": {
+      "path": "items/wooden-spoon.webp",
+      "width": 256,
+      "height": 256,
+      "bytes": 15162,
+      "sha256": "32031b589aa3160cfa3014ce48efddd7514f40918cc5ca4b80d8c85c7e104da1",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        121,
+        99,
+        1189,
+        1155
+      ]
+    },
+    "items/desk-organizer": {
+      "path": "items/desk-organizer.webp",
+      "width": 256,
+      "height": 256,
+      "bytes": 22512,
+      "sha256": "5e16972c6a228bed4b8eba6a7ec6cfa85c71946782ac469f261fd496826429fb",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        68,
+        128,
+        1193,
+        1161
+      ]
+    },
+    "items/clay-planter": {
+      "path": "items/clay-planter.webp",
+      "width": 256,
+      "height": 256,
+      "bytes": 25694,
+      "sha256": "e018fc3cb355d6f766814e301cd27ff99904b210b426fb1e6b8f3bea6942ee4f",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        165,
+        183,
+        1087,
+        1087
+      ]
+    },
+    "items/wind-chime": {
+      "path": "items/wind-chime.webp",
+      "width": 256,
+      "height": 256,
+      "bytes": 20080,
+      "sha256": "e2970868ca6fb3b184d00fdd359a991aa8478a023232d0d6f70a7c7907408bb5",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        259,
+        0,
+        998,
+        1241
+      ]
+    },
+    "items/apple-gift": {
+      "path": "items/apple-gift.webp",
+      "width": 256,
+      "height": 256,
+      "bytes": 34366,
+      "sha256": "e20ff79e9b118bd48524d54a1c6eeeb4e3f6ecfd129ab40e5eebad6ba696f597",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        60,
+        43,
+        1203,
+        1216
+      ]
+    },
+    "items/picnic-wrap": {
+      "path": "items/picnic-wrap.webp",
+      "width": 256,
+      "height": 256,
+      "bytes": 31266,
+      "sha256": "cd0e30d7f4ee918c9a5d7173d290f2b21ac7cb0e01cf253e09388161939eacc3",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        38,
+        107,
+        1223,
+        1177
+      ]
+    },
+    "ui/gift": {
+      "path": "ui/gift.webp",
+      "width": 256,
+      "height": 256,
+      "bytes": 23912,
+      "sha256": "71240a80ed2cd61c5b76010ed14115672fc7e11ff00629fd7a327070f616c9a6",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        49,
+        81,
+        1206,
+        1188
+      ]
+    }
+  },
+  "itemMap": {
+    "wild-berry": "items/wild-berry",
+    "pinecone": "items/pinecone",
+    "acorn": "items/acorn",
+    "cotton": "items/cotton",
+    "beeswax": "items/beeswax",
+    "clover": "items/clover",
+    "berry-jam": "items/berry-jam",
+    "dried-herb": "items/dried-herb",
+    "herb-sachet": "items/herb-sachet",
+    "berry-pie": "items/berry-pie",
+    "wooden-tray": "items/wooden-tray",
+    "beeswax-candle": "items/beeswax-candle",
+    "knit-scarf": "items/knit-scarf",
+    "flower-wreath": "items/flower-wreath",
+    "honey-cake": "items/honey-cake",
+    "birdhouse": "items/birdhouse",
+    "acorn-cookie": "items/acorn-cookie",
+    "tea-gift": "items/tea-gift",
+    "herb": "items/herb",
+    "wood": "items/wood",
+    "wheat": "items/wheat",
+    "flower": "items/flower",
+    "pumpkin": "items/pumpkin",
+    "tea-leaf": "items/tea-leaf",
+    "honey": "items/honey",
+    "mushroom": "items/mushroom",
+    "feather": "items/feather",
+    "flour": "items/flour",
+    "plank": "items/plank",
+    "thread": "items/thread",
+    "herb-tea": "items/herb-tea",
+    "pumpkin-puree": "items/pumpkin-puree",
+    "acorn-flour": "items/acorn-flour",
+    "pumpkin-soup": "items/pumpkin-soup",
+    "apple": "items/apple",
+    "reed": "items/reed",
+    "carrot": "items/carrot",
+    "flax": "items/flax",
+    "clay": "items/clay",
+    "salt": "items/salt",
+    "dried-apple": "items/dried-apple",
+    "apple-jam": "items/apple-jam",
+    "linen": "items/linen",
+    "reed-cord": "items/reed-cord",
+    "prepared-clay": "items/prepared-clay",
+    "herb-salt": "items/herb-salt",
+    "apple-bread": "items/apple-bread",
+    "carrot-potage": "items/carrot-potage",
+    "mushroom-skewer": "items/mushroom-skewer",
+    "linen-handkerchief": "items/linen-handkerchief",
+    "herb-pillow": "items/herb-pillow",
+    "reed-basket": "items/reed-basket",
+    "wooden-spoon": "items/wooden-spoon",
+    "desk-organizer": "items/desk-organizer",
+    "clay-planter": "items/clay-planter",
+    "wind-chime": "items/wind-chime",
+    "apple-gift": "items/apple-gift",
+    "picnic-wrap": "items/picnic-wrap"
+  },
+  "facilityMap": {
+    "gather-yard": "facilities/gather-yard",
+    "grow-plot": "facilities/grow-plot",
+    "survey-desk": "facilities/survey-desk",
+    "process-bench": "facilities/process-bench",
+    "craft-bench": "facilities/craft-bench"
+  },
+  "backgroundMap": {
+    "spring": {
+      "base": "backgrounds/workshop-base-spring",
+      "scene": "backgrounds/workshop-scene-spring"
+    },
+    "summer": {
+      "base": "backgrounds/workshop-base-summer",
+      "scene": "backgrounds/workshop-scene-summer"
+    },
+    "autumn": {
+      "base": "backgrounds/workshop-base-autumn",
+      "scene": "backgrounds/workshop-scene-autumn"
+    },
+    "winter": {
+      "base": "backgrounds/workshop-base-winter",
+      "scene": "backgrounds/workshop-scene-winter"
+    }
+  },
+  "aliases": {
+    "backgrounds/workshop-base": "backgrounds/workshop-base-autumn",
+    "backgrounds/workshop-scene": "backgrounds/workshop-scene-autumn"
+  },
+  "uiMap": {
+    "gift": "ui/gift"
+  }
+}

@@ -1,12 +1,12 @@
 import { createHash } from "node:crypto";
-import { existsSync, readdirSync, realpathSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, realpathSync } from "node:fs";
 import { copyFile, cp, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { basename, delimiter, dirname, join, relative, resolve, sep } from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { createRequire } from "node:module";
-import { catalogArtworkUrl } from "./catalog-artwork.mjs";
+import { catalogArtworkRelativePath, catalogArtworkUrl } from "./catalog-artwork.mjs";
 import { createDeterministicZip } from "./deterministic-zip.mjs";
 import { readCatalogFamily, writeCatalogFamily } from "./catalog-lanes.mjs";
 import { assertHierarchicalMapsPrivateImportBoundary } from "./hierarchical-maps-boundary.mjs";
@@ -107,6 +107,17 @@ const memoryNagOwnedSourcePaths = [
   "packages/server/src/services/memory-nag",
   "packages/client/src/features/memory-nag",
 ];
+// Forest Workshop is a package-owned game built from its own sources only; it bundles no vendored Engine module and
+// publishes from the owner's fork (marittini/ME-personal-A), not the official Pasta-Devs catalog.
+const forestWorkshopSourceRoot = join(packagesDir, "forest-workshop/src/engine");
+const forestWorkshopOwnedSourcePaths = [
+  "packages/server/src/services/forest-workshop",
+  "packages/client/src/features/forest-workshop",
+];
+const FORK_RAW_ROOT = "https://raw.githubusercontent.com/marittini/ME-personal-A/main";
+const FORK_BLOB_ROOT = "https://github.com/marittini/ME-personal-A/blob/main";
+/** Packages this fork owns: their artifact and documentation live in the fork, never at the official URL. */
+const FORK_OWNED_PACKAGE_IDS = new Set(["forest-workshop"]);
 const noodleSourceRoot = join(packagesDir, "noodle/src/engine");
 const noodleOwnedSourcePaths = [
   "packages/client/src/components/noodle",
@@ -267,7 +278,10 @@ async function prepareFeatureBuildRoot(feature) {
   if (ownRoot && !existsSync(ownRoot)) throw new Error(`Missing package-owned ${feature.name} source`);
   // Long-Term Memory, Memory Nag and World Maps carry every Engine file they build from.
   const fromVendoredEngine =
-    feature.id !== "long-term-memory" && feature.id !== "memory-nag" && feature.id !== "hierarchical-maps";
+    feature.id !== "long-term-memory" &&
+    feature.id !== "memory-nag" &&
+    feature.id !== "hierarchical-maps" &&
+    feature.id !== "forest-workshop";
   const buildRoot = await mkdtemp(join(tmpdir(), `marinara-${feature.id}-source-`));
   try {
     if (fromVendoredEngine) await cp(sourceRoot, buildRoot, { recursive: true, force: true });
@@ -341,6 +355,12 @@ async function removeOwnedSourceSnapshots(excludedPaths) {
     await rm(join(sourcesRoot, path), { recursive: true, force: true });
   }
 }
+
+// Forest Workshop's art (packages/forest-workshop/assets, handoff v1.7 §8): the pack's own path list. CREDITS.md stays in
+// the repository; the engine serves only images and JSON from a package, so it is not packed.
+const forestWorkshopAssetPaths = JSON.parse(
+  readFileSync(new URL("../packages/forest-workshop/assets/asset-paths.json", import.meta.url), "utf8"),
+).filter((assetPath) => !assetPath.endsWith(".md"));
 
 const features = [
   {
@@ -579,6 +599,39 @@ const features = [
     },
   },
   {
+    id: "forest-workshop",
+    version: "0.6.2",
+    assetPaths: forestWorkshopAssetPaths,
+    // Built and proven against ME-personal (the owner's Engine fork), which reports 2.5.1.
+    minEngineVersion: "2.5.1",
+    maxEngineExclusive: MAX_ENGINE_EXCLUSIVE,
+    name: "Forest Workshop",
+    description:
+      "A portrait cozy workshop game in development. This 0.6 build adds story expeditions: each pair of residents travels through three-episode arcs on the explore screen, and each scene is written by your language model when you first read it, from the plan and only the memories its residents share, with one answer you can give a resident. What residents learn is recorded per resident. On top of the complete workshop: five facilities with 34 materials and goods, rules or counted queues, residents whose field and talent come from their own character text, auto-selling, invitations with tickets from daily deliveries, and backups that carry pictures and scenes; letters, memory management and AI guidelines follow.",
+    category: "misc",
+    kind: ["agent"],
+    modes: ["conversation", "roleplay"],
+    permissions: ["routes", "storage", "ui"],
+    serverImport: "packages/server/src/services/forest-workshop/server-entry.ts",
+    serverEntry: true,
+    clientImport: "packages/client/src/features/forest-workshop/client-entry.ts",
+    packageSourceRoot: forestWorkshopSourceRoot,
+    ownedSourcePaths: forestWorkshopOwnedSourcePaths,
+    engineBoundaryPath: join(packagesDir, "forest-workshop/engine-boundary.json"),
+    boundaryDisplayName: "Forest Workshop",
+    capabilityApi: PACKAGE_CAPABILITY_API,
+    libraryHidden: true,
+    agent: {
+      author: "marittini",
+    },
+    contributions: {
+      slots: ["home-browser-tab"],
+      homeBrowserTab: { label: "숲결 공방", ariaLabel: "숲결 공방 열기 (개발용 연결 점검)" },
+      // The Engine serves only declared paths at /api/capability-packages/forest-workshop/assets/*: the pictures.
+      assets: { paths: forestWorkshopAssetPaths.filter((assetPath) => assetPath.endsWith(".webp")) },
+    },
+  },
+  {
     id: "hierarchical-maps",
     version: "1.5.2",
     minEngineVersion: "2.4.2",
@@ -706,6 +759,14 @@ const longTermMemoryBoundary = selectedFeatures.some((feature) => feature.id ===
       sourceRoot: longTermMemorySourceRoot,
       boundaryPath: join(packagesDir, "long-term-memory/engine-boundary.json"),
       displayName: "Long-Term Memory",
+      capabilityApi: PACKAGE_CAPABILITY_API,
+    })
+  : null;
+const forestWorkshopBoundary = selectedFeatures.some((feature) => feature.id === "forest-workshop")
+  ? await assertPackagePrivateImportBoundary({
+      sourceRoot: forestWorkshopSourceRoot,
+      boundaryPath: join(packagesDir, "forest-workshop/engine-boundary.json"),
+      displayName: "Forest Workshop",
       capabilityApi: PACKAGE_CAPABILITY_API,
     })
   : null;
@@ -1814,7 +1875,7 @@ for (const feature of selectedFeatures) {
     id: feature.id,
     name: feature.name,
     description: feature.agent?.description ?? feature.description,
-    author: "Pasta Devs",
+    author: feature.agent?.author ?? "Pasta Devs",
     phase: feature.agent?.phase ?? "pre_generation",
     enabledByDefault: false,
     category: feature.category ?? "misc",
@@ -1874,7 +1935,9 @@ for (const feature of selectedFeatures) {
         ? longTermMemoryBoundary
         : feature.id === "memory-nag"
           ? memoryNagBoundary
-          : null;
+          : feature.id === "forest-workshop"
+            ? forestWorkshopBoundary
+            : null;
   const manifest = {
     schemaVersion: boundary || feature.capabilityApi ? 2 : 1,
     ...(boundary
@@ -2001,14 +2064,19 @@ for (const feature of selectedFeatures) {
     catalog.packages.push({
       manifest,
       category: feature.category ?? "misc",
-      iconUrl: catalogArtworkUrl(feature.id),
+      iconUrl: FORK_OWNED_PACKAGE_IDS.has(feature.id)
+        ? `${FORK_RAW_ROOT}/${catalogArtworkRelativePath(feature.id)}`
+        : catalogArtworkUrl(feature.id),
       artifact: {
-        url: `https://raw.githubusercontent.com/Pasta-Devs/Marinara-Agents/main/artifacts/${basename(artifactPath)}`,
+        url: FORK_OWNED_PACKAGE_IDS.has(feature.id)
+          ? `${FORK_RAW_ROOT}/artifacts/${basename(artifactPath)}`
+          : `https://raw.githubusercontent.com/Pasta-Devs/Marinara-Agents/main/artifacts/${basename(artifactPath)}`,
         sha256: sha256(artifact),
         bytes: artifact.byteLength,
       },
-      documentationUrl:
-        feature.id === "hierarchical-maps"
+      documentationUrl: FORK_OWNED_PACKAGE_IDS.has(feature.id)
+        ? `${FORK_BLOB_ROOT}/packages/${feature.id}/README.md`
+        : feature.id === "hierarchical-maps"
           ? "https://github.com/Pasta-Devs/Marinara-Engine/blob/main/docs/agents/hierarchical-maps.md"
           : feature.id === "noodle"
             ? "https://github.com/Pasta-Devs/Marinara-Agents/blob/main/packages/noodle/README.md"

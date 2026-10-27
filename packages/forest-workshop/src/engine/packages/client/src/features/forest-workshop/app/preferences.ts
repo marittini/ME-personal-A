@@ -1,0 +1,48 @@
+// Per-viewer display preferences (설정 → 표시). They belong to this browser only, like the Engine's own UI
+// preferences, so they live in localStorage; every read and write tolerates blocked storage.
+
+const FONT_SIZE_KEY = "forest-workshop:font-size";
+export const FONT_SIZE = { min: 12, max: 22, default: 16, step: 1 } as const;
+
+export function clampFontSize(value: number): number {
+  if (!Number.isFinite(value)) return FONT_SIZE.default;
+  return Math.min(FONT_SIZE.max, Math.max(FONT_SIZE.min, Math.round(value)));
+}
+
+export function readFontSize(): number {
+  try {
+    const stored = localStorage.getItem(FONT_SIZE_KEY);
+    return stored === null ? FONT_SIZE.default : clampFontSize(Number(stored));
+  } catch {
+    return FONT_SIZE.default;
+  }
+}
+
+export function writeFontSize(value: number) {
+  try {
+    localStorage.setItem(FONT_SIZE_KEY, String(clampFontSize(value)));
+  } catch {
+    // Blocked storage: the size still applies for this session.
+  }
+}
+
+const SEASON_KEY = "forest-workshop:season";
+const SEASON_CHOICES = ["auto", "spring", "summer", "autumn", "winter"] as const;
+export type StoredSeasonChoice = (typeof SEASON_CHOICES)[number];
+
+export function readSeasonChoice(): StoredSeasonChoice {
+  try {
+    const stored = localStorage.getItem(SEASON_KEY);
+    return SEASON_CHOICES.includes(stored as StoredSeasonChoice) ? (stored as StoredSeasonChoice) : "auto";
+  } catch {
+    return "auto";
+  }
+}
+
+export function writeSeasonChoice(value: StoredSeasonChoice) {
+  try {
+    localStorage.setItem(SEASON_KEY, value);
+  } catch {
+    // Blocked storage: the choice still applies for this session.
+  }
+}

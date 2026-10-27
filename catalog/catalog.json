@@ -763,6 +763,576 @@
         "schemaVersion": 2,
         "capabilityApi": {
           "major": 1,
+          "minor": 341
+        },
+        "builtAgainst": {
+          "engineVersion": "2.5.1",
+          "engineCommit": "7f341f9186db8e08f21d63cc47ec458deff250d5"
+        },
+        "id": "forest-workshop",
+        "name": "Forest Workshop",
+        "version": "0.6.2",
+        "description": "A portrait cozy workshop game in development. This 0.6 build adds story expeditions: each pair of residents travels through three-episode arcs on the explore screen, and each scene is written by your language model when you first read it, from the plan and only the memories its residents share, with one answer you can give a resident. What residents learn is recorded per resident. On top of the complete workshop: five facilities with 34 materials and goods, rules or counted queues, residents whose field and talent come from their own character text, auto-selling, invitations with tickets from daily deliveries, and backups that carry pictures and scenes; letters, memory management and AI guidelines follow. Install it, restart Marinara Engine when prompted, then open Home → 숲결 공방.",
+        "engine": {
+          "min": "2.5.1",
+          "maxExclusive": "4.0.0"
+        },
+        "kind": [
+          "agent"
+        ],
+        "entrypoints": {
+          "agents": "agents.json",
+          "server": "server.mjs",
+          "client": "client.js"
+        },
+        "contributions": {
+          "slots": [
+            "home-browser-tab"
+          ],
+          "homeBrowserTab": {
+            "label": "숲결 공방",
+            "ariaLabel": "숲결 공방 열기 (개발용 연결 점검)"
+          },
+          "assets": {
+            "paths": [
+              "assets/backgrounds/workshop-base-autumn.webp",
+              "assets/facilities/gather-yard.webp",
+              "assets/facilities/grow-plot.webp",
+              "assets/facilities/survey-desk.webp",
+              "assets/facilities/process-bench.webp",
+              "assets/facilities/craft-bench.webp",
+              "assets/ui/paper-panel.webp",
+              "assets/ui/wood-panel.webp",
+              "assets/ui/title-sign.webp",
+              "assets/ui/primary-button.webp",
+              "assets/emotions/affection.webp",
+              "assets/emotions/fluster.webp",
+              "assets/emotions/annoyance.webp",
+              "assets/emotions/curiosity.webp",
+              "assets/emotions/joy.webp",
+              "assets/emotions/inspiration.webp",
+              "assets/backgrounds/workshop-scene-autumn.webp",
+              "assets/items/wild-berry.webp",
+              "assets/items/pinecone.webp",
+              "assets/items/acorn.webp",
+              "assets/items/cotton.webp",
+              "assets/items/beeswax.webp",
+              "assets/items/clover.webp",
+              "assets/items/berry-jam.webp",
+              "assets/items/dried-herb.webp",
+              "assets/items/herb-sachet.webp",
+              "assets/items/berry-pie.webp",
+              "assets/items/wooden-tray.webp",
+              "assets/items/beeswax-candle.webp",
+              "assets/items/knit-scarf.webp",
+              "assets/items/flower-wreath.webp",
+              "assets/items/honey-cake.webp",
+              "assets/items/birdhouse.webp",
+              "assets/items/acorn-cookie.webp",
+              "assets/items/tea-gift.webp",
+              "assets/backgrounds/workshop-base-spring.webp",
+              "assets/backgrounds/workshop-scene-spring.webp",
+              "assets/backgrounds/workshop-base-summer.webp",
+              "assets/backgrounds/workshop-scene-summer.webp",
+              "assets/backgrounds/workshop-base-winter.webp",
+              "assets/backgrounds/workshop-scene-winter.webp",
+              "assets/items/herb.webp",
+              "assets/items/wood.webp",
+              "assets/items/wheat.webp",
+              "assets/items/flower.webp",
+              "assets/items/pumpkin.webp",
+              "assets/items/tea-leaf.webp",
+              "assets/items/honey.webp",
+              "assets/items/mushroom.webp",
+              "assets/items/feather.webp",
+              "assets/items/flour.webp",
+              "assets/items/plank.webp",
+              "assets/items/thread.webp",
+              "assets/items/herb-tea.webp",
+              "assets/items/pumpkin-puree.webp",
+              "assets/items/acorn-flour.webp",
+              "assets/items/pumpkin-soup.webp",
+              "assets/items/apple.webp",
+              "assets/items/reed.webp",
+              "assets/items/carrot.webp",
+              "assets/items/flax.webp",
+              "assets/items/clay.webp",
+              "assets/items/salt.webp",
+              "assets/items/dried-apple.webp",
+              "assets/items/apple-jam.webp",
+              "assets/items/linen.webp",
+              "assets/items/reed-cord.webp",
+              "assets/items/prepared-clay.webp",
+              "assets/items/herb-salt.webp",
+              "assets/items/apple-bread.webp",
+              "assets/items/carrot-potage.webp",
+              "assets/items/mushroom-skewer.webp",
+              "assets/items/linen-handkerchief.webp",
+              "assets/items/herb-pillow.webp",
+              "assets/items/reed-basket.webp",
+              "assets/items/wooden-spoon.webp",
+              "assets/items/desk-organizer.webp",
+              "assets/items/clay-planter.webp",
+              "assets/items/wind-chime.webp",
+              "assets/items/apple-gift.webp",
+              "assets/items/picnic-wrap.webp",
+              "assets/ui/gift.webp"
+            ]
+          }
+        },
+        "files": [
+          {
+            "path": "agents.json",
+            "sha256": "4d1183900ef72a7378acdc296ba7b113e73d9b29048fb41552458615dfe5d4e0",
+            "bytes": 1158
+          },
+          {
+            "path": "server.mjs",
+            "sha256": "a815d9a3781a3afa1ceb9c63e2252f509952059510cc55272c90ea219bf3084e",
+            "bytes": 135926
+          },
+          {
+            "path": "client.js",
+            "sha256": "6649b26fd63eb3cc6dc1ea90059196d2bf3451cab176929b76171ef148ed5fab",
+            "bytes": 266665
+          },
+          {
+            "path": "assets/asset-manifest.json",
+            "sha256": "5c22ed0791d2db797c10c828ed9d53e10403456f7e23937fce8060ea64e72df9",
+            "bytes": 45750
+          },
+          {
+            "path": "assets/backgrounds/workshop-base-autumn.webp",
+            "sha256": "2b5f02f155f932d4d2377d7aecdd093340bc53135c05e7f9c01559f3d421b818",
+            "bytes": 853586
+          },
+          {
+            "path": "assets/facilities/gather-yard.webp",
+            "sha256": "7e368bbd74cfa4b82d1ae696f20c7c8e6fe4afb95d66340ce09498910f9dc530",
+            "bytes": 109500
+          },
+          {
+            "path": "assets/facilities/grow-plot.webp",
+            "sha256": "f7027c0704fe9fc1af3f1cdaf1ab5573bfd2f9b0a238bfc87f0c9688b42e379d",
+            "bytes": 112346
+          },
+          {
+            "path": "assets/facilities/survey-desk.webp",
+            "sha256": "9782e3a6f9a2316dbf4acf4f0d2320edd646e6ad8c23d76c05a489090f33bd40",
+            "bytes": 141174
+          },
+          {
+            "path": "assets/facilities/process-bench.webp",
+            "sha256": "9d17cb80fd9bfd7f0d1713bd88aa8080f08430df02fb64474f94d9af08e04235",
+            "bytes": 122012
+          },
+          {
+            "path": "assets/facilities/craft-bench.webp",
+            "sha256": "fceffa34eeae7354d662fd74cd1ba80ee6e7398e15752cb0cd6668311a565b56",
+            "bytes": 114090
+          },
+          {
+            "path": "assets/ui/paper-panel.webp",
+            "sha256": "e6a0a4bc2b0e57093ecadca280e0c7ca7966dd5dd2646d9cace1b09a5bfe7dee",
+            "bytes": 50756
+          },
+          {
+            "path": "assets/ui/wood-panel.webp",
+            "sha256": "ef602355494000983ade38987ea79abe45c5ac2762061e0e2969b6b2850f7d3a",
+            "bytes": 81384
+          },
+          {
+            "path": "assets/ui/title-sign.webp",
+            "sha256": "c089ae4b2aa67ea95c8a8f82630e5a28fca83554b9708ee098634190160272af",
+            "bytes": 92654
+          },
+          {
+            "path": "assets/ui/primary-button.webp",
+            "sha256": "26af8640fd39cb2c1fd33438c5135708e782c95b498d3f89d1f8e88bb346a84f",
+            "bytes": 57330
+          },
+          {
+            "path": "assets/emotions/affection.webp",
+            "sha256": "2c02390b5cfc2e4bceac23d500302eeacdd8ab906488304d861ba999cab10474",
+            "bytes": 11798
+          },
+          {
+            "path": "assets/emotions/fluster.webp",
+            "sha256": "18e064de2f4d31e82b9b51ad5288c09fac353102c166e2026e79fbdb4cc5617b",
+            "bytes": 13860
+          },
+          {
+            "path": "assets/emotions/annoyance.webp",
+            "sha256": "99764dc0dfab06d0e14a6c910d2f578dfae4aee0fe532fe7bac61307df578f27",
+            "bytes": 20262
+          },
+          {
+            "path": "assets/emotions/curiosity.webp",
+            "sha256": "e4aea7758033150da7890fbf09635c10f11ec43a1f2becf244dfee0b462af69e",
+            "bytes": 13786
+          },
+          {
+            "path": "assets/emotions/joy.webp",
+            "sha256": "0166646b34341b1f8c35a557e17d40977e2a15bf14843770ad410ec243e4d031",
+            "bytes": 16174
+          },
+          {
+            "path": "assets/emotions/inspiration.webp",
+            "sha256": "85d1a81524815d99451ddd29e9aeb46a98cf251358ba4b604282d9c706342151",
+            "bytes": 17024
+          },
+          {
+            "path": "assets/backgrounds/workshop-scene-autumn.webp",
+            "sha256": "437037f465629b5d2e723d8068b55a8f638026ab200e6b0e3f75359c9c7899d3",
+            "bytes": 954590
+          },
+          {
+            "path": "assets/items/wild-berry.webp",
+            "sha256": "0b4b85ba7de277ad6d2766411a7a0efc19bd5a62e1d5bc912d5e173e1ab80935",
+            "bytes": 25734
+          },
+          {
+            "path": "assets/items/pinecone.webp",
+            "sha256": "5176345c869afb668922c17a4f5a26709b70e673fe9f24e315ee43649f3462fb",
+            "bytes": 27748
+          },
+          {
+            "path": "assets/items/acorn.webp",
+            "sha256": "ede31a2c9f21fef2fb8ff1d0d16edfc147345408bc4557a68c6539bd8e46f3b3",
+            "bytes": 26406
+          },
+          {
+            "path": "assets/items/cotton.webp",
+            "sha256": "bf8c2d5452e8ae034233883bc321cf21d47b491cce36529a817f77db759152c1",
+            "bytes": 19216
+          },
+          {
+            "path": "assets/items/beeswax.webp",
+            "sha256": "03cfe9e32b1fcd1d73e3652f2ba9fe74f99ee854aebd34e28e300f48a5a3dc34",
+            "bytes": 19160
+          },
+          {
+            "path": "assets/items/clover.webp",
+            "sha256": "33ff9b24556d46b941ff03c87e9b5e417170fcb160e512073a57c1ef6dd54457",
+            "bytes": 23402
+          },
+          {
+            "path": "assets/items/berry-jam.webp",
+            "sha256": "bbacfe28e2f3c59ff9fbd4782425a6ad441de47565124a131f0b234d276c77ce",
+            "bytes": 29318
+          },
+          {
+            "path": "assets/items/dried-herb.webp",
+            "sha256": "8dea9ef3fdcd7c9842729f9e735db08422c4fb366e6154c08bf4107e7f21ae68",
+            "bytes": 29484
+          },
+          {
+            "path": "assets/items/herb-sachet.webp",
+            "sha256": "4f7526fd838a72a8c302e4f927dd4d5134893c0243ebd0ff518621b9941eab3a",
+            "bytes": 26924
+          },
+          {
+            "path": "assets/items/berry-pie.webp",
+            "sha256": "30e3eeade3aa25a1a028861b116a533cb282435515f6e06e8f862a017fc52523",
+            "bytes": 25994
+          },
+          {
+            "path": "assets/items/wooden-tray.webp",
+            "sha256": "b97dde01d0ecb1672de65b111c14be26a6983433ed5e2dbf8dd0fd77ed60f5c4",
+            "bytes": 15344
+          },
+          {
+            "path": "assets/items/beeswax-candle.webp",
+            "sha256": "154ef88fc6cd33673f8675c6668d512c49f2a75fa1a44a49b66931810431c5ab",
+            "bytes": 18232
+          },
+          {
+            "path": "assets/items/knit-scarf.webp",
+            "sha256": "b5f374d96750ba43124492410b34172dfd5f8874b75d11abac60da90acca0561",
+            "bytes": 29550
+          },
+          {
+            "path": "assets/items/flower-wreath.webp",
+            "sha256": "3edc31d5cdda5ab2c4911f079e1b2b691a5de3ed7012b7b40b7e7eb81aeb8267",
+            "bytes": 32690
+          },
+          {
+            "path": "assets/items/honey-cake.webp",
+            "sha256": "dd50d7e29ac84cfeebf30422ae5ad60294d745d311c1f6ce4ef194d5a14cfe51",
+            "bytes": 24764
+          },
+          {
+            "path": "assets/items/birdhouse.webp",
+            "sha256": "b968347ec7d242e1ed47e881c019f7d98345f7e04963e0bb911bdef5af213b1f",
+            "bytes": 26928
+          },
+          {
+            "path": "assets/items/acorn-cookie.webp",
+            "sha256": "7d09bc370e1b2d09c59594fc4b852a4387b4349ebe214a7f4b60df70c9c477f5",
+            "bytes": 23968
+          },
+          {
+            "path": "assets/items/tea-gift.webp",
+            "sha256": "65d0dfa919a8e9f16f35d6c9446330eb29251c21c8ed316e3b32e9282ad2d866",
+            "bytes": 28436
+          },
+          {
+            "path": "assets/backgrounds/workshop-base-spring.webp",
+            "sha256": "f66f8251d601a67f59dc8f6a7ec0946b688dcfc06528feca1f8d5a84beaed5b4",
+            "bytes": 870034
+          },
+          {
+            "path": "assets/backgrounds/workshop-scene-spring.webp",
+            "sha256": "a5a806ae7275d69f7438c5f2291fcbffbf790e67e4e03f59c62078559b6c501a",
+            "bytes": 928250
+          },
+          {
+            "path": "assets/backgrounds/workshop-base-summer.webp",
+            "sha256": "78b6db6a45aff499154c937720ae9a8f0a08d5e3c0d3727567d99e664e87d41c",
+            "bytes": 839656
+          },
+          {
+            "path": "assets/backgrounds/workshop-scene-summer.webp",
+            "sha256": "2af1c8fb53bd78819a7d75b8207a4cf650c76e99c7e7ec438002105406e4db8e",
+            "bytes": 953940
+          },
+          {
+            "path": "assets/backgrounds/workshop-base-winter.webp",
+            "sha256": "4f7b9a196f26f02983f179468501d510c0289d547f93ffb4d0a85b8ce3b7a114",
+            "bytes": 844482
+          },
+          {
+            "path": "assets/backgrounds/workshop-scene-winter.webp",
+            "sha256": "7b8e9bf24f5c99b743fd5de06502b07958f62910d57c23eabbe1848e37946efe",
+            "bytes": 907100
+          },
+          {
+            "path": "assets/items/herb.webp",
+            "sha256": "7b8dc712c1bb2fe39d6643d1ff7923c5b9d3a3eead33834c2d92f3bcc937363f",
+            "bytes": 32408
+          },
+          {
+            "path": "assets/items/wood.webp",
+            "sha256": "0470eeaee6725d2dfd184e97acef97e18dd10f73964148b9ac6f07d3000ad3bf",
+            "bytes": 23792
+          },
+          {
+            "path": "assets/items/wheat.webp",
+            "sha256": "72af3723166c2d047fb92138103010b58fb2b50c064a5afddb1b292455d984a3",
+            "bytes": 25238
+          },
+          {
+            "path": "assets/items/flower.webp",
+            "sha256": "9aac8c05fcfd7525a2d7f030049ab1d4c287fcb82e0d3597207586ececccaf47",
+            "bytes": 25430
+          },
+          {
+            "path": "assets/items/pumpkin.webp",
+            "sha256": "8eeb97fbfda2a8587b4127cdb90c2c08dc1d954b10b67d8d5bfd0459fa97c4e7",
+            "bytes": 24422
+          },
+          {
+            "path": "assets/items/tea-leaf.webp",
+            "sha256": "047c89b066fc14be3feb9ba9ec9b311286d4723475aa25046aad5c4a202bfa92",
+            "bytes": 22330
+          },
+          {
+            "path": "assets/items/honey.webp",
+            "sha256": "11ff402d6f76b85ad036357bd5682b72d1cb60c75c96ab2f1569f6aec5955f5a",
+            "bytes": 31792
+          },
+          {
+            "path": "assets/items/mushroom.webp",
+            "sha256": "22a17dc36f40c9bb8c666f0caaf7064004dc660307ae7fa4ba8d7d06350a864d",
+            "bytes": 25432
+          },
+          {
+            "path": "assets/items/feather.webp",
+            "sha256": "514f2221509e194479a63b8fecd530b620f29794953eda54dace9e70235e2e9b",
+            "bytes": 22216
+          },
+          {
+            "path": "assets/items/flour.webp",
+            "sha256": "4f44b62fc02c79188a636b7b74d0c9462dbf0db11648d70d097144412e062887",
+            "bytes": 27308
+          },
+          {
+            "path": "assets/items/plank.webp",
+            "sha256": "f345e1a2d3ea2f4a437a78a90adfa672296e053acf1079455a2fd87eb22c74b6",
+            "bytes": 23184
+          },
+          {
+            "path": "assets/items/thread.webp",
+            "sha256": "0becd75105482304524066ab3f3dd4c6c041fd04299d1c0da282a9dadd92ee24",
+            "bytes": 27340
+          },
+          {
+            "path": "assets/items/herb-tea.webp",
+            "sha256": "f20c24014bb5073991aba6590c0e9572259c554c81331d8c64d567afb8f32631",
+            "bytes": 26076
+          },
+          {
+            "path": "assets/items/pumpkin-puree.webp",
+            "sha256": "5727675d3b031a0f74f17cee35c5a80a81763888cf1a922eef028a082cba016b",
+            "bytes": 24518
+          },
+          {
+            "path": "assets/items/acorn-flour.webp",
+            "sha256": "ce879a3369a2f924a968879072e3698b7ea384c2859cbb32f36cb3b3a87fd241",
+            "bytes": 26558
+          },
+          {
+            "path": "assets/items/pumpkin-soup.webp",
+            "sha256": "bfc6caa2f3c11470f07cfa47b26a4224fc2ff1d1c272e593f047af1fda678263",
+            "bytes": 21944
+          },
+          {
+            "path": "assets/items/apple.webp",
+            "sha256": "953151e9d33cc78f23a88c363325ad038de1f3012f94c1ac8f5d31c971e541f1",
+            "bytes": 21222
+          },
+          {
+            "path": "assets/items/reed.webp",
+            "sha256": "380a816c00635a142765aa4400461d1f65d6d5a050165d813292b93891c4d96b",
+            "bytes": 28992
+          },
+          {
+            "path": "assets/items/carrot.webp",
+            "sha256": "368a716597bc074d2043a005fdfc3f2406ab1807e5cd59dff465b7669e610e0b",
+            "bytes": 29304
+          },
+          {
+            "path": "assets/items/flax.webp",
+            "sha256": "e2d5a98bc844275171f314913d97986042cca9e364a7ea6fe19b746bb671f5e1",
+            "bytes": 30482
+          },
+          {
+            "path": "assets/items/clay.webp",
+            "sha256": "f175348a4adef5baa0118384e9af330b98db4fffcd1a74b3dfd9d6dbdd3b4c32",
+            "bytes": 18976
+          },
+          {
+            "path": "assets/items/salt.webp",
+            "sha256": "eb496b4a392b03e77acf101a8af5619dcc55644864c42f7a42e021b27e9381ef",
+            "bytes": 25360
+          },
+          {
+            "path": "assets/items/dried-apple.webp",
+            "sha256": "057af8fd8ec1b5c9b7cd83dacc2d71d9049fa4ee0466c827747966b6f85f47a9",
+            "bytes": 25202
+          },
+          {
+            "path": "assets/items/apple-jam.webp",
+            "sha256": "bce7095630b39badb8271d2ff767233c7f7b2b3b9bd006f624bf978b95d9f3aa",
+            "bytes": 32418
+          },
+          {
+            "path": "assets/items/linen.webp",
+            "sha256": "8d760aae29cd134fbb595ceb29438e86dd7d7f67228f5e5e1ed8304781ec2506",
+            "bytes": 21336
+          },
+          {
+            "path": "assets/items/reed-cord.webp",
+            "sha256": "14054d5c9bd8b67031bc3ef193f9a88014419a2c8ad33395ba3c8bb1f0c1a91e",
+            "bytes": 24990
+          },
+          {
+            "path": "assets/items/prepared-clay.webp",
+            "sha256": "5f982f1f52f3c00c0addf70a303baa5a03cacbe4fdf7979cbb44f1e37e6b2cc5",
+            "bytes": 15816
+          },
+          {
+            "path": "assets/items/herb-salt.webp",
+            "sha256": "ec064524dd78fad913a49328dee2c2a01110159863718b7521b15b59e1252370",
+            "bytes": 29132
+          },
+          {
+            "path": "assets/items/apple-bread.webp",
+            "sha256": "43de980b991086fadba63bac0271bd587742fa3e355069a070a72c3cbdfc830f",
+            "bytes": 29050
+          },
+          {
+            "path": "assets/items/carrot-potage.webp",
+            "sha256": "7cf3f87e20b4bdb28c93bc84787a1672d3682844080460f3977e2e84bde75631",
+            "bytes": 27452
+          },
+          {
+            "path": "assets/items/mushroom-skewer.webp",
+            "sha256": "4d37503faf0c26bac5e7778f2c5d1e95aaa6bf1e9d2176ae435439151511f9c1",
+            "bytes": 23894
+          },
+          {
+            "path": "assets/items/linen-handkerchief.webp",
+            "sha256": "8007366e52bb0f2c45ed56fc2f82626f423719ea6142254b5f31b237ca7fa885",
+            "bytes": 18232
+          },
+          {
+            "path": "assets/items/herb-pillow.webp",
+            "sha256": "fa1ec884e512290db5a111bf97da04258c6d094e7218eef283684b9117844a61",
+            "bytes": 26472
+          },
+          {
+            "path": "assets/items/reed-basket.webp",
+            "sha256": "9d93550b6ab7ddb55ccb7068417bc76f484992b5d6e2e35cb82a9a203289d7c0",
+            "bytes": 28050
+          },
+          {
+            "path": "assets/items/wooden-spoon.webp",
+            "sha256": "32031b589aa3160cfa3014ce48efddd7514f40918cc5ca4b80d8c85c7e104da1",
+            "bytes": 15162
+          },
+          {
+            "path": "assets/items/desk-organizer.webp",
+            "sha256": "5e16972c6a228bed4b8eba6a7ec6cfa85c71946782ac469f261fd496826429fb",
+            "bytes": 22512
+          },
+          {
+            "path": "assets/items/clay-planter.webp",
+            "sha256": "e018fc3cb355d6f766814e301cd27ff99904b210b426fb1e6b8f3bea6942ee4f",
+            "bytes": 25694
+          },
+          {
+            "path": "assets/items/wind-chime.webp",
+            "sha256": "e2970868ca6fb3b184d00fdd359a991aa8478a023232d0d6f70a7c7907408bb5",
+            "bytes": 20080
+          },
+          {
+            "path": "assets/items/apple-gift.webp",
+            "sha256": "e20ff79e9b118bd48524d54a1c6eeeb4e3f6ecfd129ab40e5eebad6ba696f597",
+            "bytes": 34366
+          },
+          {
+            "path": "assets/items/picnic-wrap.webp",
+            "sha256": "cd0e30d7f4ee918c9a5d7173d290f2b21ac7cb0e01cf253e09388161939eacc3",
+            "bytes": 31266
+          },
+          {
+            "path": "assets/ui/gift.webp",
+            "sha256": "71240a80ed2cd61c5b76010ed14115672fc7e11ff00629fd7a327070f616c9a6",
+            "bytes": 23912
+          }
+        ],
+        "permissions": [
+          "routes",
+          "storage",
+          "ui"
+        ],
+        "restartRequired": true
+      },
+      "category": "misc",
+      "iconUrl": "https://raw.githubusercontent.com/marittini/ME-personal-A/main/artwork/agent-covers/forest-workshop.png",
+      "artifact": {
+        "url": "https://raw.githubusercontent.com/marittini/ME-personal-A/main/artifacts/forest-workshop-0.6.2.zip",
+        "sha256": "319d5fde3935002321758c6fe3f293442db02a1f985ebd45592896d7a9a8277d",
+        "bytes": 10098650
+      },
+      "documentationUrl": "https://github.com/marittini/ME-personal-A/blob/main/packages/forest-workshop/README.md"
+    },
+    {
+      "manifest": {
+        "schemaVersion": 2,
+        "capabilityApi": {
+          "major": 1,
           "minor": 10
         },
         "builtAgainst": {

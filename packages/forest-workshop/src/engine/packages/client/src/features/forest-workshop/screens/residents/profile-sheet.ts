@@ -51,6 +51,19 @@ export function renderProfileSheet(world: WorldView, state: AppState, controller
   textarea.value = resident.worldSetting;
   counter.id = "fw-profile-count";
   const { source } = resident;
+  const original = h("details", { className: "compare-box source source-details" }, [
+    h("summary", { className: "compare-title" }, [ICONS.document("icon"), "원래 설정 보기"]),
+    h("p", {
+      className: "muted",
+      text: `${source.name} · ${formatTime(source.takenAt)}에 읽음 · 원본은 바뀌지 않아요`,
+    }),
+    sourceBlock("설명", source.description),
+    sourceBlock("성격", source.personality),
+    sourceBlock("상황", source.scenario),
+    !source.description && !source.personality && !source.scenario
+      ? h("p", { className: "muted", text: "원본에 적힌 설명이 없어요." })
+      : null,
+  ]);
   return h("div", { className: "sheet-backdrop" }, [
     h(
       "section",
@@ -59,21 +72,9 @@ export function renderProfileSheet(world: WorldView, state: AppState, controller
         h("div", { className: "sheet-head" }, [
           h("h2", { className: "section-title", text: `${resident.displayName} 프로필`, attrs: { id: "fw-profile" } }),
           kindTag(resident),
+          button("닫기", () => controller.closeSheet(), { variant: "secondary" }),
         ]),
         h("div", { className: "compare" }, [
-          h("div", { className: "compare-box source" }, [
-            h("p", { className: "compare-title" }, [ICONS.document("icon"), "원래 설정"]),
-            h("p", {
-              className: "muted",
-              text: `${source.name} · ${formatTime(source.takenAt)}에 읽음 · 원본은 바뀌지 않아요`,
-            }),
-            sourceBlock("설명", source.description),
-            sourceBlock("성격", source.personality),
-            sourceBlock("상황", source.scenario),
-            !source.description && !source.personality && !source.scenario
-              ? h("p", { className: "muted", text: "원본에 적힌 설명이 없어요." })
-              : null,
-          ]),
           h(
             "form",
             {
@@ -102,6 +103,7 @@ export function renderProfileSheet(world: WorldView, state: AppState, controller
               }),
             ],
           ),
+          original,
         ]),
         h("h3", { className: "subhead", text: "변경 이력" }),
         h("ol", { className: "change-list" }, resident.changes.map(changeRow)),

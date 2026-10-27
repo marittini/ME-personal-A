@@ -2,15 +2,12 @@
 // phase opens them. They never pretend to work. Unlocking is done in app/features.ts.
 import type { Controller } from "../../app/controller";
 import { h, type Child } from "../../app/dom";
-import { isLocked, lockedPhase, type LockedFeature } from "../../app/features";
+import { isLocked, type LockedFeature } from "../../app/features";
 import { ICONS } from "./icons";
 
 /** The small "🔒 P3" tag placed on a locked element. */
-export function lockTag(feature: LockedFeature) {
-  return h("span", { className: "lock-tag", attrs: { "aria-hidden": "true" } }, [
-    ICONS.lock("icon tiny"),
-    lockedPhase(feature),
-  ]);
+export function lockTag(_feature: LockedFeature) {
+  return h("span", { className: "lock-tag", attrs: { "aria-hidden": "true" } }, [ICONS.lock("icon tiny"), "준비 중"]);
 }
 
 /**
@@ -40,7 +37,7 @@ export function lockedBlock(controller: Controller, feature: LockedFeature, chil
     "div",
     {
       className: `locked-block ${className}`.trim(),
-      attrs: { role: "button", tabindex: "0", "aria-label": "준비 중인 기능 — 누르면 열리는 단계를 알려 드려요" },
+      attrs: { role: "button", tabindex: "0", "aria-label": "준비 중인 기능 — 누르면 안내해 드려요" },
       on: {
         click: () => controller.notifyLocked(feature),
         keydown: (event) => {

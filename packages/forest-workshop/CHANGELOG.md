@@ -1,3 +1,7 @@
+## 0.6.1 — 2026-10-27
+- Fixed: a late heartbeat or read could put an older revision of the world back on screen, and an answer for a world you had left could replace the one you opened. Updates now apply only to the same world and never go backwards; opening a world drops answers from an earlier navigation.
+- Fixed: once the 72-hour absence budget was used, background reads on later days kept auto-selling. The workshop now stays frozen until you return; a return or a command still re-evaluates at once.
+
 ## 0.6.0 — 2026-10-27
 - 탐사 → 이야기 탐험: each pair goes through arcs of three episodes. Episode 1 needs one resident, 2 and 3 need both; the next opens after the previous is read. Expeditions take 30–90 minutes of workshop time (the 72-hour rule applies), use up to two preparations and can be cancelled with everything returned.
 - Reading a scene for the first time asks your language model to write it from the stored plan and only the memories its residents share. A refused or failed answer stores nothing; retry the same plan at no cost.

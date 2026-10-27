@@ -15,6 +15,7 @@ import { clampFontSize, readFontSize, writeFontSize } from "./preferences";
 import type { Loadable } from "./dom";
 import { errorCode, errorMessage, newRequestId, newWorldId } from "./host-api";
 import { createStore, type Store } from "./store";
+import { WorldGate } from "./world-gate";
 import { createRegisterActions, type RegisterState } from "./register-actions";
 import { createProductionActions, type ProductionSheet, type WorkView } from "./production-actions";
 import { createResidentActions, type ResidentsView, type ResidentSheet } from "./resident-actions";
@@ -181,6 +182,7 @@ export function createController() {
     worldReceivedAt: Date.now(),
   });
   const pending = new Map<string, PendingRequest>();
+  const gate = new WorldGate();
 
   // An info toast goes away by itself after a few seconds; an error stays until it is closed.
   const INFO_NOTICE_MS = 4000;
@@ -229,7 +231,8 @@ export function createController() {
     }
   }
 
-  function showWorld(view: WorldView, content?: GameContent) {
+  /** Puts a world on screen (no checks: callers decide). */
+  function applyWorld(view: WorldView, content?: GameContent) {
     writeLastWorld(view.worldId);
     store.set((state) => ({
       world: {
@@ -247,7 +250,20 @@ export function createController() {
     }));
   }
 
+  /** An update of the world on screen: dropped when it is for another world or older than what is shown. */
+  function showWorld(view: WorldView, content?: GameContent) {
+    if (!gate.acceptsUpdate(currentWorld(), view)) return;
+    applyWorld(view, content);
+  }
+
+  /** Opening a world the player chose (create, restore): a new navigation. */
+  function enterWorld(view: WorldView, content?: GameContent) {
+    gate.beginNavigation();
+    applyWorld(view, content);
+  }
+
   function rememberWorld(view: WorldView) {
+    if (!gate.acceptsUpdate(currentWorld(), view)) return;
     store.remember({
       world: {
         state: "ready",
@@ -270,11 +286,15 @@ export function createController() {
   }
 
   async function openWorld(worldId: string) {
+    const ticket = gate.beginNavigation();
     store.set({ world: { state: "loading" }, route: "home", notice: null });
     try {
       const view = await gameApi.getState(worldId);
-      showWorld(view, view.content);
+      // The player may have opened another world meanwhile: this answer belongs to an older navigation.
+      if (!gate.isCurrentNavigation(ticket)) return;
+      applyWorld(view, view.content);
     } catch (error) {
+      if (!gate.isCurrentNavigation(ticket)) return;
       if (errorCode(error) === "world_not_found") writeLastWorld(null);
       store.set({ world: { state: "error", message: errorMessage(error, "세계를 불러오지 못했습니다.") } });
     }
@@ -319,6 +339,9 @@ export function createController() {
       "요청을 처리하지 못했습니다. 다시 시도해 주세요.",
     );
     if (!response) return null;
+    // The player left this world while the command was out: its answer must not touch the world now on screen,
+    // and the caller's follow-up (a notice, a sheet) must not run there either.
+    if (currentWorld()?.worldId !== world.worldId) return null;
     showWorld({
       worldId: world.worldId,
       revision: response.revision,
@@ -398,7 +421,7 @@ export function createController() {
         () => gameApi.createWorld({ worldId, worldName, playerNickname }),
         "세계를 만들지 못했습니다.",
       );
-      if (created) showWorld(created, created.content);
+      if (created) enterWorld(created, created.content);
     },
 
     runCommand,
@@ -463,7 +486,7 @@ export function createController() {
         "백업을 복원하지 못했습니다.",
       );
       if (!restored) return;
-      showWorld(restored, restored.content);
+      enterWorld(restored, restored.content);
       store.set({
         route: "home",
         restore: null,

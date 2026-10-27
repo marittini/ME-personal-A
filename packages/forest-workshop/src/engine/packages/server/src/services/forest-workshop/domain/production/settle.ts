@@ -12,12 +12,20 @@ export function settleWorld(state: WorldState, now: string, options: { active: b
   const credit = creditTime(state.production.activity, now, options);
   const simFrom = state.production.simMs;
   const settledAt = state.production.activity.settledAt;
+  // Nothing credited and nobody here (a background read after the 72-hour budget ran out, or a repeat read): the
+  // workshop is frozen. No sale, no new run, no new day — only the bookkeeping moves (mid-review defect 2). A
+  // command or a return (active) still re-evaluates at once, at the present real time.
+  if (!options.active && credit.creditedMs === 0 && settledAt !== null) {
+    return { ...state, production: { ...state.production, activity: credit.activity } };
+  }
   const crew = crewBonuses(state);
   const { production, inventory, summary } = advanceProduction(
     { ...state.production, activity: credit.activity },
     state.inventory,
     credit.creditedMs,
-    { crew, realStart: settledAt === null ? Date.parse(now) : Date.parse(settledAt) },
+    // Credited time is one contiguous stretch starting at the last settlement; with nothing credited (a command right
+    // after another, a return) the only real time is now.
+    { crew, realStart: settledAt === null || credit.creditedMs === 0 ? Date.parse(now) : Date.parse(settledAt) },
   );
   if (summary.runs > 0 || summary.gold > 0) {
     const report: ProductionReport = {

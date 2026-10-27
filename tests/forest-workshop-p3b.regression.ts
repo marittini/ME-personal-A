@@ -288,6 +288,35 @@ async function main() {
     assert.equal(sold, 40, "missed days are not collected: 4 days × 10, not 8");
   }
 
+  // Mid-review defect 2: after the 72-hour budget is used, background reads on later UTC days sell nothing and start
+  // nothing; a real return re-evaluates at once (today's limit).
+  {
+    let frozen = cmd(world({ "berry-jam": 200 }), "economy.setAutoSell", {
+      itemId: "berry-jam",
+      setting: { enabled: true, keep: 0, dailyMax: 10 },
+    }).state;
+    frozen = settleWorld(frozen, iso(T0 + 80 * HOUR), { active: false });
+    const atCap = structuredClone({
+      inventory: frozen.inventory,
+      wallet: frozen.wallet,
+      sales: frozen.production.sales,
+    });
+    for (let day = 1; day <= 5; day += 1) {
+      frozen = settleWorld(frozen, iso(T0 + 80 * HOUR + day * 24 * HOUR), { active: false });
+    }
+    assert.deepEqual(
+      { inventory: frozen.inventory, wallet: frozen.wallet, sales: frozen.production.sales },
+      atCap,
+      "frozen: no sales on later days",
+    );
+    const back = settleWorld(frozen, iso(T0 + 80 * HOUR + 5 * 24 * HOUR + MIN), { active: true });
+    assert.equal(
+      (frozen.inventory["berry-jam"] ?? 0) - (back.inventory["berry-jam"] ?? 0),
+      10,
+      "a real return sells today's limit at once",
+    );
+  }
+
   // 배치 · 패시브 · 세트.
   {
     const a = resident(1, true, { field: "process", talentId: "fine-mill", breakthrough: 0 });

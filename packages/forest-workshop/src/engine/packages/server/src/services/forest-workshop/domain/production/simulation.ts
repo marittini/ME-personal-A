@@ -75,6 +75,7 @@ export function targetItem(recipeId: string): string | null {
  */
 export function autoSellFloor(production: ProductionState, itemId: string): number {
   const setting = production.autoSell[itemId];
+  if (setting?.enabled && setting.continuous) return Math.max(setting.keep, protectedAmount(production, itemId));
   let highestTarget = 0;
   for (const facility of Object.values(production.facilities)) {
     if (!facility.unlocked || facility.mode !== "auto") continue;
@@ -136,6 +137,7 @@ function tryRules(
   now: number,
   jobId: number,
   crew: CrewBonus | undefined,
+  realNow: number | undefined,
 ): Attempt {
   const rules = orderedRules(facility.rules);
   if (rules.length === 0) return { job: null, waiting: { reason: "no_rules" } };
@@ -144,7 +146,15 @@ function tryRules(
     const recipe = recipeDefinition(rule.recipeId);
     if (!recipe) continue;
     const item = targetItem(recipe.id);
-    if (item && stockWithPending(inventory, production, item) >= rule.targetStock) continue;
+    if (item) {
+      const setting = production.autoSell[item];
+      const day = realNow === undefined ? null : utcDay(realNow);
+      const sold = day !== null && production.sales.day === day ? (production.sales.sold[item] ?? 0) : 0;
+      const remaining =
+        setting?.enabled && setting.continuous && day !== null ? Math.max(0, setting.dailyMax - sold) : 0;
+      const saleTarget = remaining > 0 ? autoSellFloor(production, item) + remaining : 0;
+      if (stockWithPending(inventory, production, item) >= Math.max(rule.targetStock, saleTarget)) continue;
+    }
     const run = crewRecipe(recipe, crew);
     const missing = shortageOf(run.inputs, production, inventory);
     if (missing) {
@@ -245,7 +255,7 @@ export function advanceProduction(
         const attempt =
           pass === "count"
             ? tryQueue(facility, production, inventory, time, production.nextJobId, crew[facilityId])
-            : tryRules(facility, production, inventory, time, production.nextJobId, crew[facilityId]);
+            : tryRules(facility, production, inventory, time, production.nextJobId, crew[facilityId], realAt(time));
         facility.waiting = attempt.waiting;
         if (attempt.job) {
           add(inventory, attempt.job.consumed, -1);

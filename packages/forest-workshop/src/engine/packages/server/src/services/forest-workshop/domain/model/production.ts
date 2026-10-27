@@ -136,6 +136,8 @@ export const autoSellSchema = z
     enabled: z.boolean(),
     keep: z.number().int().min(0).max(999),
     dailyMax: z.number().int().min(1).max(999),
+    /** Opt in to producing sale stock beyond the normal target while today's sale allowance remains. */
+    continuous: z.boolean().optional(),
   })
   .strict();
 export type AutoSell = z.infer<typeof autoSellSchema>;

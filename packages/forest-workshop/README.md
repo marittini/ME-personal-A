@@ -28,7 +28,7 @@ through a catalog override:
 MARINARA_AGENT_CATALOG_URL=https://raw.githubusercontent.com/marittini/ME-personal-A/main/catalog/v2/catalog.json
 ```
 
-The override replaces the whole official list, so the fork's catalog carries the official entries as well. Keep the
+The override replaces the whole official list; this catalog lists Forest Workshop only. Keep the
 original value before changing it. Then open **Agents → Download Agents**, install Forest Workshop, restart when
 prompted, and open **Home → 숲결 공방**.
 

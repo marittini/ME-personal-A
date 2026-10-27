@@ -191,143 +191,7 @@ const packagesWithChangelogs = await listPackagesWithChangelogs(repoRoot);
 console.log(
   `Release notes: ${packagesWithChangelogs.length}/${publishedCatalog.packages.length} published packages ship a CHANGELOG.md.`,
 );
-const hierarchicalMapsBoundary = await assertHierarchicalMapsPrivateImportBoundary();
-
-const hierarchicalMapsOwnedSourcePaths = [
-  "packages/server/src/routes/spatial-context.routes.ts",
-  "packages/server/src/services/spatial-context",
-  "packages/server/src/services/storage/spatial-context.storage.ts",
-  "packages/client/src/features/spatial-context",
-  "packages/client/src/hooks/use-spatial-context.ts",
-  "packages/client/src/components/game/GameWorldMap.tsx",
-];
-for (const relativePath of hierarchicalMapsOwnedSourcePaths) {
-  const packageOwnedPath = join(repoRoot, "packages/hierarchical-maps/src/engine", relativePath);
-  const capturedEnginePath = join(repoRoot, "sources/engine", relativePath);
-  if (!existsSync(packageOwnedPath)) {
-    throw new Error(`Hierarchical Maps package source is missing: ${relativePath}`);
-  }
-  if (existsSync(capturedEnginePath)) {
-    throw new Error(`Hierarchical Maps source must not be captured as generic Engine material: ${relativePath}`);
-  }
-}
-
-// Must equal slurp2OwnedSourcePaths in the builder: the three slp roots and two permanent exceptions.
-const slurp2OwnedSourcePaths = [
-  "packages/client/src/slp",
-  "packages/server/src/slp",
-  "packages/shared/src/slp",
-  "packages/server/src/services/garnish-ads",
-  "packages/server/src/db/schema/slurp.ts",
-];
-for (const relativePath of slurp2OwnedSourcePaths) {
-  if (!existsSync(join(repoRoot, "packages/slurp2/src/engine", relativePath))) {
-    throw new Error(`slurp2 package source is missing: ${relativePath}`);
-  }
-}
-
-// Hierarchical Maps and Long-Term Memory have always asserted this; Slurp never did, which is how
-// ten stale copies of package-owned files survived in sources/engine long after the split. A
-// captured copy is worse than dead weight now: the remaster's slurp2_* table names would become
-// build input for Noodle, and tests that read the snapshot would check the wrong tree.
-for (const relativePath of ["packages/server/src/db/schema/slurp.ts", ...slurp2OwnedSourcePaths]) {
-  if (existsSync(join(repoRoot, "sources/engine", relativePath))) {
-    throw new Error(`Slurp source must not be captured as generic Engine material: ${relativePath}`);
-  }
-}
-
-const longTermMemorySourceRoot = join(repoRoot, "packages/long-term-memory/src/engine");
-const longTermMemoryBoundary = await assertPackagePrivateImportBoundary({
-  sourceRoot: longTermMemorySourceRoot,
-  boundaryPath: join(repoRoot, "packages/long-term-memory/engine-boundary.json"),
-  displayName: "Long-Term Memory",
-  capabilityApi: { major: 1, minor: 341 },
-});
-for (const relativePath of [
-  "packages/shared/src/features/agents/long-term-memory",
-  "packages/server/src/services/long-term-memory",
-  "packages/client/src/features/long-term-memory",
-]) {
-  if (!existsSync(join(longTermMemorySourceRoot, relativePath))) {
-    throw new Error(`Long-Term Memory package source is missing: ${relativePath}`);
-  }
-  if (existsSync(join(repoRoot, "sources/engine", relativePath))) {
-    throw new Error(`Long-Term Memory source must not be captured as generic Engine material: ${relativePath}`);
-  }
-}
-
-const pixelforgeBoundary = await assertPackagePrivateImportBoundary({
-  sourceRoot: join(repoRoot, "packages/pixelforge/src"),
-  boundaryPath: join(repoRoot, "packages/pixelforge/engine-boundary.json"),
-  displayName: "Pixelforge",
-  capabilityApi: { major: 1, minor: 18 },
-});
-
-const hierarchicalMapsClientSourceRoot = join(repoRoot, "packages/hierarchical-maps/src/engine/packages/client/src");
-const forbiddenHierarchicalMapsPinkText =
-  /text-(?:pink|rose|fuchsia)-|text-\[var\(--(?:primary|muted-foreground)\)\](?:\/\d+)?|#(?:d4acfb|d4adfc|7a64a0)\b/iu;
-async function assertHierarchicalMapsUsesChromaText(path) {
-  const entries = await readdir(path, { withFileTypes: true });
-  for (const entry of entries) {
-    const entryPath = join(path, entry.name);
-    if (entry.isDirectory()) {
-      await assertHierarchicalMapsUsesChromaText(entryPath);
-      continue;
-    }
-    if (!entry.name.endsWith(".tsx")) continue;
-    const contents = await readFile(entryPath, "utf8");
-    if (forbiddenHierarchicalMapsPinkText.test(contents)) {
-      throw new Error(
-        `Hierarchical Maps text must use the configured chroma accent instead of pink theme defaults: ${entryPath}`,
-      );
-    }
-  }
-}
-await assertHierarchicalMapsUsesChromaText(hierarchicalMapsClientSourceRoot);
-
-const forbiddenAboutMeKeeperPaths = [
-  "packages/about-me-keeper/manifest.json",
-  "packages/about-me-keeper/agents.json",
-  "artifacts/about-me-keeper-1.0.0.zip",
-  "sources/engine/packages/shared/dist/features/agents/about-me-keeper/manifest.js",
-];
-for (const relativePath of forbiddenAboutMeKeeperPaths) {
-  if (existsSync(join(repoRoot, relativePath))) {
-    throw new Error(`About Me is a core Conversation feature and must not ship as an agent package: ${relativePath}`);
-  }
-}
-const snapshotAgentRegistry = await readFile(
-  join(repoRoot, "sources/engine/packages/shared/dist/features/agents/agent-registry.generated.js"),
-  "utf8",
-);
-if (snapshotAgentRegistry.includes("about-me-keeper") || snapshotAgentRegistry.includes("aboutMeKeeper")) {
-  throw new Error("The packaged agent registry must not reference the built-in About Me feature");
-}
-
-const aboutMeKeeperMarkers = ["about-me-keeper", "About Me Keeper", "aboutMeKeeper"];
-const textExtensions = new Set([".js", ".json", ".md", ".mjs", ".ts", ".tsx"]);
-async function assertNoAboutMeKeeperReferences(path) {
-  const entries = await readdir(path, { withFileTypes: true });
-  for (const entry of entries) {
-    const entryPath = join(path, entry.name);
-    if (entry.isDirectory()) {
-      await assertNoAboutMeKeeperReferences(entryPath);
-      continue;
-    }
-    if (!textExtensions.has(extname(entry.name))) continue;
-    const contents = await readFile(entryPath, "utf8");
-    if (aboutMeKeeperMarkers.some((marker) => contents.includes(marker))) {
-      throw new Error(`About Me is a core Conversation feature and must not be bundled as an agent: ${entryPath}`);
-    }
-  }
-}
-for (const relativePath of ["packages", "sources/engine", "catalog"]) {
-  await assertNoAboutMeKeeperReferences(join(repoRoot, relativePath));
-}
 const readme = await readFile(join(repoRoot, "README.md"), "utf8");
-if (aboutMeKeeperMarkers.some((marker) => readme.includes(marker))) {
-  throw new Error("README.md must not describe About Me as an agent package");
-}
 
 const ids = new Set();
 const agentDefinitionIds = new Set();
@@ -434,39 +298,6 @@ for (const entry of catalog.packages) {
   }
   if (manifest.id === "about-me-keeper") {
     throw new Error("About Me is a core Conversation feature and must not appear in the agent catalog");
-  }
-  if (manifest.id === "hierarchical-maps") {
-    if (manifest.schemaVersion !== 2) {
-      throw new Error("Hierarchical Maps must use capability package manifest v2");
-    }
-    if (JSON.stringify(manifest.capabilityApi) !== JSON.stringify(hierarchicalMapsBoundary.capabilityApi)) {
-      throw new Error("Hierarchical Maps capability API does not match engine-boundary.json");
-    }
-    if (JSON.stringify(manifest.builtAgainst) !== JSON.stringify(hierarchicalMapsBoundary.builtAgainst)) {
-      throw new Error("Hierarchical Maps build provenance does not match engine-boundary.json");
-    }
-  }
-  if (manifest.id === "long-term-memory") {
-    if (manifest.schemaVersion !== 2) {
-      throw new Error("Long-Term Memory must use capability package manifest v2");
-    }
-    if (JSON.stringify(manifest.capabilityApi) !== JSON.stringify(longTermMemoryBoundary.capabilityApi)) {
-      throw new Error("Long-Term Memory capability API does not match engine-boundary.json");
-    }
-    if (JSON.stringify(manifest.builtAgainst) !== JSON.stringify(longTermMemoryBoundary.builtAgainst)) {
-      throw new Error("Long-Term Memory build provenance does not match engine-boundary.json");
-    }
-  }
-  if (manifest.id === "pixelforge") {
-    if (manifest.schemaVersion !== 2) {
-      throw new Error("Pixelforge must use capability package manifest v2");
-    }
-    if (JSON.stringify(manifest.capabilityApi) !== JSON.stringify(pixelforgeBoundary.capabilityApi)) {
-      throw new Error("Pixelforge capability API does not match engine-boundary.json");
-    }
-    if (JSON.stringify(manifest.builtAgainst) !== JSON.stringify(pixelforgeBoundary.builtAgainst)) {
-      throw new Error("Pixelforge build provenance does not match engine-boundary.json");
-    }
   }
   if (manifest.id === "noodle") {
     const expectedLocales = ["de", "ko", "pl"];
@@ -795,9 +626,6 @@ for (const entry of catalog.packages) {
       ),
       "utf8",
     );
-    if (forbiddenHierarchicalMapsPinkText.test(clientSource)) {
-      throw new Error(`${manifest.id} generated client still contains pink-default text styling`);
-    }
     if (/\bReact\.createElement\b/u.test(clientSource)) {
       throw new Error(`${manifest.id} client runtime references an undefined classic React JSX global`);
     }
@@ -904,31 +732,6 @@ for (const entry of catalog.packages) {
 // (#544). Sweep the rest of packages/ with the same assertions.
 const uncataloguedIntegrity = await assertEveryPackageManifestIntegrity({ repoRoot, cataloguedIds: ids });
 
-// The avatar packages are checked from source whether or not they are listed yet, because they are
-// built ahead of the Engine surfaces that read them (scripts/avatar-package-checks.mjs).
-for (const id of AVATAR_PACKAGE_IDS) {
-  const packageRoot = await resolveContainedPortablePath(join(repoRoot, "packages"), id, `Package directory for ${id}`);
-  const manifest = JSON.parse(
-    await readFile(await resolveContainedPortablePath(packageRoot, "manifest.json", `Manifest for ${id}`), "utf8"),
-  );
-  const agentDefinitions = JSON.parse(
-    await readFile(
-      await resolveContainedPortablePath(packageRoot, manifest.entrypoints?.agents, `Agent entrypoint for ${id}`),
-      "utf8",
-    ),
-  );
-  assertAvatarPackageContract(manifest, agentDefinitions);
-}
-
-// Guidance may be authored ahead of listing for an incomplete package (its id
-// is absent from the catalog by design), so exempt those ids from exactness.
-const guidanceIds = Object.keys(OFFICIAL_PACKAGE_GUIDANCE)
-  .filter((id) => !INCOMPLETE_PACKAGE_IDS.has(id))
-  .sort();
-if (JSON.stringify(guidanceIds) !== JSON.stringify([...ids].sort())) {
-  throw new Error("Official package activation guidance must cover exactly the downloadable catalog");
-}
-
 // Counted over the PUBLISHED lanes — what a stable user actually receives.
 // Staging-only packages live in the preview overlay and are counted separately.
 // A ruleset ships neither a server runtime nor an Agent, so the agent/feature
@@ -939,8 +742,8 @@ const agentOnly = publishedCatalog.packages.filter(
   (entry) => !isRulesetPackage(entry.manifest) && !entry.manifest.entrypoints.server,
 ).length;
 const features = publishedCatalog.packages.length - agentOnly - rulesets;
-if (publishedCatalog.packages.length !== 42 || agentOnly !== 26 || features !== 16 || rulesets !== 0) {
-  throw new Error(`Expected 26 agents, 16 features, and 0 rulesets, found ${agentOnly}, ${features}, and ${rulesets}`);
+if (publishedCatalog.packages.length !== 1 || agentOnly !== 0 || features !== 1 || rulesets !== 0) {
+  throw new Error(`Expected 0 agents, 1 feature, and 0 rulesets, found ${agentOnly}, ${features}, and ${rulesets}`);
 }
 console.log(
   `Catalog valid: ${publishedCatalog.packages.length} packages (${agentOnly} agents, ${features} features, ${rulesets} rulesets).`,

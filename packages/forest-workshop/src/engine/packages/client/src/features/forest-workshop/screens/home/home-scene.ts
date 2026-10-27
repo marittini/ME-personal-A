@@ -1,18 +1,21 @@
 // The home scene (board 01-1): the workshop under the trees, with residents standing on the path. Layers follow
-// plan §8 (background → seasonal props → up to two residents → emotion marks → weather → DOM UI). Until the verified
-// background art arrives (P5) the background is this drawing in code. Recruited residents stand in the two places,
+// plan §8 (background → seasonal props → up to two residents → emotion marks → weather → DOM UI). The background is
+// the current season's workshop picture (assets/backgrounds/workshop-scene-<season>.webp); the drawing in code below
+// stands in only if that file cannot load. Recruited residents stand in the two places,
 // drawn from their own picture and placement; before the starting resident is chosen the first place invites the
 // player to 주민 등록, and a place still empty waits for invitations (P3).
 import type { AppState, Controller } from "../../app/controller";
 import { h } from "../../app/dom";
 import type { Resident, WorldState } from "../../app/types";
+import { BACKGROUND_ART, assetImage } from "../../app/assets";
+import { currentSeason } from "../../app/controller";
 import { ICONS } from "../chrome/icons";
 import { residentFigure } from "../residents/resident-figure";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 
-/** One SVG drawing of the workshop scene; purely decorative. */
-function backdrop() {
+/** The drawn stand-in for the scene, used only if the season's picture cannot load. */
+function drawnBackdrop() {
   const svg = document.createElementNS(SVG_NS, "svg");
   svg.setAttribute("viewBox", "0 0 390 300");
   svg.setAttribute("preserveAspectRatio", "xMidYMax slice");
@@ -104,7 +107,8 @@ export function renderHomeScene(state: AppState, controller: Controller) {
   const world = state.world?.state === "ready" ? state.world.value.state : null;
   const residents = world ? sceneResidents(world) : [];
   return h("section", { className: "scene", attrs: { "aria-label": "공방 장면" } }, [
-    backdrop(),
+    // Layers (plan §8): the season's workshop picture → residents (their own picture) → DOM UI.
+    assetImage(BACKGROUND_ART[currentSeason(state)].scene, { className: "scene-art", fallback: drawnBackdrop }),
     world
       ? h("div", { className: "scene-stage" }, [
           spot("left", residents[0] ?? null, world, controller),

@@ -5,6 +5,7 @@
 import type { AppState } from "../../app/controller";
 import { h } from "../../app/dom";
 import type { FieldId, GameContent, Job, TalentDefinition, Waiting, WorldState, WorldView } from "../../app/types";
+import { FACILITY_ART, assetImage, itemArtPath } from "../../app/assets";
 import { ICONS, type IconFactory } from "../chrome/icons";
 
 const ITEM_ICONS: Record<string, IconFactory> = {
@@ -68,11 +69,22 @@ export function itemIcon(itemId: string, className = "icon"): SVGSVGElement {
   return (ITEM_ICONS[itemId] ?? ICONS.box)(className);
 }
 
-/** An item picture slot: the item's icon in a framed tile (the illustrated item art arrives with P5). */
+/**
+ * An item picture slot: the item's own picture (assets/items/<id>.webp), the same one on every screen — recipes,
+ * storeroom, deliveries, gifts, reports. If the file cannot load, the drawn icon takes its place.
+ */
 export function itemTile(itemId: string, size: "small" | "big" = "small") {
   return h("span", { className: `item-tile ${size} item-${itemId}`, attrs: { "aria-hidden": "true" } }, [
-    itemIcon(itemId, "icon"),
+    assetImage(itemArtPath(itemId), { className: "item-art", lazy: true, fallback: () => itemIcon(itemId, "icon") }),
   ]);
+}
+
+/** A facility's picture (assets/facilities/<id>.webp), or the drawn house if it cannot load. */
+export function facilityPicture(facilityId: string, size: "big" | "huge" = "big") {
+  return assetImage(FACILITY_ART[facilityId] ?? null, {
+    className: `facility-image ${size}`,
+    fallback: () => ICONS.house(`icon ${size}`),
+  });
 }
 
 export function recipeOf(content: GameContent | null, recipeId: string) {

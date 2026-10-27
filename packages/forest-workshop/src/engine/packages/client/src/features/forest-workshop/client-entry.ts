@@ -29,6 +29,7 @@ import { STYLES } from "./styles";
 import { PRODUCTION_STYLES } from "./styles-production";
 import { INVITE_STYLES } from "./styles-invite";
 import { STORY_STYLES } from "./styles-story";
+import { ART_STYLES } from "./styles-art";
 import { RESIDENT_STYLES } from "./styles-residents";
 
 const TAG = "marinara-capability-forest-workshop";
@@ -50,7 +51,8 @@ class ForestWorkshopElement extends HTMLElement {
   constructor() {
     super();
     this.root = this.attachShadow({ mode: "open" });
-    this.styleNode.textContent = STYLES + PRODUCTION_STYLES + RESIDENT_STYLES + INVITE_STYLES + STORY_STYLES;
+    this.styleNode.textContent =
+      STYLES + PRODUCTION_STYLES + RESIDENT_STYLES + INVITE_STYLES + STORY_STYLES + ART_STYLES;
   }
 
   connectedCallback() {

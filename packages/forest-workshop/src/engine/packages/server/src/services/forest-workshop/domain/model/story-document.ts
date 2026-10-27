@@ -4,7 +4,20 @@ import { z } from "zod";
 
 const uuid = z.string().uuid();
 
-export const EMOTIONS = ["none", "joy", "calm", "surprise", "worry", "thinking", "shy"] as const;
+/** The six agreed emotion marks (plan §8; drawn art in assets/emotions) and "none". */
+export const EMOTIONS = ["none", "joy", "affection", "curiosity", "fluster", "inspiration", "annoyance"] as const;
+/** Marks of prompt v1 (0.6.0), still read from scenes written then; shown as their closest drawn mark. */
+export const LEGACY_EMOTIONS = {
+  calm: "affection",
+  surprise: "curiosity",
+  worry: "fluster",
+  thinking: "inspiration",
+  shy: "fluster",
+} as const;
+const STORED_EMOTIONS = [
+  ...EMOTIONS,
+  ...(Object.keys(LEGACY_EMOTIONS) as Array<keyof typeof LEGACY_EMOTIONS>),
+] as const;
 export const STORY_LIMITS = {
   segmentsMin: 4,
   segmentsMax: 16,
@@ -22,7 +35,7 @@ export const segmentSchema = z.discriminatedUnion("kind", [
       kind: z.literal("line"),
       speakerId: uuid,
       text: z.string().min(1).max(STORY_LIMITS.lineMax),
-      emotion: z.enum(EMOTIONS),
+      emotion: z.enum(STORED_EMOTIONS),
     })
     .strict(),
   z.object({ kind: z.literal("narration"), text: z.string().min(1).max(STORY_LIMITS.narrationMax) }).strict(),

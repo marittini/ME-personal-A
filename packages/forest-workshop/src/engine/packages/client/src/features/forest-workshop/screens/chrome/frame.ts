@@ -2,7 +2,7 @@
 // bar, plus two overlays: the notice (a toast just above the bottom bar, so a tap far down the page still shows its
 // answer) and an optional sheet above everything (welcome package). Only `.scroll` scrolls; client-entry keeps its
 // position across re-renders of the same route.
-import type { AppState, Controller } from "../../app/controller";
+import { artClasses, currentSeason, type AppState, type Controller } from "../../app/controller";
 import { h, type Child } from "../../app/dom";
 import { renderDeliveriesSheet } from "../invite/deliveries-sheet";
 import { renderBottomNav } from "./bottom-nav";
@@ -39,7 +39,9 @@ function notice(state: AppState, controller: Controller) {
 export function renderFrame(state: AppState, controller: Controller, frame: Frame) {
   return h(
     "div",
-    { className: `shell backdrop-${frame.backdrop}${frame.nav ? " has-nav" : ""}${state.notice ? " has-notice" : ""}` },
+    {
+      className: `shell backdrop-${frame.backdrop} season-${currentSeason(state)}${artClasses(state)}${frame.nav ? " has-nav" : ""}${state.notice ? " has-notice" : ""}`,
+    },
     [
       h("div", { className: "scroll" }, [
         h("div", { className: "column" }, [

@@ -14,6 +14,7 @@ import type { HostLanguageModelMessage } from "../host/engine-adapter";
 import type { Fact } from "../domain/model/memory";
 import {
   EMOTIONS,
+  LEGACY_EMOTIONS,
   STORY_LIMITS,
   segmentSchema,
   storyMemorySchema,
@@ -21,7 +22,7 @@ import {
   type StoryMemory,
 } from "../domain/model/story-document";
 
-export const STORY_PROMPT_VERSION = 1;
+export const STORY_PROMPT_VERSION = 2;
 
 export interface SceneParticipant {
   residentId: string;
@@ -58,7 +59,7 @@ const RULES = [
 const OUTPUT_SHAPE = `{
   "segments": [
     { "kind": "narration", "text": "서술" },
-    { "kind": "line", "speakerId": "<participants의 residentId>", "text": "대사", "emotion": "none|joy|calm|surprise|worry|thinking|shy" },
+    { "kind": "line", "speakerId": "<participants의 residentId>", "text": "대사", "emotion": "none|joy|affection|curiosity|fluster|inspiration|annoyance" },
     { "kind": "choice", "askerId": "<participants의 residentId>", "question": "플레이어에게 묻는 말", "options": [ { "optionId": "a", "text": "짧은 대답" }, { "optionId": "b", "text": "짧은 대답" } ] }
   ],
   "memories": [
@@ -136,7 +137,14 @@ export function parseScene(
             ...value,
             ...(typeof value.text === "string" ? { text: clean(value.text) } : {}),
             ...(typeof value.question === "string" ? { question: clean(value.question) } : {}),
-            ...(value.kind === "line" && !EMOTIONS.includes(value.emotion as never) ? { emotion: "none" } : {}),
+            // A legacy or unknown mark becomes its closest drawn mark, or none; it never refuses a scene.
+            ...(value.kind === "line"
+              ? {
+                  emotion: EMOTIONS.includes(value.emotion as never)
+                    ? value.emotion
+                    : (LEGACY_EMOTIONS[value.emotion as keyof typeof LEGACY_EMOTIONS] ?? "none"),
+                }
+              : {}),
           }
         : value;
     const parsed = segmentSchema.safeParse(normalised);

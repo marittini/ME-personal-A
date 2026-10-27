@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { existsSync, readdirSync, realpathSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, realpathSync } from "node:fs";
 import { copyFile, cp, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { basename, delimiter, dirname, join, relative, resolve, sep } from "node:path";
@@ -356,6 +356,12 @@ async function removeOwnedSourceSnapshots(excludedPaths) {
   }
 }
 
+// Forest Workshop's art (packages/forest-workshop/assets, handoff v1.7 §8): the pack's own path list. CREDITS.md stays in
+// the repository; the engine serves only images and JSON from a package, so it is not packed.
+const forestWorkshopAssetPaths = JSON.parse(
+  readFileSync(new URL("../packages/forest-workshop/assets/asset-paths.json", import.meta.url), "utf8"),
+).filter((assetPath) => !assetPath.endsWith(".md"));
+
 const features = [
   {
     id: "noodle",
@@ -594,7 +600,8 @@ const features = [
   },
   {
     id: "forest-workshop",
-    version: "0.6.1",
+    version: "0.6.2",
+    assetPaths: forestWorkshopAssetPaths,
     // Built and proven against ME-personal (the owner's Engine fork), which reports 2.5.1.
     minEngineVersion: "2.5.1",
     maxEngineExclusive: MAX_ENGINE_EXCLUSIVE,
@@ -620,6 +627,8 @@ const features = [
     contributions: {
       slots: ["home-browser-tab"],
       homeBrowserTab: { label: "숲결 공방", ariaLabel: "숲결 공방 열기 (개발용 연결 점검)" },
+      // The Engine serves only declared paths at /api/capability-packages/forest-workshop/assets/*: the pictures.
+      assets: { paths: forestWorkshopAssetPaths.filter((assetPath) => assetPath.endsWith(".webp")) },
     },
   },
   {

@@ -11,7 +11,16 @@
 import { gameApi } from "./api";
 import { previewBackup, type BackupSummary } from "./backup-preview";
 import { lockedMessage, type LockedFeature } from "./features";
-import { clampFontSize, readFontSize, writeFontSize } from "./preferences";
+import {
+  clampFontSize,
+  readFontSize,
+  readSeasonChoice,
+  writeFontSize,
+  writeSeasonChoice,
+  type StoredSeasonChoice,
+} from "./preferences";
+import { resolveSeason } from "./season";
+import { frameArt, probeAsset, type Season } from "./assets";
 import type { Loadable } from "./dom";
 import { errorCode, errorMessage, newRequestId, newWorldId } from "./host-api";
 import { createStore, type Store } from "./store";
@@ -72,6 +81,10 @@ export interface AppState {
   restore: RestoreSelection | null;
   /** 설정 → 표시 → 글자 크기, per viewer. */
   fontSize: number;
+  /** 설정 → 표시 → 계절: follow today's date, or one season (per viewer, visual only). */
+  seasonChoice: StoredSeasonChoice;
+  /** Pack files that loaded (app/assets.ts probeAsset); the frame turns their CSS art on. */
+  artReady: string[];
   /** 시설과 창고: which tab is open. */
   facilitiesTab: "facilities" | "storage";
   /** 저장·백업 → 저장 공간 사용량, loaded when that screen opens. */
@@ -165,6 +178,8 @@ export function createController() {
     notice: null,
     restore: null,
     fontSize: readFontSize(),
+    seasonChoice: readSeasonChoice(),
+    artReady: [],
     facilitiesTab: "facilities",
     storage: null,
     starterSheetHidden: false,
@@ -183,6 +198,18 @@ export function createController() {
   });
   const pending = new Map<string, PendingRequest>();
   const gate = new WorldGate();
+
+  /** Asks for the current season's backdrop and the four UI panels; each one switches on when it has loaded. */
+  function loadFrameArt() {
+    for (const { path } of frameArt(currentSeason(store.get()))) {
+      void probeAsset(path).then((ok) => {
+        if (ok && !store.get().artReady.includes(path)) {
+          store.set((state) => ({ artReady: [...state.artReady, path] }));
+        }
+      });
+    }
+  }
+  loadFrameArt();
 
   // An info toast goes away by itself after a few seconds; an error stays until it is closed.
   const INFO_NOTICE_MS = 4000;
@@ -391,6 +418,12 @@ export function createController() {
       store.set({ notice: { kind: "info", text: lockedMessage(feature) } });
     },
 
+    setSeasonChoice(choice: StoredSeasonChoice) {
+      writeSeasonChoice(choice);
+      store.set({ seasonChoice: choice });
+      loadFrameArt();
+    },
+
     setFontSize(value: number) {
       const fontSize = clampFontSize(value);
       writeFontSize(fontSize);
@@ -500,3 +533,16 @@ export function createController() {
 }
 
 export type Controller = ReturnType<typeof createController>;
+
+/** The season the screens draw now (visual only). */
+export function currentSeason(state: Pick<AppState, "seasonChoice">): Season {
+  return resolveSeason(state.seasonChoice);
+}
+
+/** Shell classes for the frame art of the current season that has loaded. */
+export function artClasses(state: Pick<AppState, "seasonChoice" | "artReady">): string {
+  return frameArt(currentSeason(state))
+    .filter(({ path }) => state.artReady.includes(path))
+    .map(({ flag }) => ` ${flag}`)
+    .join("");
+}

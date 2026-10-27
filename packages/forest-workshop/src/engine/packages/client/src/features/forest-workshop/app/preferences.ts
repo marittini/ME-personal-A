@@ -25,3 +25,24 @@ export function writeFontSize(value: number) {
     // Blocked storage: the size still applies for this session.
   }
 }
+
+const SEASON_KEY = "forest-workshop:season";
+const SEASON_CHOICES = ["auto", "spring", "summer", "autumn", "winter"] as const;
+export type StoredSeasonChoice = (typeof SEASON_CHOICES)[number];
+
+export function readSeasonChoice(): StoredSeasonChoice {
+  try {
+    const stored = localStorage.getItem(SEASON_KEY);
+    return SEASON_CHOICES.includes(stored as StoredSeasonChoice) ? (stored as StoredSeasonChoice) : "auto";
+  } catch {
+    return "auto";
+  }
+}
+
+export function writeSeasonChoice(value: StoredSeasonChoice) {
+  try {
+    localStorage.setItem(SEASON_KEY, value);
+  } catch {
+    // Blocked storage: the choice still applies for this session.
+  }
+}

@@ -15,6 +15,7 @@ import { queuePanel } from "./queue-panel";
 import {
   crewBonus,
   crewRun,
+  facilityPicture,
   facilityOf,
   percent,
   unlockParts,
@@ -100,7 +101,10 @@ function unlockCard(
     [
       h("div", { className: "facility-entry" }, [
         h("span", { className: "facility-open closed" }, [
-          h("span", { className: "facility-art" }, [ICONS.lock("icon big")]),
+          h("span", { className: "facility-art closed" }, [
+            facilityPicture(facilityId),
+            h("span", { className: "facility-lock" }, [ICONS.lock("icon")]),
+          ]),
           h("span", { className: "facility-text" }, [
             h("strong", { text: `${definition?.name ?? facilityId} · 해금 전` }),
             h("span", { text: definition?.description ?? "" }),
@@ -154,7 +158,7 @@ function facilityCard(
         on: { click: () => controller.navigate("facilities") },
       },
       [
-        h("span", { className: "facility-art" }, [ICONS.house("icon big")]),
+        h("span", { className: "facility-art" }, [facilityPicture(facilityId)]),
         h("span", { className: "facility-text" }, [
           h("strong", { text: `${definition?.name ?? facilityId} Lv. ${facility.level}` }),
           h("span", { text: `${definition?.description ?? ""} 처리 속도 +${speedPercent(content, facility.level)}%` }),

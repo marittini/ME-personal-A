@@ -4,8 +4,10 @@
 // At the end, 다 읽음 records the reading. The reading space hides the bottom bar and has an explicit way back
 // (plan §15.6). The first open of an unlocked episode writes the scene: that is a language-model call, so the box
 // says so, and a failure offers the same plan again (no new expedition, no cost).
-import type { AppState, Controller } from "../../app/controller";
+import { currentSeason, type AppState, type Controller } from "../../app/controller";
+import { BACKGROUND_ART, EMOTION_ART, assetImage, type Season } from "../../app/assets";
 import { button, h } from "../../app/dom";
+
 import type { Emotion, Segment, StoryDocument, WorldView } from "../../app/types";
 import type { ReaderState } from "../../app/story-actions";
 import { renderFrame } from "../chrome/frame";
@@ -13,26 +15,45 @@ import { ICONS } from "../chrome/icons";
 import { sheetDialog } from "../chrome/sheet";
 import { residentFigure } from "../residents/resident-figure";
 
-/** Emotion marks (the six agreed marks arrive as art in P5; these are their text stand-ins). */
-const EMOTION_MARK: Record<Emotion, string> = {
-  none: "",
-  joy: "♪",
-  calm: "~",
-  surprise: "!",
-  worry: "?",
-  thinking: "…",
-  shy: "✿",
+/** Scenes written before prompt v2 carry the earlier emotion names; they show as the nearest of the six arts. */
+const LEGACY: Record<string, Emotion> = {
+  calm: "affection",
+  surprise: "curiosity",
+  worry: "fluster",
+  thinking: "inspiration",
+  shy: "fluster",
 };
+
+const MARK_TEXT: Record<keyof typeof EMOTION_ART, string> = {
+  joy: "♪",
+  affection: "♡",
+  curiosity: "?",
+  fluster: "💧",
+  inspiration: "✦",
+  annoyance: "💢",
+};
+
+function emotionArt(emotion: string) {
+  const known = (emotion in EMOTION_ART ? emotion : LEGACY[emotion]) as keyof typeof EMOTION_ART | undefined;
+  if (!known) return null;
+  return assetImage(EMOTION_ART[known], {
+    className: "emotion-bubble emotion-art",
+    fallback: () => h("span", { className: "emotion-bubble", text: MARK_TEXT[known] }),
+  });
+}
 
 function nameOf(world: WorldView, residentId: string) {
   return world.state.residents[residentId]?.displayName ?? "주민";
 }
 
-function stage(world: WorldView, story: StoryDocument | null, current: Segment | undefined) {
+function stage(season: Season, world: WorldView, story: StoryDocument | null, current: Segment | undefined) {
   const ids = story?.participants ?? [];
   const speaking = current?.kind === "line" ? current.speakerId : current?.kind === "choice" ? current.askerId : null;
   return h("section", { className: "story-stage", attrs: { "aria-hidden": "true" } }, [
-    h("span", { className: "stage-shelf" }),
+    assetImage(BACKGROUND_ART[season].scene, {
+      className: "stage-art",
+      fallback: () => h("span", { className: "stage-shelf" }),
+    }),
     h(
       "div",
       { className: `stage-cast cast-${ids.length}` },
@@ -40,9 +61,9 @@ function stage(world: WorldView, story: StoryDocument | null, current: Segment |
         const resident = world.state.residents[id];
         if (!resident) return null;
         const mark =
-          speaking === id && current?.kind === "line" ? EMOTION_MARK[current.emotion] : speaking === id ? "?" : "";
+          speaking !== id ? null : current?.kind === "line" ? emotionArt(current.emotion) : emotionArt("curiosity");
         return h("span", { className: `stage-spot${speaking === id ? " speaking" : ""}` }, [
-          mark ? h("span", { className: "emotion-bubble", text: mark }) : null,
+          mark,
           residentFigure(resident),
         ]);
       }),
@@ -190,7 +211,7 @@ export function renderStoryReader(state: AppState, controller: Controller) {
     },
     backdrop: "wood",
     body: [
-      stage(world, story, current),
+      stage(currentSeason(state), world, story, current),
       dialogue(state, world, reader, controller),
       story && reader.index < total
         ? h("div", { className: "reader-foot" }, [

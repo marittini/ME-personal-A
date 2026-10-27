@@ -61,10 +61,12 @@ export interface Fact {
   supersedes: number | null;
 }
 
-export type Emotion = "none" | "joy" | "calm" | "surprise" | "worry" | "thinking" | "shy";
+export type Emotion = "none" | "joy" | "affection" | "curiosity" | "fluster" | "inspiration" | "annoyance";
+/** Marks of scenes written by prompt v1 (0.6.0). */
+export type LegacyEmotion = "calm" | "surprise" | "worry" | "thinking" | "shy";
 
 export type Segment =
-  | { kind: "line"; speakerId: string; text: string; emotion: Emotion }
+  | { kind: "line"; speakerId: string; text: string; emotion: Emotion | LegacyEmotion }
   | { kind: "narration"; text: string }
   | { kind: "choice"; askerId: string; question: string; options: Array<{ optionId: string; text: string }> };
 

@@ -1,3 +1,8 @@
+## 0.6.2 — 2026-10-27
+- The workshop now has its own art: a picture for every item and facility, the season's backdrop and workshop scene, emotion marks in stories, the wooden title sign, and paper, wood and button panels. A picture that cannot load falls back to the drawn look.
+- 설정 → 표시 → 계절: follow today's date or pick spring, summer, autumn or winter. Only the current season's pictures are loaded; the season changes the look only.
+- Story emotions are now joy, affection, curiosity, fluster, inspiration and annoyance; scenes written earlier keep showing with the nearest mark.
+
 ## 0.6.1 — 2026-10-27
 - Fixed: a late heartbeat or read could put an older revision of the world back on screen, and an answer for a world you had left could replace the one you opened. Updates now apply only to the same world and never go backwards; opening a world drops answers from an earlier navigation.
 - Fixed: once the 72-hour absence budget was used, background reads on later days kept auto-selling. The workshop now stays frozen until you return; a return or a command still re-evaluates at once.

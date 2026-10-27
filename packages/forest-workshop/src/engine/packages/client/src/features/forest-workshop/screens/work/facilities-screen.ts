@@ -10,7 +10,7 @@ import { card, renderFrame } from "../chrome/frame";
 import { ICONS } from "../chrome/icons";
 import { amountPicker } from "../chrome/sheet";
 import { renderAutoSellSheet } from "./auto-sell-sheet";
-import { crewBonus, facilityOf, itemName, itemTile, percent, speedPercent } from "./production-view";
+import { crewBonus, facilityOf, facilityPicture, itemName, itemTile, percent, speedPercent } from "./production-view";
 
 function holdings(view: WorldView, content: GameContent | null) {
   const order = new Map(content?.items.map((item, index) => [item.id, index]));
@@ -76,7 +76,7 @@ function facilityCard(state: AppState, content: GameContent, world: WorldView, c
         ),
       ),
       h("div", { className: "facility" }, [
-        h("span", { className: "facility-picture" }, [ICONS.house("icon huge")]),
+        h("span", { className: `facility-picture${closed ? " closed" : ""}` }, [facilityPicture(facilityId, "huge")]),
         h("div", { className: "facility-info" }, [
           h("strong", { className: "facility-name", text: definition?.name ?? facilityId }),
           h("span", { className: "facility-level" }, [

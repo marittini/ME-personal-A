@@ -1,6 +1,8 @@
 // 설정 (board 04-1): 내 공방 (닉네임 + 수정, 현실 날씨 + 변경), 표시 (글자 크기 + 미리보기, 날씨 효과, 자동 읽기),
 // 관리 (주민 그림 관리 · AI 지침 관리 · 기억 관리 · 저장 · 백업), the 72-hour note and the automation footnote.
 // Real now: nickname, text size and 저장 · 백업. The rest keeps its place, locked until its phase.
+import type { StoredSeasonChoice } from "../../app/preferences";
+import { SEASON_LABELS, seasonForDate } from "../../app/season";
 import type { AppState, Controller, Route } from "../../app/controller";
 import { h, statusLine } from "../../app/dom";
 import type { LockedFeature } from "../../app/features";
@@ -86,6 +88,39 @@ function fontSizeRow(state: AppState, controller: Controller) {
   ]);
 }
 
+/** 계절: which season's workshop the screens draw. Visual only; daily limits follow the server's UTC day. */
+function seasonRow(state: AppState, controller: Controller) {
+  const choices: Array<{ id: StoredSeasonChoice; label: string }> = [
+    { id: "auto", label: `자동 (${SEASON_LABELS[seasonForDate(new Date())]})` },
+    { id: "spring", label: "봄" },
+    { id: "summer", label: "여름" },
+    { id: "autumn", label: "가을" },
+    { id: "winter", label: "겨울" },
+  ];
+  return h("div", { className: "setting-block" }, [
+    h("div", { className: "setting-row" }, [
+      ICONS.leaf("icon row-leaf"),
+      h("span", { className: "setting-label", text: "계절", attrs: { id: "fw-season-label" } }),
+    ]),
+    h(
+      "div",
+      { className: "chip-row season-chips", attrs: { role: "group", "aria-labelledby": "fw-season-label" } },
+      choices.map((choice) =>
+        h("button", {
+          className: `pill-tab${state.seasonChoice === choice.id ? " current" : ""}`,
+          text: choice.label,
+          attrs: { type: "button", "aria-pressed": state.seasonChoice === choice.id ? "true" : "false" },
+          on: { click: () => controller.setSeasonChoice(choice.id) },
+        }),
+      ),
+    ),
+    h("p", {
+      className: "hint",
+      text: "자동은 오늘 날짜(북반구)를 따라요. 도시를 정하는 현실 날씨는 P5에서 열려요. 계절은 그림만 바꾸고 생산 · 판매 · 선물에는 영향이 없어요.",
+    }),
+  ]);
+}
+
 function toggleRow(controller: Controller, feature: LockedFeature, icon: IconFactory, title: string, detail: string) {
   return featureButton(controller, feature, {
     className: "toggle-row",
@@ -128,6 +163,7 @@ export function renderSettingsScreen(state: AppState, controller: Controller) {
           "표시",
           [
             fontSizeRow(state, controller),
+            seasonRow(state, controller),
             toggleRow(controller, "weather-effects", ICONS.leaf, "날씨 효과", "공방 배경에 현재 날씨를 반영해요."),
             toggleRow(controller, "auto-read", ICONS.book, "자동 읽기", "이야기를 자동으로 넘겨요."),
           ],

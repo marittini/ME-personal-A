@@ -8,7 +8,7 @@ import { ICONS } from "../chrome/icons";
 import type { GameContent, WorldState } from "../../app/types";
 import { renderHomeScene } from "./home-scene";
 import { renderStarterKitSheet } from "./starter-kit-sheet";
-import { absenceStrip, workReportCard, workReportSheet } from "./work-report";
+import { absenceStrip, compactWorkReport, workReportSheet } from "./work-report";
 
 /** What the story card says, from the world: an opened episode first, then a running expedition. */
 function storyLine(world: WorldState, content: GameContent | null): string {
@@ -69,10 +69,11 @@ export function renderHomeScreen(state: AppState, controller: Controller) {
     top: { kind: "home" },
     backdrop: "forest",
     hero: renderHomeScene(state, controller),
+    homeLayout: true,
     body: [
-      workReportCard(world.value, state.content, controller),
-      absenceStrip(world.value, state.content, controller),
+      compactWorkReport(world.value, controller),
       storyCard(world.value.state, state.content, controller),
+      absenceStrip(world.value, state.content, controller),
     ],
     nav: true,
     sheet:

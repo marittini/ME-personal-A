@@ -34,7 +34,7 @@
  * dependency types a strict run reports about a thousand false errors and hides real ones, so it only runs with an
  * Engine. The Long-Term Memory browser workflow sets one; Pull Request Checks has no Engine checkout and skips it.
  */
-import { cp, mkdtemp, rm, symlink } from "node:fs/promises";
+import { cp, mkdir, mkdtemp, rm, symlink } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { tmpdir } from "node:os";
@@ -153,7 +153,7 @@ for (const id of packages) {
 
   const overlay = await mkdtemp(join(tmpdir(), `marinara-typecheck-${id}-`));
   try {
-    await cp(engineSources, overlay, { recursive: true, force: true });
+    if (id !== "forest-workshop") await cp(engineSources, overlay, { recursive: true, force: true });
     // Stacked as the bundler stacks them, so package code is checked against the host adapters it is built with.
     for (const root of OVERLAY_ROOTS) await cp(root, overlay, { recursive: true, force: true });
     if (packageSources) await cp(packageSources, overlay, { recursive: true, force: true });
@@ -196,7 +196,10 @@ for (const id of packages) {
       // Resolve bare imports (zod, fastify, react, @types/node) the way the Engine does.
       for (const dir of ["", "packages/client", "packages/server", "packages/shared"]) {
         const modules = join(engineRoot, dir, "node_modules");
-        if (existsSync(modules)) await symlink(modules, join(overlay, dir, "node_modules"), "junction");
+        if (existsSync(modules)) {
+          await mkdir(join(overlay, dir), { recursive: true });
+          await symlink(modules, join(overlay, dir, "node_modules"), "junction");
+        }
       }
       for (const run of strictRuns) {
         const ownFiles = files.filter((file) => run.roots.some((root) => file.startsWith(root)));

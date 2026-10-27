@@ -8,7 +8,7 @@ import { amountPicker, sheetDialog } from "../chrome/sheet";
 import { itemTile } from "./production-view";
 
 /** The floor the server uses (domain/production/simulation.ts autoSellFloor). */
-function floorOf(world: WorldView, content: GameContent, itemId: string, keep: number) {
+function floorOf(world: WorldView, content: GameContent, itemId: string, keep: number, continuous: boolean) {
   let target = 0;
   for (const facility of Object.values(world.state.production.facilities)) {
     if (!facility.unlocked || facility.mode !== "auto") continue;
@@ -18,7 +18,7 @@ function floorOf(world: WorldView, content: GameContent, itemId: string, keep: n
         target = Math.max(target, rule.targetStock);
     }
   }
-  return { floor: Math.max(keep, target, world.state.production.protectedStock[itemId] ?? 0), target };
+  return { floor: Math.max(keep, continuous ? 0 : target, world.state.production.protectedStock[itemId] ?? 0), target };
 }
 
 export function renderAutoSellSheet(state: AppState, world: WorldView, content: GameContent, controller: Controller) {
@@ -32,11 +32,24 @@ export function renderAutoSellSheet(state: AppState, world: WorldView, content: 
     const setting = world.state.production.autoSell[item.id] ?? { enabled: false, keep: 0, dailyMax: 10 };
     const keep = amountPicker(`fw-keep-${item.id}`, setting.keep, 0, 999, { label: `${item.name} 남길 수량` });
     const daily = amountPicker(`fw-daily-${item.id}`, setting.dailyMax, 1, 999, { label: `${item.name} 하루 최대` });
-    const { floor, target } = floorOf(world, content, item.id, setting.keep);
+    const continuous = h("input", { attrs: { type: "checkbox", id: `fw-continuous-${item.id}` } });
+    continuous.checked = Boolean(setting.continuous);
+    const { floor, target } = floorOf(
+      world,
+      content,
+      item.id,
+      setting.keep,
+      Boolean(setting.continuous && setting.enabled),
+    );
     const soldToday = sales.day === today ? (sales.sold[item.id] ?? 0) : 0;
     const busy = Boolean(state.busy[`auto-sell:${item.id}`]);
     const save = (enabled: boolean) =>
-      void controller.setAutoSell(item.id, { enabled, keep: keep.read(), dailyMax: daily.read() });
+      void controller.setAutoSell(item.id, {
+        enabled,
+        keep: keep.read(),
+        dailyMax: daily.read(),
+        continuous: continuous.checked,
+      });
     return h("li", { className: `auto-sell-row${setting.enabled ? " on" : ""}` }, [
       h("div", { className: "auto-sell-head" }, [
         itemTile(item.id),
@@ -58,9 +71,13 @@ export function renderAutoSellSheet(state: AppState, world: WorldView, content: 
         h("label", { className: "field-label", text: "하루 최대 판매량", attrs: { for: `fw-daily-${item.id}` } }),
         daily.node,
       ]),
+      h("label", { attrs: { for: `fw-continuous-${item.id}` } }, [continuous, " 판매할 만큼 계속 생산하기"]),
       h("p", {
         className: "hint",
-        text: `실제로 남기는 양: ${floor}개 이상 (남길 수량 · 생산 목표 ${target} · 보호 ${world.state.production.protectedStock[item.id] ?? 0} 중 가장 큰 값). 목표와 같으면 팔지 않을 수 있어요.`,
+        text:
+          setting.enabled && setting.continuous
+            ? `현재 판매 시 ${floor}개 이상 남겨요. 판매 한도에 도달하면 일반 생산 목표 ${target}개를 따릅니다.`
+            : `현재 ${floor}개 이상 남겨요 (보관량 · 생산 목표 ${target} · 보호 재고 중 가장 큰 값).`,
       }),
       h("div", { className: "row-actions" }, [
         button(busy ? "저장 중…" : setting.enabled ? "설정 저장" : "켜기", () => save(true), { disabled: busy }),
@@ -71,7 +88,7 @@ export function renderAutoSellSheet(state: AppState, world: WorldView, content: 
   return sheetDialog("fw-auto-sell", "자동 판매", [
     h("p", {
       className: "muted",
-      text: "켠 품목만 회차가 끝날 때마다 팔아요. 하루(UTC 기준) 최대 판매량을 넘지 않고, 보호 · 예약 재고와 생산 목표만큼은 남겨요.",
+      text: "켠 품목을 하루(UTC 기준) 판매 한도까지 팔아요. 계속 생산을 선택하면 남길 수량과 보호 재고를 지키며 판매할 만큼 만들어요.",
     }),
     rows.length
       ? h("ul", { className: "protect-list" }, rows)

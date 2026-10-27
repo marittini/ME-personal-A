@@ -45,8 +45,27 @@ function simulate(intervalHours: number, sell: boolean) {
   };
 }
 
+function simulateContinuous(intervalHours: number) {
+  let production = initialProduction(worldId);
+  production.autoSell["berry-jam"] = { enabled: true, keep: 5, dailyMax: 8, continuous: true };
+  let inventory: Record<string, number> = { ...STARTER_KIT.items };
+  let gold = 0;
+  let runs = 0;
+  for (let elapsed = 0; elapsed < days * 24; elapsed += intervalHours) {
+    const result = advanceProduction(production, inventory, intervalHours * hour, {
+      realStart: start + elapsed * hour,
+    });
+    production = result.production;
+    inventory = result.inventory;
+    gold += result.summary.gold;
+    runs += result.summary.runs;
+  }
+  return { intervalHours, policy: "continuous jam, keep 5, daily max 8", runs, gold, inventory };
+}
+
 for (const interval of [0.5, 2, 8, 24, 72]) {
   for (const sell of [false, true]) console.log(JSON.stringify(simulate(interval, sell)));
+  console.log(JSON.stringify(simulateContinuous(interval)));
 }
 const production = initialProduction(worldId);
 production.autoSell["berry-jam"] = { enabled: true, keep: 0, dailyMax: 999 };

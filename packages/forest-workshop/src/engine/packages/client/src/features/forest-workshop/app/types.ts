@@ -215,6 +215,7 @@ export interface AutoSell {
   enabled: boolean;
   keep: number;
   dailyMax: number;
+  continuous?: boolean;
 }
 
 export interface ProductionState {

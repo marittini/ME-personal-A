@@ -112,8 +112,13 @@ export const INVITE_STYLES = `
 .row-actions { display: flex; flex-wrap: wrap; gap: 0.5em; }
 .row-actions .button { flex: 1; }
 
-/* 주민: unset field and lit 돌파 leaves */
-.tag.field.unset { background: var(--fw-surface-3); color: var(--fw-muted); border-style: dashed; }
+/* 주민: 특기 and lit 돌파 leaves */
+.talent-card { display: grid; gap: 0.35em; padding: 0.65em 0.75em; border-radius: 0.9em; border: var(--line-in) solid var(--ink); background: var(--fw-leaf-soft); }
+.talent-card p { margin: 0; }
+.talent-field { display: flex; align-items: center; gap: 0.4em; font-size: calc(var(--fs) * 1.05); }
+.talent-field .icon { color: var(--fw-accent); }
+.talent-name { display: grid; gap: 0.15em; }
+.talent-line, .talent-note { display: flex; align-items: center; flex-wrap: wrap; gap: 0.3em; margin: 0; color: #2f4a26; font-weight: 800; }
 .pip.on { background: var(--fw-leaf); }
 .passive-block { display: grid; gap: 0.25em; }
 .passive-block p { margin: 0; }

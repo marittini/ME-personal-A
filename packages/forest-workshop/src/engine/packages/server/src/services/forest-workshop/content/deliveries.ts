@@ -21,9 +21,19 @@ export const LATER_ORDERS: readonly DeliveryOrder[] = [
   { id: "dried-herbs", title: "찻집의 말린 허브", items: { "dried-herb": 3 }, reward: { tickets: 1, gold: 30 } },
   { id: "flour-sack", title: "빵집의 밀가루 한 자루", items: { flour: 3 }, reward: { tickets: 1, gold: 30 } },
   { id: "honey-jar", title: "꿀 한 단지", items: { honey: 2 }, reward: { tickets: 1, gold: 20 } },
+  { id: "plank-stack", title: "목수의 판자 주문", items: { plank: 4 }, reward: { tickets: 1, gold: 30 } },
+  { id: "pinecone-box", title: "불쏘시개용 솔방울", items: { pinecone: 12 }, reward: { tickets: 1, gold: 15 } },
   { id: "pie-order", title: "축하 자리에 놓을 파이", items: { "berry-pie": 1 }, reward: { tickets: 2, gold: 40 } },
   { id: "sachet-gift", title: "선물용 향주머니", items: { "herb-sachet": 1 }, reward: { tickets: 2, gold: 30 } },
   { id: "tray-set", title: "나무 쟁반 두 개", items: { "wooden-tray": 2 }, reward: { tickets: 2, gold: 30 } },
+  { id: "candle-pair", title: "밤길에 켤 밀랍 초", items: { "beeswax-candle": 2 }, reward: { tickets: 2, gold: 40 } },
+  { id: "scarf-order", title: "겨울 준비 목도리", items: { "knit-scarf": 1 }, reward: { tickets: 2, gold: 50 } },
+  { id: "wreath-door", title: "마을 회관 문 화환", items: { "flower-wreath": 1 }, reward: { tickets: 2, gold: 30 } },
+  { id: "soup-pot", title: "아픈 이웃을 위한 수프", items: { "pumpkin-soup": 1 }, reward: { tickets: 2, gold: 35 } },
+  { id: "cake-party", title: "생일 잔치 꿀 케이크", items: { "honey-cake": 1 }, reward: { tickets: 2, gold: 40 } },
+  { id: "birdhouse-park", title: "공원에 달 새집", items: { birdhouse: 1 }, reward: { tickets: 2, gold: 45 } },
+  { id: "cookie-basket", title: "소풍용 도토리 쿠키", items: { "acorn-cookie": 2 }, reward: { tickets: 2, gold: 35 } },
+  { id: "tea-gift-box", title: "특별한 날의 찻상자", items: { "tea-gift": 1 }, reward: { tickets: 3, gold: 60 } },
 ];
 
 export const ORDERS_PER_DAY = 3;

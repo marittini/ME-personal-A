@@ -14,6 +14,7 @@ import { renderAssignSheet } from "./assign-sheet";
 import { queuePanel } from "./queue-panel";
 import {
   crewBonus,
+  crewRun,
   facilityOf,
   percent,
   unlockParts,
@@ -160,7 +161,7 @@ function facilityCard(
           h("span", { className: "crew-line" }, [
             bonus.resident ? residentAvatar(bonus.resident) : null,
             bonus.resident
-              ? `${bonus.resident.displayName} · ${bonus.matches ? `+${percent(bonus.passive)}` : "분야가 달라 효과 없음"}`
+              ? `${bonus.resident.displayName} · ${bonus.matches ? `+${percent(bonus.passive)}${bonus.talent ? ` · 특기 ${bonus.talent.name}` : ""}` : "분야가 달라 효과 없음"}`
               : "배치한 주민 없음",
             bonus.set ? ` · 세트 +${percent(bonus.set)}` : "",
           ]),
@@ -179,7 +180,7 @@ function facilityCard(
   ]);
 }
 
-function recipeCard(content: GameContent, rule: Rule | undefined, level: number, bonus: number) {
+function recipeCard(content: GameContent, rule: Rule | undefined, level: number, crew: ReturnType<typeof crewBonus>) {
   const recipe = rule ? recipeOf(content, rule.recipeId) : null;
   if (!recipe) {
     return h("div", { className: "recipe" }, [
@@ -191,8 +192,9 @@ function recipeCard(content: GameContent, rule: Rule | undefined, level: number,
     ]);
   }
   const output = Object.keys(recipe.outputs)[0]!;
-  const oneRun = runMs(content, recipe, level, bonus);
-  const flow = [...Object.entries(recipe.inputs).map(([item, amount]) => `${itemName(content, item)} ${amount}`)];
+  const run = crewRun(recipe, crew);
+  const oneRun = runMs(content, recipe, level, run.extraBonus);
+  const flow = Object.entries(run.inputs).map(([item, amount]) => `${itemName(content, item)} ${amount}`);
   return h("div", { className: "recipe" }, [
     h("span", { className: "recipe-art" }, [itemTile(output, "big")]),
     h("span", { className: "recipe-text" }, [
@@ -204,6 +206,12 @@ function recipeCard(content: GameContent, rule: Rule | undefined, level: number,
           .map(([item, amount]) => `${itemName(content, item)} ${amount}`)
           .join(" · ")} · 1회 ${formatDuration(oneRun)}`,
       }),
+      run.talentApplies && crew.talent
+        ? h("span", { className: "talent-note" }, [
+            ICONS.sparkle("icon tiny"),
+            ` 특기 ${crew.talent.name}: ${crew.talent.description}`,
+          ])
+        : null,
     ]),
   ]);
 }
@@ -415,7 +423,7 @@ function body(state: AppState, content: GameContent, world: WorldView, controlle
   const dirty = isDraftDirty(state, world.state.production, facilityId);
   const applying = Boolean(state.busy[`rules:${facilityId}`]);
   const auto = facility.mode === "auto";
-  const bonus = crewBonus(content, world.state, facilityId).total;
+  const crew = crewBonus(content, world.state, facilityId);
   return [
     fieldTabs(content, world, facilityId, controller),
     card(
@@ -425,7 +433,7 @@ function body(state: AppState, content: GameContent, world: WorldView, controlle
         facilityCard(content, world, facilityId, facility, controller),
         ...(auto
           ? [
-              recipeCard(content, selected, facility.level, bonus),
+              recipeCard(content, selected, facility.level, crew),
               selected ? targetRow(content, world, facilityId, selected, controller) : null,
               materialsBlock(content, world, selected),
               priorityList(content, facilityId, rules, selected?.policyId, controller),

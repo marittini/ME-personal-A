@@ -1,3 +1,8 @@
+## 0.5.1 — 2026-10-27
+- More to make: 15 materials (pinecones, acorns, pumpkins, cotton, tea leaves, beeswax, feathers, four-leaf clovers…), 8 processed goods and 11 finished goods, with longer chains such as cotton → thread → scarf or tea → herb tea → gift box. More delivery requests use them.
+- A resident's field and talent are now decided when they are registered, read from their own character or persona text, and shown before you confirm; they no longer change afterwards. Each talent speeds up one recipe of that field or saves one input.
+- Existing residents keep a field you already chose and get a matching talent; others get both from their stored source text.
+
 ## 0.5.0 — 2026-10-27
 - Five facilities, one per field; 재배밭, 조사대 and 제작대 open once their condition is met. New materials and goods.
 - 지정 횟수: a facility can run a queue (1–99 runs per request, 3–5 slots by level) instead of its rules; switching lets the current run finish.

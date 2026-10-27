@@ -2,6 +2,7 @@
 // capability runtime's resources. Read-only: nothing here writes a character, a persona or the active persona.
 // Also the CommandHost that residents.register uses to take its snapshot, so the snapshot is always the server's
 // own reading of the source, never something the client sent.
+import { assignTalent } from "../domain/residents/talent-assign";
 import type { CommandHost } from "../domain/commands/command";
 import { FwError } from "../domain/errors";
 import { assertWorldId, sha256Hex, stableStringify } from "../domain/ids";
@@ -84,12 +85,14 @@ export function createSourceService(runtime: HostRuntime, persistence: HostPersi
 
     /** The snapshot a registration would take, for the 원래 설정 box before anything is saved. */
     async preview(worldId: unknown, kind: unknown, sourceId: unknown) {
-      assertWorldId(worldId);
+      const world = assertWorldId(worldId);
       if ((kind !== "character" && kind !== "persona") || typeof sourceId !== "string" || !sourceId) {
         throw new FwError("invalid_request");
       }
       const snapshot = await host.readSource(kind, sourceId, new Date().toISOString());
-      return { kind, id: sourceId, snapshot, summary: sourceSummary(snapshot, 400) };
+      // The field and talent registering would give: the same rule residents.register applies.
+      const talent = assignTalent(world, kind, sourceId, snapshot);
+      return { kind, id: sourceId, snapshot, summary: sourceSummary(snapshot, 400), talent };
     },
   };
 }

@@ -2,6 +2,7 @@
 // 공방 세계 설정 with its n / 200 counter, 수정 · 다시 제안, 주민 그림 직접 등록 (PNG · WebP → WebP 저장),
 // "원본 프로필은 바뀌지 않아요.", 재구축 확정 and 나중에 그림 등록. ① and ③ use the same frame for the two steps the
 // board shows only in its step bar. This is a form, so the bottom bar is hidden and 뒤로 is explicit (plan §15.6).
+import { FIELD_ICONS, FIELD_LABELS, talentOf } from "../work/production-view";
 import type { AppState, Controller } from "../../app/controller";
 import { button, errorLine, h, statusLine } from "../../app/dom";
 import type { RegisterState } from "../../app/register-actions";
@@ -123,6 +124,26 @@ function originalSetting(preview: RegisterState["preview"]) {
   return h("div", { className: "readonly-box" }, [h("p", { text: value.summary || "원본에 적힌 설명이 없어요." })]);
 }
 
+/** 전문 분야 · 특기 this registration gives (decided by the server from the source; shown before confirming). */
+function talentBox(state: AppState, preview: RegisterState["preview"]) {
+  if (!preview || preview.state !== "ready" || !state.content) return null;
+  const talent = talentOf(state.content, preview.value.talent.talentId);
+  const field = preview.value.talent.field;
+  return h("div", { className: "talent-card", attrs: { "aria-label": "맞이하면 정해지는 전문 분야와 특기" } }, [
+    h("p", { className: "talent-field" }, [
+      FIELD_ICONS[field]("icon"),
+      h("strong", { text: `전문 분야 · ${FIELD_LABELS[field]}` }),
+    ]),
+    talent
+      ? h("p", { className: "talent-name" }, [
+          h("strong", { text: `특기 · ${talent.name}` }),
+          h("span", { text: talent.description }),
+        ])
+      : null,
+    h("p", { className: "muted", text: "원래 설정을 바탕으로 정해져요. 주민을 맞이하면 바뀌지 않아요." }),
+  ]);
+}
+
 function imagePicker(register: RegisterState, controller: Controller, maxBytes: number) {
   const input = h("input", {
     className: "visually-hidden",
@@ -211,6 +232,7 @@ function stepTwo(register: RegisterState, state: AppState, controller: Controlle
     h("section", { className: "card rebuild", attrs: { "aria-labelledby": "fw-original" } }, [
       h("h2", { className: "section-title doc", text: "원래 설정", attrs: { id: "fw-original" } }),
       originalSetting(register.preview),
+      talentBox(state, register.preview),
       h("label", { className: "section-title", text: "공방 세계 설정", attrs: { for: "fw-world-setting" } }),
       h("div", { className: "textarea-wrap" }, [textarea, counter]),
       h("div", { className: "rule-actions even" }, [

@@ -6,7 +6,7 @@ import { h } from "../../app/dom";
 import type { GameContent, WorldView } from "../../app/types";
 import { ICONS } from "../chrome/icons";
 import { amountPicker } from "../chrome/sheet";
-import { itemName, itemTile, queueSlotsAt, recipeOf } from "./production-view";
+import { crewBonus, crewRun, itemName, itemTile, queueSlotsAt, recipeOf } from "./production-view";
 
 export function queuePanel(
   state: AppState,
@@ -22,8 +22,9 @@ export function queuePanel(
   const chosenId = state.work.queueRecipe[facilityId] ?? recipes[0]?.id ?? "";
   const chosen = recipeOf(content, chosenId);
   const forecast = h("p", { className: "hint" });
+  const crew = crewBonus(content, world.state, facilityId);
   const describe = (count: number) => {
-    const inputs = chosen ? Object.entries(chosen.inputs) : [];
+    const inputs = chosen ? Object.entries(crewRun(chosen, crew).inputs) : [];
     forecast.textContent = inputs.length
       ? `예상 재료 ${inputs.map(([item, amount]) => `${itemName(content, item)} ${amount * count}`).join(" · ")} — 한 회차씩 시작할 때 꺼내요. 재료 확보를 미리 보장하지 않아요.`
       : "재료 없이 숲에서 바로 모아요.";

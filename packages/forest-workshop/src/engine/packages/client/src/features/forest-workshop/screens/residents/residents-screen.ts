@@ -9,7 +9,7 @@ import { visibleResidents, type ResidentsView } from "../../app/resident-actions
 import type { GameContent, Resident, WorldView } from "../../app/types";
 import { card, renderFrame } from "../chrome/frame";
 import { ICONS, type IconFactory } from "../chrome/icons";
-import { FIELD_ICONS, FIELD_LABELS, passiveOf, percent } from "../work/production-view";
+import { FIELD_ICONS, FIELD_LABELS, passiveOf, percent, talentOf } from "../work/production-view";
 import { searchField } from "../chrome/search-field";
 import { kindTag, residentFigure } from "./resident-figure";
 import { renderFieldSheet } from "./field-sheet";
@@ -66,15 +66,15 @@ function tabs(view: ResidentsView, controller: Controller) {
 }
 
 function fieldTag(resident: Resident, controller: Controller) {
-  const label = resident.field ? FIELD_LABELS[resident.field] : "분야 정하기";
+  const label = FIELD_LABELS[resident.field];
   return h(
     "button",
     {
-      className: `tag field${resident.field ? "" : " unset"}`,
-      attrs: { type: "button", "aria-label": `${resident.displayName} 전문 분야: ${label}` },
+      className: "tag field",
+      attrs: { type: "button", "aria-label": `${resident.displayName} 전문 분야 ${label} — 특기 보기` },
       on: { click: () => controller.openSheet({ kind: "field", residentId: resident.residentId }) },
     },
-    [(resident.field ? FIELD_ICONS[resident.field] : ICONS.leaf)("icon tiny"), h("span", { text: label })],
+    [FIELD_ICONS[resident.field]("icon tiny"), h("span", { text: label })],
   );
 }
 
@@ -123,6 +123,7 @@ function passiveBlock(resident: Resident, world: WorldView, content: GameContent
   const max = content?.crew.maxBreakthrough ?? 5;
   const base = content ? passiveOf(content, 0) : 0;
   const now = content ? passiveOf(content, resident.breakthrough) : 0;
+  const talent = talentOf(content, resident.talentId);
   const placedAt = Object.entries(world.state.production.facilities).find(
     ([, facility]) => facility.residentId === resident.residentId,
   )?.[0];
@@ -138,8 +139,15 @@ function passiveBlock(resident: Resident, world: WorldView, content: GameContent
     h("p", { className: "passive" }, [
       ICONS.leaf("icon tiny"),
       h("strong", { text: "패시브" }),
-      ` ${resident.field ? `${FIELD_LABELS[resident.field]} 시설 처리 속도` : "분야를 정하면 생겨요"}`,
+      ` ${FIELD_LABELS[resident.field]} 시설 처리 속도`,
     ]),
+    talent
+      ? h("p", { className: "talent-line" }, [
+          ICONS.sparkle("icon tiny"),
+          h("strong", { text: `특기 ${talent.name}` }),
+          ` ${talent.description}`,
+        ])
+      : null,
     h("p", { className: "muted", text: `기본 효과 ${percent(base)} → 현재 ${percent(now)} · ${where}` }),
     h("p", { className: "breakthrough" }, [
       h("span", { text: `돌파 ${resident.breakthrough}/${max}` }),

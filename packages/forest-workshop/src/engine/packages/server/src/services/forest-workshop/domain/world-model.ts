@@ -2,17 +2,18 @@
 // it, every load is validated against it, and a backup is checked with it before anything is written.
 // Each phase adds its parts through a schema migration (domain/migrations.ts): v2 added residents and pairs (P2),
 // v3 made pairs any two residents, v4 added production (P3a), v5 the rest of P3 (fields, placement, 지정 횟수, 자동 판매,
-// 초대, 납품).
+// 초대, 납품), v6 a field and talent on every resident, decided at registration.
 import { z } from "zod";
 import { isKnownItem } from "../content/items";
 import { FACILITIES, queueSlots, recipeDefinition } from "../content/production";
+import { talentDefinition } from "../content/talents";
 import { deliveryStateSchema, initialInvite, inviteStateSchema } from "./model/invite";
 import { MAX_PAIRS, pairSchema } from "./model/pairs";
 import { productionSchema } from "./model/production";
 import { initialProduction } from "./production/initial";
 import { MAX_RESIDENTS, residentSchema } from "./model/residents";
 
-export const CURRENT_SCHEMA_VERSION = 5;
+export const CURRENT_SCHEMA_VERSION = 6;
 
 const nonNegativeInt = z.number().int().min(0).max(Number.MAX_SAFE_INTEGER);
 const displayText = (max: number) =>
@@ -70,6 +71,7 @@ export const worldStateSchema = worldShape.superRefine((world, context) => {
     // The same source is one resident in a world (plan §10 P2: 동일주민 1명 유지).
     const source = `${resident.kind}:${resident.sourceId}`;
     if (sources.has(source)) issue(["residents", key], "duplicate source");
+    if (talentDefinition(resident.talentId)?.field !== resident.field) issue(["residents", key], "talent field");
     sources.add(source);
   }
   const starter = world.progress.starterResidentId;

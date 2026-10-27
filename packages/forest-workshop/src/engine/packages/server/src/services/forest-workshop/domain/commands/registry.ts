@@ -26,7 +26,7 @@ import {
   setResidentImage,
   setResidentPlacement,
 } from "./resident-images";
-import { chooseStarter, registerResident, setField, updateResident } from "./residents";
+import { chooseStarter, registerResident, updateResident } from "./residents";
 import { updateSettings } from "./settings";
 
 const DEFINITIONS = [
@@ -35,7 +35,6 @@ const DEFINITIONS = [
   registerResident,
   updateResident,
   chooseStarter,
-  setField,
   setResidentImage,
   restoreResidentImage,
   setResidentPlacement,

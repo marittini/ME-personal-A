@@ -199,7 +199,9 @@ export interface Resident {
   displayName: string;
   worldSetting: string;
   recruited: boolean;
-  field: FieldId | null;
+  /** 전문 분야 and 특기, decided at registration. */
+  field: FieldId;
+  talentId: string;
   breakthrough: number;
   registeredAt: string;
   image: { current: ResidentImage | null; history: ResidentImage[]; placement: Placement };
@@ -231,12 +233,24 @@ export interface SourcePreview {
   id: string;
   snapshot: { name: string; description: string; personality: string; scenario: string };
   summary: string;
+  /** The field and talent registering this source would give. */
+  talent: { field: FieldId; talentId: string };
+}
+
+export interface TalentDefinition {
+  id: string;
+  field: FieldId;
+  name: string;
+  description: string;
+  effect:
+    | { kind: "speed"; recipeId: string; bonus: number }
+    | { kind: "save"; recipeId: string; itemId: string; amount: number };
 }
 
 export interface ItemDefinition {
   id: string;
   name: string;
-  category: "material" | "product";
+  category: "material" | "processed" | "goods";
   sellPrice: number;
 }
 
@@ -266,6 +280,7 @@ export interface GameContent {
     setBonusPerPair: number;
     setBonusMax: number;
   };
+  talents: TalentDefinition[];
   invite: {
     ticketsPerDraw: number;
     multiDraw: number;

@@ -3,10 +3,9 @@
 //                           can never come from the client; the same source in a world is refused (one resident).
 //   residents.update        수정: 공방 세계 설정 or the display name, with a change-log entry.
 //   residents.chooseStarter 시작 주민: once per world; that resident is recruited.
-//   residents.setField      전문 분야: the player's choice, changeable any time at no cost (plan §7.2-G: 변경 무료).
 import { z } from "zod";
 import { FwError } from "../errors";
-import { FIELD_IDS } from "../../content/production";
+import { assignTalent } from "../residents/talent-assign";
 import {
   DEFAULT_PLACEMENT,
   MAX_RESIDENTS,
@@ -52,6 +51,8 @@ export const registerResident = defineCommand({
     if (state.residents[payload.residentId]) throw new FwError("resident_exists");
     if (Object.keys(state.residents).length >= MAX_RESIDENTS) throw new FwError("resident_limit");
 
+    // 전문 분야 and 특기 are decided now, from the source's own text (the preview showed the same result).
+    const talent = assignTalent(state.worldId, payload.source.kind, payload.source.id, snapshot);
     const resident: Resident = {
       residentId: payload.residentId,
       kind: payload.source.kind,
@@ -60,7 +61,8 @@ export const registerResident = defineCommand({
       displayName: displayNameSchema.parse(snapshot.name.slice(0, 40)),
       worldSetting: payload.worldSetting,
       recruited: false,
-      field: null,
+      field: talent.field,
+      talentId: talent.talentId,
       breakthrough: 0,
       registeredAt: context.now,
       image: { current: null, history: [], placement: DEFAULT_PLACEMENT },
@@ -125,28 +127,5 @@ export const chooseStarter = defineCommand({
       },
       result: { residentId: resident.residentId, alreadyChosen: false },
     };
-  },
-});
-
-const FIELD_NAMES: Record<(typeof FIELD_IDS)[number], string> = {
-  gather: "채집",
-  grow: "재배",
-  survey: "조사",
-  process: "가공",
-  craft: "제작",
-};
-
-export const setField = defineCommand({
-  type: "residents.setField",
-  payloadSchema: z.object({ residentId: z.string().uuid(), field: z.enum(FIELD_IDS) }).strict(),
-  requiresFreshView: false,
-  apply(state, payload, context) {
-    const current = requireResident(state, payload.residentId);
-    if (current.field === payload.field) return { state, result: { residentId: current.residentId, changed: false } };
-    const resident = withChange(
-      { ...current, field: payload.field },
-      { at: context.now, kind: "field", detail: FIELD_NAMES[payload.field] },
-    );
-    return { state: putResident(state, resident), result: { residentId: resident.residentId, changed: true } };
   },
 });

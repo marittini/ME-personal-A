@@ -14,6 +14,7 @@
 import { itemDefinition } from "../../content/items";
 import { FACILITY_ORDER, recipeDefinition, runDurationMs, type RecipeDefinition } from "../../content/production";
 import type { FacilityState, Job, ProductionState, Rule, Waiting } from "../model/production";
+import { crewRecipe, type CrewBonus } from "./crew";
 import { protectedAmount, stockWithPending, usableAmount } from "./stock";
 
 type Inventory = Record<string, number>;
@@ -29,8 +30,8 @@ export interface AdvanceSummary {
 }
 
 export interface AdvanceOptions {
-  /** Extra speed per facility from placed residents (domain/production/crew.ts), fixed for this settlement. */
-  bonuses?: Readonly<Record<string, number>>;
+  /** Placed residents per facility (domain/production/crew.ts): extra speed and 특기, fixed for this settlement. */
+  crew?: Readonly<Record<string, CrewBonus>>;
   /**
    * Real time (epoch ms) at the start of this settlement's credited time. Credited time is one contiguous stretch of
    * real time (online, then up to the 72-hour budget of absence), so workshop time maps to real time by offset; the
@@ -85,10 +86,12 @@ export function autoSellFloor(production: ProductionState, itemId: string): numb
   return Math.max(setting?.keep ?? 0, highestTarget, protectedAmount(production, itemId));
 }
 
-function shortageOf(recipe: RecipeDefinition, production: ProductionState, inventory: Inventory): Waiting | null {
-  const missing = Object.entries(recipe.inputs).find(
-    ([itemId, need]) => usableAmount(inventory, production, itemId) < need,
-  );
+function shortageOf(
+  inputs: Readonly<Record<string, number>>,
+  production: ProductionState,
+  inventory: Inventory,
+): Waiting | null {
+  const missing = Object.entries(inputs).find(([itemId, need]) => usableAmount(inventory, production, itemId) < need);
   if (!missing) return null;
   const [itemId, needed] = missing;
   return {
@@ -102,12 +105,12 @@ function shortageOf(recipe: RecipeDefinition, production: ProductionState, inven
 
 function newJob(
   recipe: RecipeDefinition,
+  run: ReturnType<typeof crewRecipe>,
   facility: FacilityState,
   policyId: string,
   source: Job["source"],
   now: number,
   jobId: number,
-  bonus: number,
 ): Job {
   return {
     jobId,
@@ -115,8 +118,8 @@ function newJob(
     policyId,
     source,
     startedSim: now,
-    endsSim: now + runDurationMs(recipe, facility.level, bonus),
-    consumed: { ...recipe.inputs },
+    endsSim: now + runDurationMs(recipe, facility.level, run.extraBonus),
+    consumed: run.inputs,
     outputs: { ...recipe.outputs },
   };
 }
@@ -132,7 +135,7 @@ function tryRules(
   inventory: Inventory,
   now: number,
   jobId: number,
-  bonus: number,
+  crew: CrewBonus | undefined,
 ): Attempt {
   const rules = orderedRules(facility.rules);
   if (rules.length === 0) return { job: null, waiting: { reason: "no_rules" } };
@@ -142,12 +145,13 @@ function tryRules(
     if (!recipe) continue;
     const item = targetItem(recipe.id);
     if (item && stockWithPending(inventory, production, item) >= rule.targetStock) continue;
-    const missing = shortageOf(recipe, production, inventory);
+    const run = crewRecipe(recipe, crew);
+    const missing = shortageOf(run.inputs, production, inventory);
     if (missing) {
       shortage ??= missing;
       continue;
     }
-    return { job: newJob(recipe, facility, rule.policyId, "rule", now, jobId, bonus), waiting: null };
+    return { job: newJob(recipe, run, facility, rule.policyId, "rule", now, jobId), waiting: null };
   }
   return { job: null, waiting: shortage ?? { reason: "target_reached" } };
 }
@@ -159,17 +163,18 @@ function tryQueue(
   inventory: Inventory,
   now: number,
   jobId: number,
-  bonus: number,
+  crew: CrewBonus | undefined,
 ): Attempt {
   const head = facility.queue[0];
   if (!head) return { job: null, waiting: { reason: "queue_empty" } };
   const recipe = recipeDefinition(head.recipeId);
   if (!recipe) return { job: null, waiting: { reason: "queue_empty" } };
-  const missing = shortageOf(recipe, production, inventory);
+  const run = crewRecipe(recipe, crew);
+  const missing = shortageOf(run.inputs, production, inventory);
   if (missing) return { job: null, waiting: missing };
   const started = head.started + 1;
   facility.queue = started >= head.total ? facility.queue.slice(1) : [{ ...head, started }, ...facility.queue.slice(1)];
-  return { job: newJob(recipe, facility, head.entryId, "queue", now, jobId, bonus), waiting: null };
+  return { job: newJob(recipe, run, facility, head.entryId, "queue", now, jobId), waiting: null };
 }
 
 /**
@@ -185,7 +190,7 @@ export function advanceProduction(
   const production: ProductionState = structuredClone(input);
   const inventory: Inventory = { ...inventoryIn };
   const summary: AdvanceSummary = { produced: {}, consumed: {}, runs: 0, sold: {}, gold: 0 };
-  const bonuses = options.bonuses ?? {};
+  const crew = options.crew ?? {};
   const simStart = production.simMs;
   const end = simStart + Math.max(0, Math.floor(creditedMs));
   const realStart = options.realStart;
@@ -237,11 +242,10 @@ export function advanceProduction(
           continue;
         }
         if (facility.mode !== pass) continue;
-        const bonus = bonuses[facilityId] ?? 0;
         const attempt =
           pass === "count"
-            ? tryQueue(facility, production, inventory, time, production.nextJobId, bonus)
-            : tryRules(facility, production, inventory, time, production.nextJobId, bonus);
+            ? tryQueue(facility, production, inventory, time, production.nextJobId, crew[facilityId])
+            : tryRules(facility, production, inventory, time, production.nextJobId, crew[facilityId]);
         facility.waiting = attempt.waiting;
         if (attempt.job) {
           add(inventory, attempt.job.consumed, -1);

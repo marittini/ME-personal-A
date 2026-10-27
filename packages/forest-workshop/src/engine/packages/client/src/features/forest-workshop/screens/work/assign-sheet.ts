@@ -6,7 +6,7 @@ import { button, h } from "../../app/dom";
 import type { GameContent, WorldView } from "../../app/types";
 import { sheetDialog } from "../chrome/sheet";
 import { kindTag, residentAvatar } from "../residents/resident-figure";
-import { FIELD_LABELS, crewBonus, facilityOf, passiveOf, percent } from "./production-view";
+import { FIELD_LABELS, crewBonus, facilityOf, passiveOf, percent, talentOf } from "./production-view";
 
 export function renderAssignSheet(
   state: AppState,
@@ -46,12 +46,11 @@ export function renderAssignSheet(
           recruited.map((resident) => {
             const matches = resident.field === facility?.field;
             const elsewhere = placedAt(resident.residentId);
+            const talent = talentOf(content, resident.talentId);
             const note = [
               matches
-                ? `+${percent(passiveOf(content, resident.breakthrough))}`
-                : resident.field
-                  ? `${FIELD_LABELS[resident.field]} 분야라 효과 없음`
-                  : "분야를 정하지 않아 효과 없음",
+                ? `+${percent(passiveOf(content, resident.breakthrough))}${talent ? ` · 특기 ${talent.name}: ${talent.description}` : ""}`
+                : `${FIELD_LABELS[resident.field]} 분야라 효과 없음`,
               elsewhere && elsewhere !== facilityId
                 ? `${facilityOf(content, elsewhere)?.name ?? ""}에서 옮겨 와요`
                 : "",

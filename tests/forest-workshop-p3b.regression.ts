@@ -11,6 +11,8 @@
 import assert from "node:assert/strict";
 import { FakeHost } from "./support/forest-workshop-fake-host";
 
+import { talentDefinition } from "../packages/forest-workshop/src/engine/packages/server/src/services/forest-workshop/content/talents";
+import { assignTalent } from "../packages/forest-workshop/src/engine/packages/server/src/services/forest-workshop/domain/residents/talent-assign";
 import { passiveBonus } from "../packages/forest-workshop/src/engine/packages/server/src/services/forest-workshop/content/crew";
 import { INVITE_RULES } from "../packages/forest-workshop/src/engine/packages/server/src/services/forest-workshop/content/invite";
 import {
@@ -64,7 +66,8 @@ function resident(n: number, recruited: boolean, extra: Partial<Resident> = {}):
     displayName: `주민${n}`,
     worldSetting: "숲의 이웃",
     recruited,
-    field: null,
+    field: "gather",
+    talentId: "berry-eye",
     breakthrough: 0,
     registeredAt: iso(T0),
     image: { current: null, history: [], placement: DEFAULT_PLACEMENT },
@@ -175,7 +178,11 @@ async function main() {
     assert.equal(s.inventory["berry-jam"], 4, "3 queue runs + the rule run");
     assert.equal(s.production.facilities["process-bench"]!.queue.length, 0);
     assert.equal(s.production.facilities["process-bench"]!.waiting?.reason, "queue_empty");
-    assert.equal(s.production.facilities["process-bench"]!.rules.length, 1, "rules wait unchanged");
+    assert.deepEqual(
+      s.production.facilities["process-bench"]!.rules,
+      world().production.facilities["process-bench"]!.rules,
+      "rules wait unchanged",
+    );
     // Slots: 3 at level 1.
     assert.equal(queueSlots(1), 3);
     assert.equal(queueSlots(8), 4);
@@ -281,8 +288,8 @@ async function main() {
 
   // 배치 · 패시브 · 세트.
   {
-    const a = resident(1, true, { field: "process", breakthrough: 0 });
-    const b = resident(2, true, { field: "gather", breakthrough: 5 });
+    const a = resident(1, true, { field: "process", talentId: "fine-mill", breakthrough: 0 });
+    const b = resident(2, true, { field: "gather", talentId: "herb-nose", breakthrough: 5 });
     const c = resident(3, false);
     let s = world({}, [a, b, c]);
     refuses(
@@ -337,9 +344,41 @@ async function main() {
       T0 + MIN,
     );
     assert.equal(unplaced.state.production.facilities["process-bench"]!.job!.endsSim, job.endsSim, "keeps its speed");
-    // 전문 분야 is the player's choice, free to change.
-    const fielded = cmd(world({}, [a, c]), "residents.setField", { residentId: c.residentId, field: "craft" });
-    assert.equal(fielded.state.residents[c.residentId]!.field, "craft");
+    // 전문 분야 and 특기 are decided at registration: there is no command to change them.
+    refuses(() => getCommandDefinition("residents.setField"), "unknown_command", "fields are not picked afterwards");
+  }
+
+  // 특기: a matching resident's talent acts on its one recipe (speed or one input less).
+  {
+    const thrifty = resident(1, true, { field: "process", talentId: "jam-thrift" });
+    let s = settleWorld(noRules(world({ "wild-berry": 3 }, [thrifty]), "gather-yard"), iso(T0), { active: true });
+    assert.equal(s.production.facilities["process-bench"]!.waiting?.reason, "materials", "3 berries: not enough alone");
+    s = cmd(s, "production.assignResident", { facilityId: "process-bench", residentId: thrifty.residentId }).state;
+    const jam = s.production.facilities["process-bench"]!.job;
+    assert.deepEqual(jam?.consumed, { "wild-berry": 3 }, "알뜰한 잼 솥: one berry less");
+    assert.equal(s.inventory["wild-berry"] ?? 0, 0);
+    const picker = resident(1, true, { field: "gather", talentId: "berry-eye" });
+    let g = world({}, [picker]);
+    g = cmd(g, "production.assignResident", { facilityId: "gather-yard", residentId: picker.residentId }, T0).state;
+    // The berry run started at T0 before placement keeps its speed; the next one uses passive 5% + talent 15%.
+    g = presentFor(g, T0, T0 + 11 * MIN);
+    const run = g.production.facilities["gather-yard"]!.job!;
+    assert.equal(run.recipeId, "gather-berry");
+    assert.equal(run.endsSim - run.startedSim, runDurationMs(recipeDefinition("gather-berry")!, 1, 0.2));
+    // The same talent elsewhere (a field that does not match) does nothing.
+    const away = cmd(g, "production.assignResident", { facilityId: "process-bench", residentId: picker.residentId });
+    assert.equal(crewBonuses(away.state)["process-bench"]!.talent, null);
+    // Assignment from the source text: a baker leans to 제작; no hint → the same field every time.
+    const baker = assignTalent(WORLD, "character", "b1", {
+      name: "마을 제빵사",
+      description: "새벽마다 빵을 굽는 제빵 장인.",
+      personality: "",
+      scenario: "",
+    });
+    assert.equal(baker.field, "craft");
+    assert.equal(talentDefinition(baker.talentId)?.field, "craft");
+    const plain = { name: "이름", description: "", personality: "", scenario: "" };
+    assert.deepEqual(assignTalent(WORLD, "persona", "p1", plain), assignTalent(WORLD, "persona", "p1", plain));
   }
 
   // 초대.
@@ -499,7 +538,7 @@ async function main() {
     void amount;
   }
 
-  // Migration v4 → v5 keeps a running job and the rules; new facilities closed; residents without field.
+  // Migration v4 → v5 → v6 keeps a running job and the rules; new facilities closed; residents get a field and talent.
   {
     const v5 = settleWorld(world({ "wild-berry": 20 }, [resident(1, true)]), iso(T0 + MIN), { active: true });
     const v4: Record<string, unknown> = structuredClone(v5) as never;
@@ -521,10 +560,11 @@ async function main() {
     delete production.made;
     for (const r of Object.values(v4.residents as Record<string, Record<string, unknown>>)) {
       delete r.field;
+      delete r.talentId;
       delete r.breakthrough;
     }
     const migrated = migrateWorld(v4);
-    assert.equal(migrated.schemaVersion, 5);
+    assert.equal(migrated.schemaVersion, 6);
     assert.equal(migrated.wallet.tickets, 3);
     assert.equal(migrated.production.facilities["process-bench"]!.job?.source, "rule");
     assert.deepEqual(
@@ -532,7 +572,9 @@ async function main() {
       v5.production.facilities["process-bench"]!.rules,
     );
     assert.equal(migrated.production.facilities["craft-bench"]!.unlocked, false);
-    assert.equal(migrated.residents[uuid(1)]!.field, null);
+    const migratedResident = migrated.residents[uuid(1)]!;
+    assert.equal(talentDefinition(migratedResident.talentId)?.field, migratedResident.field, "field and talent agree");
+    assert.equal(migratedResident.source.name, "주민1", "the source snapshot is only read");
   }
 
   console.log("forest-workshop P3b regressions: OK");

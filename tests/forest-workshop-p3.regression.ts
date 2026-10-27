@@ -233,7 +233,7 @@ async function main() {
   // Targets, overproduction by at most one batch, protection, resume after use.
   {
     // Berry target 30: stock 29 + 3 from one run = 32 (one batch over), then the yard turns to herbs.
-    let state = world({ "wild-berry": 29, herb: 10 });
+    let state = world({ "wild-berry": 29, herb: 10, wood: 8 });
     state = {
       ...state,
       production: {
@@ -250,7 +250,7 @@ async function main() {
     assert.equal(
       state.production.facilities["gather-yard"]!.waiting?.reason,
       "target_reached",
-      "herbs at target 10 too",
+      "herbs (10) and wood (8) at target too",
     );
 
     // Protection: 20 of 22 berries protected → jam waits, naming the protected amount.

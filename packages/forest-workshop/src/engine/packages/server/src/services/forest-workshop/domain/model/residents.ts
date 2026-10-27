@@ -120,8 +120,11 @@ export const residentSchema = z
     worldSetting: worldSettingSchema,
     /** Recruited residents live in the workshop; the others are registered and wait for an invitation (P3). */
     recruited: z.boolean(),
-    /** 전문 분야, chosen by the player; null until chosen. A placed resident helps only in a facility of this field. */
-    field: z.enum(FIELD_IDS).nullable(),
+    /** 전문 분야, decided at registration (domain/residents/talent-assign.ts). A placed resident helps only in a
+     *  facility of this field. */
+    field: z.enum(FIELD_IDS),
+    /** 특기 of that field (content/talents.ts), decided with the field. */
+    talentId: z.string().min(1).max(64),
     /** 돌파 0–5, from inviting a resident who already came (plan §7.2-F). */
     breakthrough: z.number().int().min(0).max(MAX_BREAKTHROUGH),
     registeredAt: isoTime,

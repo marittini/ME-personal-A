@@ -11,14 +11,12 @@ export function settleWorld(state: WorldState, now: string, options: { active: b
   const credit = creditTime(state.production.activity, now, options);
   const simFrom = state.production.simMs;
   const settledAt = state.production.activity.settledAt;
-  const bonuses = Object.fromEntries(
-    Object.entries(crewBonuses(state)).map(([facilityId, bonus]) => [facilityId, bonus.total]),
-  );
+  const crew = crewBonuses(state);
   const { production, inventory, summary } = advanceProduction(
     { ...state.production, activity: credit.activity },
     state.inventory,
     credit.creditedMs,
-    { bonuses, realStart: settledAt === null ? Date.parse(now) : Date.parse(settledAt) },
+    { crew, realStart: settledAt === null ? Date.parse(now) : Date.parse(settledAt) },
   );
   if (summary.runs > 0 || summary.gold > 0) {
     const report: ProductionReport = {

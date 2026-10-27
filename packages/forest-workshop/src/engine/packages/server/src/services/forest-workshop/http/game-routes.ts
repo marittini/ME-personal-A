@@ -22,6 +22,7 @@ import {
   SET_BONUS_PER_PAIR,
 } from "../content/crew";
 import { INVITE_RULES } from "../content/invite";
+import { TALENTS } from "../content/talents";
 import { ITEMS } from "../content/items";
 import {
   FACILITIES,
@@ -93,6 +94,7 @@ const CONTENT = {
     setBonusMax: SET_BONUS_MAX,
   },
   invite: INVITE_RULES,
+  talents: TALENTS,
   starterKit: STARTER_KIT,
   relationStages: RELATION_STAGES,
   residents: { worldSettingMax: WORLD_SETTING_MAX, placement: PLACEMENT_LIMITS, maxImageBytes: MAX_INPUT_BYTES },

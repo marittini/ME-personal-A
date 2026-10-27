@@ -6,6 +6,8 @@ import { STARTER_KIT } from "../content/starter-kit";
 import { FACILITIES } from "../content/production";
 import { initialInvite } from "./model/invite";
 import { initialFacility, initialProduction } from "./production/initial";
+import { assignTalent, type SourceText } from "./residents/talent-assign";
+import type { FieldId } from "../content/production";
 import { CURRENT_SCHEMA_VERSION, worldStateSchema, type WorldState } from "./world-model";
 
 type RawWorld = Record<string, unknown>;
@@ -83,6 +85,24 @@ const MIGRATIONS: Readonly<Record<number, (world: RawWorld) => RawWorld>> = {
       deliveries: { day: null, done: [] },
     };
   },
+  // v5 → v6: every resident gets the field and talent a registration now decides. A field the player already chose in
+  // v5 is kept; otherwise it is read from the stored source snapshot, the same way a new registration does.
+  5: (world) => ({
+    ...world,
+    schemaVersion: 6,
+    residents: Object.fromEntries(
+      Object.entries((world.residents ?? {}) as Record<string, RawWorld>).map(([id, resident]) => {
+        const talent = assignTalent(
+          String(world.worldId),
+          String(resident.kind),
+          String(resident.sourceId),
+          resident.source as SourceText,
+          (resident.field as FieldId | null) ?? undefined,
+        );
+        return [id, { ...resident, field: talent.field, talentId: talent.talentId }];
+      }),
+    ),
+  }),
 };
 
 export function migrateWorld(raw: unknown): WorldState {

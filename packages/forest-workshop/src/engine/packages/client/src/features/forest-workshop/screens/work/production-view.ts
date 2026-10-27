@@ -4,23 +4,44 @@
 // and asks the server once a run should have finished.
 import type { AppState } from "../../app/controller";
 import { h } from "../../app/dom";
-import type { FieldId, GameContent, Job, Waiting, WorldState, WorldView } from "../../app/types";
+import type { FieldId, GameContent, Job, TalentDefinition, Waiting, WorldState, WorldView } from "../../app/types";
 import { ICONS, type IconFactory } from "../chrome/icons";
 
 const ITEM_ICONS: Record<string, IconFactory> = {
   "wild-berry": ICONS.berry,
   herb: ICONS.leaf,
   wood: ICONS.log,
-  wheat: ICONS.sprout,
+  pinecone: ICONS.pinecone,
+  acorn: ICONS.acorn,
+  wheat: ICONS.wheat,
   flower: ICONS.flower,
+  pumpkin: ICONS.pumpkin,
+  cotton: ICONS.weather,
+  "tea-leaf": ICONS.sprout,
   honey: ICONS.jar,
-  mushroom: ICONS.sprout,
+  mushroom: ICONS.mushroom,
+  beeswax: ICONS.box,
+  feather: ICONS.feather,
+  clover: ICONS.clover,
   "berry-jam": ICONS.jar,
   "dried-herb": ICONS.leaf,
   flour: ICONS.box,
+  plank: ICONS.log,
+  thread: ICONS.spool,
+  "herb-tea": ICONS.cup,
+  "pumpkin-puree": ICONS.pumpkin,
+  "acorn-flour": ICONS.acorn,
   "herb-sachet": ICONS.heart,
-  "berry-pie": ICONS.berry,
+  "berry-pie": ICONS.cake,
   "wooden-tray": ICONS.log,
+  "beeswax-candle": ICONS.candle,
+  "knit-scarf": ICONS.scarf,
+  "flower-wreath": ICONS.flower,
+  "pumpkin-soup": ICONS.cup,
+  "honey-cake": ICONS.cake,
+  birdhouse: ICONS.house,
+  "acorn-cookie": ICONS.acorn,
+  "tea-gift": ICONS.clover,
 };
 
 export const FIELD_LABELS: Record<FieldId, string> = {
@@ -105,7 +126,37 @@ export function crewBonus(content: GameContent, state: WorldState, facilityId: s
   const resident = residentId ? state.residents[residentId] : undefined;
   const matches = resident !== undefined && resident.field === facilityOf(content, facilityId)?.field;
   const passive = matches ? passiveOf(content, resident.breakthrough) : 0;
-  return { resident: resident ?? null, matches, passive, set, total: Math.round((passive + set) * 1000) / 1000 };
+  const talent = matches ? (talentOf(content, resident.talentId) ?? null) : null;
+  return {
+    resident: resident ?? null,
+    matches,
+    passive,
+    set,
+    talent,
+    total: Math.round((passive + set) * 1000) / 1000,
+  };
+}
+
+export function talentOf(content: GameContent | null, talentId: string): TalentDefinition | undefined {
+  return content?.talents.find((talent) => talent.id === talentId);
+}
+
+/** One run of a recipe with the facility's crew, as the server computes it (domain/production/crew.ts crewRecipe). */
+export function crewRun(
+  recipe: { id: string; inputs: Record<string, number> },
+  crew: { total: number; talent: TalentDefinition | null },
+) {
+  const inputs = { ...recipe.inputs };
+  let extraBonus = crew.total;
+  const effect = crew.talent?.effect;
+  let talentApplies = false;
+  if (effect && effect.recipeId === recipe.id) {
+    talentApplies = true;
+    if (effect.kind === "speed") extraBonus += effect.bonus;
+    else if (inputs[effect.itemId] !== undefined)
+      inputs[effect.itemId] = Math.max(1, inputs[effect.itemId]! - effect.amount);
+  }
+  return { extraBonus: Math.round(extraBonus * 1000) / 1000, inputs, talentApplies };
 }
 
 export function percent(value: number): string {

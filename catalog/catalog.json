@@ -771,8 +771,8 @@
         },
         "id": "forest-workshop",
         "name": "Forest Workshop",
-        "version": "0.5.0",
-        "description": "A portrait cozy workshop game in development. This 0.5 build completes workshop management: five facilities (three opened by one-time conditions) running on your rules or a counted queue, residents placed by their field for a passive speed bonus, opt-in auto-selling with a daily limit, invitations with tickets earned from daily deliveries (breakthroughs, tokens and a chosen-resident exchange), stock protection, upgrades and the 72-hour absence cap — on top of residents registered from your characters and personas, your own uploaded resident pictures stored as WebP, pairs between any two residents, and backups that carry the pictures; stories and letters follow. Install it, restart Marinara Engine when prompted, then open Home → 숲결 공방.",
+        "version": "0.5.1",
+        "description": "A portrait cozy workshop game in development. This 0.5 build completes workshop management: five facilities (three opened by one-time conditions) with 34 materials and goods running on your rules or a counted queue, residents whose field and talent are set from their own character text at registration and who speed up a facility of their field, opt-in auto-selling with a daily limit, invitations with tickets earned from daily deliveries (breakthroughs, tokens and a chosen-resident exchange), stock protection, upgrades and the 72-hour absence cap — on top of residents registered from your characters and personas, your own uploaded resident pictures stored as WebP, pairs between any two residents, and backups that carry the pictures; stories and letters follow. Install it, restart Marinara Engine when prompted, then open Home → 숲결 공방.",
         "engine": {
           "min": "2.5.1",
           "maxExclusive": "4.0.0"
@@ -797,18 +797,18 @@
         "files": [
           {
             "path": "agents.json",
-            "sha256": "78693c554ca54f1fdb5a6c56dd7240c3045692a820c3b02b929d3d9ebee35590",
-            "bytes": 1115
+            "sha256": "97c9d39472045fece06872a6dc9fa18fe00210816b2043bab5fc926a6bf6a7a6",
+            "bytes": 1215
           },
           {
             "path": "server.mjs",
-            "sha256": "13e44e3a623c6eab5c91bc8a06c8dcdabfe90f8c8e4823989300fe5e00d9190d",
-            "bytes": 91985
+            "sha256": "26a04b7316eec339237b949cb81c09a68469e79d70ccbf277fe9a4e95959f073",
+            "bytes": 105870
           },
           {
             "path": "client.js",
-            "sha256": "bddf77ff4d07a624fe449a11750e99aa00aabfc32da7184a79acd39db323acd8",
-            "bytes": 224560
+            "sha256": "88784d026e4a8057883a46ce1ef48da8460ae4a09c55b97189dccc4d7c18ef00",
+            "bytes": 228359
           }
         ],
         "permissions": [
@@ -821,9 +821,9 @@
       "category": "misc",
       "iconUrl": "https://raw.githubusercontent.com/marittini/ME-personal-A/main/artwork/agent-covers/forest-workshop.png",
       "artifact": {
-        "url": "https://raw.githubusercontent.com/marittini/ME-personal-A/main/artifacts/forest-workshop-0.5.0.zip",
-        "sha256": "fdc76a58e8aeddc377f48a8b232c8b972218c3c8fe041157d96155d3e82a8c1a",
-        "bytes": 320079
+        "url": "https://raw.githubusercontent.com/marittini/ME-personal-A/main/artifacts/forest-workshop-0.5.1.zip",
+        "sha256": "311af8d00ca68941c74aa925547d0334498300a8cc2a205a9a59770cdc227096",
+        "bytes": 337964
       },
       "documentationUrl": "https://github.com/marittini/ME-personal-A/blob/main/packages/forest-workshop/README.md"
     },

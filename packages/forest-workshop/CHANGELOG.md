@@ -1,4 +1,5 @@
 ## 0.6.7 — 2026-10-28
+- Align facility and stock actions evenly and keep the work status compact.
 - Work status provides direct access to protected stock and the sales storeroom.
 - Facility details always open the selected facility instead of a previously viewed storage tab.
 - Home opens the active facility directly when showing an active job; unread reports still open the report.

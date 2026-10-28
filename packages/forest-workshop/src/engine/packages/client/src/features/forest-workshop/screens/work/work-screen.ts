@@ -169,7 +169,7 @@ function facilityCard(
         h("span", { className: "facility-art" }, [facilityPicture(facilityId)]),
         h("span", { className: "facility-text" }, [
           h("strong", { text: `${definition?.name ?? facilityId} Lv. ${facility.level}` }),
-          h("span", { text: `${definition?.description ?? ""} 처리 속도 +${speedPercent(content, facility.level)}%` }),
+          h("span", { text: `처리 속도 +${speedPercent(content, facility.level)}%` }),
           h("span", { className: "crew-line" }, [
             bonus.resident ? residentAvatar(bonus.resident) : null,
             bonus.resident

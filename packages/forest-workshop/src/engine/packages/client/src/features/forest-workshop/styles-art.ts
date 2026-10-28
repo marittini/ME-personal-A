@@ -116,4 +116,6 @@ img.emotion-bubble.emotion-art { min-width: 0; width: 2.6em; height: 2.6em; padd
 .facility-entry:has(.facility-image) .facility-open { flex: 1 1 13em; }
 .facility-entry:has(.facility-image) .outline-button { white-space: nowrap; }
 .facility-entry:has(.facility-image) > :not(.facility-open) { margin-left: auto; }
+.work-card .facility-entry:has(.facility-image) > .outline-button { width: 100%; margin: 0; justify-content: center; text-align: center; white-space: nowrap; font-size: calc(var(--fs) * 0.85); }
+.work-stock-actions .outline-button { justify-content: center; text-align: center; }
 `;

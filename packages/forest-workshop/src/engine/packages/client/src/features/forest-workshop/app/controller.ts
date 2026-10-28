@@ -469,6 +469,12 @@ export function createController() {
       return result;
     },
 
+    async saveGround(ground: WorldView["state"]["settings"]["ground"]) {
+      const result = await runCommand("ground-save", "settings.update", { ground });
+      if (result) core.notify("지면 설정을 저장했어요.");
+      return result;
+    },
+
     hideStarterSheet() {
       store.set({ starterSheetHidden: true });
     },

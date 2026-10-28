@@ -1,15 +1,23 @@
 // settings.update — renames the world or the player's nickname. The player has a nickname only, no appearance
 // (plan §3). Edits what the player saw, so it refuses an outdated screen.
 import { z } from "zod";
-import { nicknameSchema, worldNameSchema } from "../world-model";
+import { groundSchema, nicknameSchema, worldNameSchema } from "../world-model";
 import { defineCommand } from "./command";
 
 const payloadSchema = z
-  .object({ worldName: worldNameSchema.optional(), playerNickname: nicknameSchema.optional() })
+  .object({
+    worldName: worldNameSchema.optional(),
+    playerNickname: nicknameSchema.optional(),
+    ground: groundSchema.optional(),
+  })
   .strict()
-  .refine((payload) => payload.worldName !== undefined || payload.playerNickname !== undefined, {
-    message: "nothing to change",
-  });
+  .refine(
+    (payload) =>
+      payload.worldName !== undefined || payload.playerNickname !== undefined || payload.ground !== undefined,
+    {
+      message: "nothing to change",
+    },
+  );
 
 export const updateSettings = defineCommand({
   type: "settings.update",
@@ -17,6 +25,7 @@ export const updateSettings = defineCommand({
   requiresFreshView: true,
   apply(state, payload) {
     const settings = {
+      ground: payload.ground ?? state.settings.ground,
       worldName: payload.worldName ?? state.settings.worldName,
       playerNickname: payload.playerNickname ?? state.settings.playerNickname,
     };

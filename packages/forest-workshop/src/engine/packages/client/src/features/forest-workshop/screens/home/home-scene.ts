@@ -111,15 +111,19 @@ function spot(side: "left" | "right", resident: Resident | null, world: WorldSta
 export function renderHomeScene(state: AppState, controller: Controller) {
   const world = state.world?.state === "ready" ? state.world.value.state : null;
   const residents = world ? sceneResidents(world) : [];
+  const ground = world?.settings.ground ?? { left: 12, right: 88, top: 58, bottom: 90 };
+  const cast = world
+    ? h("div", { className: "scene-stage ground-stage" }, [
+        spot("left", residents[0] ?? null, world, controller),
+        spot("right", residents[1] ?? null, world, controller),
+      ])
+    : null;
+  if (cast)
+    cast.style.cssText = `left:${ground.left}%;top:${ground.top}%;width:${ground.right - ground.left}%;height:${ground.bottom - ground.top}%;right:auto;bottom:auto;padding:0;`;
   return h("section", { className: "scene", attrs: { "aria-label": "공방 장면" } }, [
     // Layers (plan §8): the season's workshop picture → residents (their own picture) → DOM UI.
     assetImage(BACKGROUND_ART[currentSeason(state)].scene, { className: "scene-art", fallback: drawnBackdrop }),
-    world
-      ? h("div", { className: "scene-stage" }, [
-          spot("left", residents[0] ?? null, world, controller),
-          spot("right", residents[1] ?? null, world, controller),
-        ])
-      : null,
+    cast,
     // With a resident standing here the empty place speaks for itself; the caption would sit under their name.
     residents.length === 0
       ? h("p", { className: "scene-caption" }, [ICONS.leaf("icon tiny"), "주민을 맞이하면 이곳에 모여요"])

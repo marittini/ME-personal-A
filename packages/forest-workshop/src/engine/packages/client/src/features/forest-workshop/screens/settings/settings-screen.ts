@@ -53,6 +53,72 @@ function nicknameRow(view: WorldView, state: AppState, controller: Controller) {
   );
 }
 
+function groundEditor(view: WorldView, state: AppState, controller: Controller) {
+  const ground = { ...(view.state.settings.ground ?? { left: 12, right: 88, top: 58, bottom: 90 }) };
+  const preview = h("div", { className: "ground-preview", attrs: { "aria-label": "지면 이동영역 미리보기" } });
+  const area = h("span", { className: "ground-area" });
+  preview.append(area);
+  const draw = () => {
+    area.style.cssText = `left:${ground.left}%;top:${ground.top}%;width:${ground.right - ground.left}%;height:${ground.bottom - ground.top}%;`;
+  };
+  const rows = (
+    [
+      ["left", "왼쪽", 0, 80],
+      ["right", "오른쪽", 20, 100],
+      ["top", "위쪽", 35, 85],
+      ["bottom", "아래쪽", 55, 100],
+    ] as const
+  ).map(([key, label, min, max]) => {
+    const value = h("output", { text: String(ground[key]) });
+    const input = h("input", {
+      attrs: {
+        type: "range",
+        min: String(min),
+        max: String(max),
+        value: String(ground[key]),
+        "aria-label": `지면 ${label}`,
+      },
+      on: {
+        input: () => {
+          ground[key] = Number(input.value);
+          value.textContent = input.value;
+          draw();
+        },
+      },
+    });
+    return h("label", { className: "ground-row" }, [label, input, value]);
+  });
+  draw();
+  return h(
+    "form",
+    {
+      className: "ground-editor",
+      on: {
+        submit: (event) => {
+          event.preventDefault();
+          if (ground.right - ground.left < 20 || ground.bottom - ground.top < 10) {
+            controller.notify("이동영역의 너비는 20, 높이는 10 이상으로 설정해 주세요.");
+            return;
+          }
+          void controller.saveGround(ground);
+        },
+      },
+    },
+    [
+      h("h3", { text: "지면 설정" }),
+      preview,
+      ...rows,
+      h("p", { className: "muted", text: "주민 발이 움직일 범위를 정해요. 저장 전 변경은 적용되지 않아요." }),
+      h("button", {
+        className: "button",
+        text: "지면 저장",
+        attrs: { type: "submit" },
+        disabled: Boolean(state.busy["ground-save"]),
+      }),
+    ],
+  );
+}
+
 function weatherRow(controller: Controller) {
   return h("div", { className: "setting-row" }, [
     ICONS.leaf("icon row-leaf"),
@@ -182,7 +248,11 @@ export function renderSettingsScreen(state: AppState, controller: Controller) {
           ),
         ),
         section === "workshop"
-          ? card("내 공방", [nicknameRow(world, state, controller), weatherRow(controller)], { id: "fw-mine" })
+          ? card(
+              "내 공방",
+              [nicknameRow(world, state, controller), groundEditor(world, state, controller), weatherRow(controller)],
+              { id: "fw-mine" },
+            )
           : null,
         section === "display"
           ? card(

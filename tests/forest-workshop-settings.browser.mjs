@@ -68,6 +68,9 @@ try {
       rememberSettingsNickname(worldId, value) {
         window.testState.settingsNicknameDraft = { worldId, value };
       },
+      saveGround(ground) {
+        window.savedGround = ground;
+      },
       saveSettingsNickname(worldId, value) {
         window.saved = { worldId, value };
       },
@@ -95,6 +98,9 @@ try {
   assert.deepEqual(await page.evaluate(() => window.saved), { worldId: "world", value: "새 이름" });
   await page.getByRole("button", { name: "관리", exact: true }).click();
   assert.equal(await page.getByText("저장 · 백업").isVisible(), true);
+  await page.getByRole("button", { name: "내 공방", exact: true }).click();
+  await page.getByRole("button", { name: "지면 저장", exact: true }).click();
+  assert.deepEqual(await page.evaluate(() => window.savedGround), { left: 12, right: 88, top: 58, bottom: 90 });
   console.log("Settings sections and draft preservation: OK");
 } finally {
   await browser?.close();

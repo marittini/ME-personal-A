@@ -93,6 +93,15 @@ export const RESIDENT_STYLES = `
 .detail-action { display: flex; align-items: center; justify-content: center; gap: 0.35em; min-height: 3em; padding: 0.3em; border-radius: 0.8em; border: var(--line-in) solid var(--ink); background: var(--fw-surface-3); color: var(--fw-text); font: inherit; font-weight: 800; cursor: pointer; }
 .detail-action .icon { color: var(--fw-wood-dark); }
 
+/* Foot positions follow the saved world's ground rectangle. */
+.ground-stage .resident-spot { position: absolute; transform: translate(-50%, -100%); top: 65%; }
+.ground-stage .resident-spot.left { left: 22%; }
+.ground-stage .resident-spot.right { left: 78%; }
+.ground-stage .resident-spot.filled.left { animation: fw-ground-left 18s ease-in-out infinite; }
+.ground-stage .resident-spot.filled.right { animation: fw-ground-right 18s ease-in-out infinite; }
+@keyframes fw-ground-left { 0%, 20%, 95%, 100% { left: 22%; top: 65%; } 45%, 70% { left: 40%; top: 35%; } }
+@keyframes fw-ground-right { 0%, 20%, 95%, 100% { left: 78%; top: 40%; } 45%, 70% { left: 60%; top: 65%; } }
+@media (prefers-reduced-motion: reduce) { .ground-stage .resident-spot.filled.left, .ground-stage .resident-spot.filled.right { animation: none; } }
 /* Home scene: residents standing in their places. */
 .resident-spot.filled { width: 8.5em; height: 11em; border: 0; border-radius: 0; background: none; }
 .resident-spot.filled.left { animation: fw-stroll-left 12s ease-in-out infinite; }

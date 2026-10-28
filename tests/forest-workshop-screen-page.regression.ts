@@ -3,7 +3,7 @@ import { screenPageKey } from "../packages/forest-workshop/src/engine/packages/c
 
 const residentsView = { tab: "all" as const, query: "", filter: "all" as const, selectedId: null };
 const work = { facilityId: "gather-yard", drafts: {}, selected: {}, queueRecipe: {} };
-const state = { route: "residents" as const, residentsView, work };
+const state = { route: "residents" as const, residentsView, work, facilitiesTab: "facilities" as const };
 assert.equal(screenPageKey(state), screenPageKey({ ...state, residentsView: { ...residentsView, query: "a" } }));
 assert.notEqual(screenPageKey(state), screenPageKey({ ...state, residentsView: { ...residentsView, page: 1 } }));
 assert.notEqual(

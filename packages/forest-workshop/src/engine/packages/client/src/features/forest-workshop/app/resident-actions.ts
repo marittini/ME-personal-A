@@ -16,7 +16,7 @@ export interface ResidentsView {
 }
 
 export type ResidentSheet =
-  | { kind: "profile"; residentId: string; panel?: number; draft?: string }
+  | { kind: "profile"; residentId: string; panel?: number; draft?: string; historyPage?: number }
   | { kind: "pair-add"; residentId: string }
   | { kind: "image-history"; residentId: string }
   | { kind: "history-cleanup" }
@@ -93,7 +93,7 @@ export function createResidentActions(core: ControllerCore) {
       store.set({ sheet: null });
     },
 
-    rememberProfile(patch: { panel?: number; draft?: string }) {
+    rememberProfile(patch: { panel?: number; draft?: string; historyPage?: number }) {
       store.remember((state) => (state.sheet?.kind === "profile" ? { sheet: { ...state.sheet, ...patch } } : {}));
     },
 

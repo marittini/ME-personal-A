@@ -86,7 +86,9 @@ export interface AppState {
   /** Pack files that loaded (app/assets.ts probeAsset); the frame turns their CSS art on. */
   artReady: string[];
   /** 시설과 창고: which tab is open. */
-  facilitiesTab: "facilities" | "storage";
+  facilitiesTab: "facilities" | "protection" | "storage";
+  settingsSection?: "workshop" | "display" | "manage";
+  settingsNicknameDraft?: { worldId: string; value: string };
   /** 저장·백업 → 저장 공간 사용량, loaded when that screen opens. */
   storage: Loadable<StorageUsage> | null;
   /** The welcome-package sheet was put off for this session ("나중에"). */
@@ -431,7 +433,24 @@ export function createController() {
     },
 
     setFacilitiesTab(tab: AppState["facilitiesTab"]) {
-      store.set({ facilitiesTab: tab });
+      store.set((state) => ({ facilitiesTab: tab, work: { ...state.work, inventoryPage: 0 } }));
+    },
+
+    setSettingsSection(settingsSection: NonNullable<AppState["settingsSection"]>) {
+      store.set({ settingsSection });
+    },
+
+    rememberSettingsNickname(worldId: string, value: string) {
+      store.remember({ settingsNicknameDraft: { worldId, value } });
+    },
+
+    async saveSettingsNickname(worldId: string, value: string) {
+      const result = await runCommand("rename-nickname", "settings.update", { playerNickname: value });
+      const draft = store.get().settingsNicknameDraft;
+      if (result && draft?.worldId === worldId && draft.value === value) {
+        store.remember({ settingsNicknameDraft: undefined });
+      }
+      return result;
     },
 
     hideStarterSheet() {

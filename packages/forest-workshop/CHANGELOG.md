@@ -1,5 +1,5 @@
 ## 0.6.4 — 2026-10-28
-- World selection keeps the new-world form closed when a world already exists. Tap a resident on Home to open their profile; profiles separate workshop settings, original settings and history, and retain an unfinished edit across refreshes. Resident lists use pages and a separate detail view; workshop controls are grouped into current work, production settings and ordering. Full mobile layout and installation verification remain incomplete.
+- World selection keeps the new-world form closed when a world already exists. Tap a resident on Home to open their profile; profiles separate workshop settings, original settings and paged history, and retain an unfinished edit across refreshes. Resident lists use pages and a separate detail view; workshop controls are grouped into current work, production settings and ordering. Facilities, stock protection, storage and settings are separated into smaller views; inventory and protection editing use pages. Full mobile layout and installation verification remain incomplete.
 
 ## 0.6.3 — 2026-10-28
 - Home includes the latest layout and visual improvements. Other screens and the actual mobile layout have not yet been verified.

@@ -41,7 +41,11 @@ try {
       kind: "character",
       worldSetting: "기존 설정",
       source: { name: "원본", takenAt: "2026-10-27", description: "원본 설명", personality: "", scenario: "" },
-      changes: [],
+      changes: [
+        { kind: "name", detail: "첫 기록", at: "2026-10-27" },
+        { kind: "name", detail: "둘째 기록", at: "2026-10-27" },
+        { kind: "name", detail: "셋째 기록", at: "2026-10-27" },
+      ],
     };
     window.testState = {
       sheet: { kind: "profile", residentId: "r" },
@@ -79,7 +83,12 @@ try {
   await page.getByRole("button", { name: "공방 설정", exact: true }).click();
   assert.equal(await page.locator("#host").locator("textarea").inputValue(), "새 설정");
   await page.getByRole("button", { name: "변경 이력", exact: true }).click();
-  assert.equal(await page.getByText("아직 변경 이력이 없어요.").isVisible(), true);
+  assert.equal(await page.getByText("첫 기록").isVisible(), true);
+  assert.equal(await page.getByText("셋째 기록").count(), 0);
+  await page.getByRole("button", { name: "다음", exact: true }).click();
+  assert.equal(await page.getByText("셋째 기록").isVisible(), true);
+  await page.evaluate(() => window.testRender());
+  assert.equal(await page.getByText("셋째 기록").isVisible(), true);
   console.log("Profile panels and draft preservation: OK");
 } finally {
   await browser?.close();

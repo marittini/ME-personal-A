@@ -8,16 +8,18 @@ Baseline: ME-personal-A main `1b0b949cf7354b036dd26a2ae1a10701478a096e`, ME-pers
 - Tapping a resident on Home opens the resident profile. The profile separates workshop settings, original settings and change history. Selected section and unsaved setting text survive a client re-render.
 - Fullscreen applies safe-area insets and updates the control after external fullscreen exit.
 - Residents use a two-person page and separate detail view; work controls are split into current work, production settings and ordering/apply, with unapplied drafts indicated across sections.
+- Facilities, protection and storage have separate views. Stock and protection lists are paged, protection edit keeps unsaved quantities across page changes and re-renders, and settings are split into sections with a world-bound nickname draft.
 - Version 0.6.4 is a branch-only build for this checkpoint; the change log explicitly records incomplete mobile and install verification.
 
 ## Evidence and limits
 
 - Nine existing Forest Workshop regressions, strict package type checks, formatting/lint and catalog validation passed. The focused profile test uses Chromium at 390×740 with a simulated host and checks panel selection and draft retention; it is not an Engine install or an Android test.
 - Simulated Chromium checks also exercise resident list paging and detail navigation, including list fit at 390×740 and 320×640 with default text, and work section navigation with an unapplied draft. These are fixture-based checks, not actual-device or exhaustive content-size proof.
+- Further fixture-based Chromium checks cover inventory pagination and selling target, protection editing draft retention, profile history paging, and settings section and nickname draft retention. Storage fits 320×640 and 390×740 in the tested default-text fixtures.
 - A separate isolated Engine 2.5.1 development server started with a fixture-injected 0.6.4 package; its installed-packages API listed the package. At a simulated 390×740 viewport the Engine opened the empty library and a chat/tutorial overlay; after closing the overlays, a Forest Workshop tab was not found on that visible screen. This does not establish that normal catalog installation works, or why the entry point was absent. The actual first-play flow is still unverified.
 - In the pinned Engine source, `HomeBrowserHub.tsx` renders `home-browser-tab` contributions, but a source search found no import or use of `HomeBrowserHub` outside that file. The user has separately built the entry point and directed us to skip Engine entry work; it has not been verified here.
 - Fullscreen behavior, system bars, keyboard, fonts, touch, screen rotation, installation, update, reconnect and first-play flow have not been verified on an Android device.
-- The existing common frame and many sheets still scroll. Long profiles, story content, work queues and priority lists, storage, invite, explore, settings and world lists still need page-based layouts; do not describe this checkpoint as the requested no-scroll redesign.
+- The existing common frame and many sheets still scroll. Long profiles, story content, work queues and priority lists, invite, explore, backup and world lists still need page-based layouts; large text, long item names and protection edit layout need more testing. Do not describe this checkpoint as the requested no-scroll redesign.
 
 ## Next work
 

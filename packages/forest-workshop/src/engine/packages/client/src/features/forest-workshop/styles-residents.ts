@@ -119,7 +119,7 @@ export const RESIDENT_STYLES = `
 .source-details[open] > :not(summary) { margin-top: 0.6em; }
 .sheet-head { flex-wrap: wrap; }
 .sheet-head .section-title { flex: 1 1 10em; }
-.change-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 0.3em; max-height: 14em; overflow-y: auto; }
+.change-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 0.3em; }
 .change-row { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0 0.6em; padding: 0.4em 0.6em; border-radius: 0.6em; background: var(--fw-surface-3); font-size: calc(var(--fs) * 0.85); }
 .change-kind { font-weight: 800; }
 .change-detail { overflow-wrap: anywhere; }

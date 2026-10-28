@@ -61,6 +61,7 @@ export const PRODUCTION_STYLES = `
 .step-value.big { flex: 1.4; display: grid; place-items: center; font-size: calc(var(--fs) * 1.25); }
 .protect-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.55em; }
 .protect-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "tile name save" "picker picker picker"; align-items: center; gap: 0.45em 0.5em; padding: 0.55em; border-radius: 0.9em; border: var(--line-in) solid var(--ink); background: var(--fw-surface-3); }
+.protect-row[hidden] { display: none; }
 .protect-row > .item-tile { grid-area: tile; }
 .protect-name { grid-area: name; display: grid; min-width: 0; }
 .protect-row > .stepper { grid-area: picker; }

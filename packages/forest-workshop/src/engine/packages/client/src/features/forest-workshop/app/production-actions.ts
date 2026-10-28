@@ -16,11 +16,12 @@ export interface WorkView {
   /** 지정 횟수: the recipe chosen for the next queue entry, per facility. */
   queueRecipe: Record<string, string>;
   section?: "status" | "recipe" | "priority";
+  inventoryPage?: number;
 }
 
 export type ProductionSheet =
   | { kind: "work-report" }
-  | { kind: "protect-edit" }
+  | { kind: "protect-edit"; page?: number; drafts?: Record<string, number> }
   | { kind: "sell"; itemId: string }
   | { kind: "assign"; facilityId: string }
   | { kind: "auto-sell" };
@@ -137,6 +138,19 @@ export function createProductionActions(core: ControllerCore) {
       patchWork({ section });
     },
 
+    setInventoryPage(page: number) {
+      patchWork({ inventoryPage: Math.max(0, page) });
+    },
+
+    rememberProtection(patch: { page?: number; itemId?: string; amount?: number }) {
+      store.remember((state) => {
+        if (state.sheet?.kind !== "protect-edit") return {};
+        const drafts = { ...state.sheet.drafts };
+        if (patch.itemId !== undefined && patch.amount !== undefined) drafts[patch.itemId] = patch.amount;
+        return { sheet: { ...state.sheet, page: patch.page ?? state.sheet.page, drafts } };
+      });
+    },
+
     selectRule(facilityId: string, policyId: string) {
       patchWork({ selected: { ...store.get().work.selected, [facilityId]: policyId } });
     },
@@ -232,7 +246,14 @@ export function createProductionActions(core: ControllerCore) {
     },
 
     async setProtected(itemId: string, amount: number) {
-      await core.runCommand(`protect:${itemId}`, "production.setProtected", { itemId, amount });
+      const result = await core.runCommand(`protect:${itemId}`, "production.setProtected", { itemId, amount });
+      if (result)
+        store.remember((state) => {
+          if (state.sheet?.kind !== "protect-edit" || state.sheet.drafts?.[itemId] !== amount) return {};
+          const drafts = { ...state.sheet.drafts };
+          delete drafts[itemId];
+          return { sheet: { ...state.sheet, drafts } };
+        });
     },
 
     async sell(itemId: string, amount: number) {

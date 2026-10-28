@@ -148,6 +148,11 @@ try {
     window.testRender();
   });
   assert.equal(await page.getByText("적용 전", { exact: false }).isVisible(), true);
+  await page.getByRole("button", { name: "재고 보호", exact: true }).click();
+  assert.equal(await page.evaluate(() => window.facilitiesTab), "protection");
+  assert.equal(await page.evaluate(() => window.destination), "facilities");
+  await page.getByRole("button", { name: "창고 · 판매", exact: true }).click();
+  assert.equal(await page.evaluate(() => window.facilitiesTab), "storage");
   await page.getByRole("button", { name: "채집터 — 시설과 창고 열기" }).click();
   assert.equal(await page.evaluate(() => window.facilitiesTab), "facilities");
   assert.equal(await page.evaluate(() => window.destination), "facilities");

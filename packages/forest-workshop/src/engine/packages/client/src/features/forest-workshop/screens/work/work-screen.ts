@@ -517,9 +517,32 @@ function body(state: AppState, content: GameContent, world: WorldView, controlle
               modeToggle(state, facilityId, facility, controller),
               facilityCard(state, content, world, facilityId, facility, controller),
               currentWork(state, content, world, facility),
-              h("p", { className: "hint center" }, [
-                ICONS.info("icon"),
-                facility.waiting ? waitingText(content, facility.waiting) : "재료가 부족하면 기다렸다 다시 시작해요.",
+              facility.waiting
+                ? h("p", { className: "hint center", text: waitingText(content, facility.waiting) })
+                : null,
+              h("div", { className: "work-stock-actions", attrs: { role: "group", "aria-label": "재고 관리" } }, [
+                h("button", {
+                  className: "outline-button",
+                  text: "재고 보호",
+                  attrs: { type: "button" },
+                  on: {
+                    click: () => {
+                      controller.setFacilitiesTab("protection");
+                      controller.navigate("facilities");
+                    },
+                  },
+                }),
+                h("button", {
+                  className: "outline-button",
+                  text: "창고 · 판매",
+                  attrs: { type: "button" },
+                  on: {
+                    click: () => {
+                      controller.setFacilitiesTab("storage");
+                      controller.navigate("facilities");
+                    },
+                  },
+                }),
               ]),
             ]
           : []),

@@ -1,4 +1,5 @@
 ## 0.6.7 — 2026-10-28
+- Work status provides direct access to protected stock and the sales storeroom.
 - Facility details always open the selected facility instead of a previously viewed storage tab.
 - Home opens the active facility directly when showing an active job; unread reports still open the report.
 - Removed the duplicate exchange shortcut from the invite tab and the in-game fullscreen button. Delivery list responses are ignored after changing worlds or starting a newer request. Mobile game layout and actual Android installation remain under development.

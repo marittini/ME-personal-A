@@ -13,7 +13,7 @@ try {
     bundle = join(temp, "bundle.js");
   await writeFile(
     entry,
-    `import { renderWorkScreen } from ${JSON.stringify(join(client, "screens/work/work-screen.ts"))};\nimport { STYLES } from ${JSON.stringify(join(client, "styles.ts"))};\nimport { RESIDENT_STYLES } from ${JSON.stringify(join(client, "styles-residents.ts"))};\nimport { PRODUCTION_STYLES } from ${JSON.stringify(join(client, "styles-production.ts"))};\nwindow.renderWorkScreen = renderWorkScreen; window.fwStyles = STYLES + RESIDENT_STYLES + PRODUCTION_STYLES;`,
+    `import { renderWorkScreen } from ${JSON.stringify(join(client, "screens/work/work-screen.ts"))};\nimport { STYLES } from ${JSON.stringify(join(client, "styles.ts"))};\nimport { RESIDENT_STYLES } from ${JSON.stringify(join(client, "styles-residents.ts"))};\nimport { PRODUCTION_STYLES } from ${JSON.stringify(join(client, "styles-production.ts"))};\nimport { INVITE_STYLES } from ${JSON.stringify(join(client, "styles-invite.ts"))};\nimport { STORY_STYLES } from ${JSON.stringify(join(client, "styles-story.ts"))};\nimport { ART_STYLES } from ${JSON.stringify(join(client, "styles-art.ts"))};\nwindow.renderWorkScreen = renderWorkScreen; window.fwStyles = STYLES + RESIDENT_STYLES + PRODUCTION_STYLES + INVITE_STYLES + STORY_STYLES + ART_STYLES;`,
   );
   await build({
     entryPoints: [entry],
@@ -70,7 +70,7 @@ try {
           state: {
             production: { facilities: { "gather-yard": facility }, protectedStock: {} },
             inventory: {},
-            wallet: { gold: 0, tickets: 0 },
+            wallet: { gold: 100, tickets: 0 },
             residents: {},
             pairs: {},
           },
@@ -90,14 +90,19 @@ try {
           },
         ],
         items: [{ id: "berry", name: "산딸기" }],
-        production: { speedBonusPerLevel: 0 },
+        production: { speedBonusPerLevel: 0, maxLevel: 5, upgradeCosts: [50, 100, 200, 400] },
         crew: { setBonusMax: 0, setBonusPerPair: 0 },
         talents: [],
       },
       sheet: null,
       notice: null,
       seasonChoice: "spring",
-      artReady: [],
+      artReady: [
+        "ui/title-sign.webp",
+        "ui/paper-panel.webp",
+        "ui/primary-button.webp",
+        "backgrounds/workshop-base-spring.webp",
+      ],
       busy: {},
     };
     const update = (patch) => {
@@ -119,7 +124,12 @@ try {
       openResidents() {},
       changeTarget() {},
       recommendRules() {},
-      applyRules() {},
+      applyRules() {
+        window.appliedRules = true;
+      },
+      upgradeFacility(facilityId, level) {
+        window.upgraded = { facilityId, level };
+      },
       toggleRule() {},
       moveRule() {},
       addRule() {},
@@ -132,17 +142,39 @@ try {
     };
     window.testRender();
   });
-  assert.equal(await page.getByText("바꾼 규칙은 아직 적용 전이에요.", { exact: false }).isVisible(), true);
+  assert.equal(await page.getByText("적용 전", { exact: false }).isVisible(), true);
+  await page.getByRole("button", { name: "채집터 강화 50 골드" }).click();
+  assert.deepEqual(await page.evaluate(() => window.upgraded), { facilityId: "gather-yard", level: 1 });
+  await page.getByRole("button", { name: "적용하기" }).click();
+  assert.equal(await page.evaluate(() => window.appliedRules), true);
   const statusSize = await page.locator("#host").evaluate((host) => {
     const scroller = host.shadowRoot.querySelector(".scroll");
     return { content: scroller.scrollHeight, available: scroller.clientHeight };
   });
   assert.ok(statusSize.content <= statusSize.available + 1, `work status should fit: ${JSON.stringify(statusSize)}`);
+  await page.setViewportSize({ width: 320, height: 640 });
+  await page.locator("#host").evaluate((host) => {
+    host.style.width = "320px";
+    host.style.height = "640px";
+  });
+  const smallSize = await page.locator("#host").evaluate((host) => {
+    const scroller = host.shadowRoot.querySelector(".scroll");
+    return { content: scroller.scrollWidth, available: scroller.clientWidth };
+  });
+  assert.ok(
+    smallSize.content <= smallSize.available + 1,
+    `small work status should not overflow horizontally: ${JSON.stringify(smallSize)}`,
+  );
+  await page.setViewportSize({ width: 390, height: 740 });
+  await page.locator("#host").evaluate((host) => {
+    host.style.width = "390px";
+    host.style.height = "740px";
+  });
   await page.getByRole("button", { name: "순서·적용", exact: true }).click();
   assert.equal(await page.getByRole("button", { name: "운영 규칙 적용", exact: true }).isVisible(), true);
   await page.getByRole("button", { name: /산딸기 목표 6/ }).click();
   assert.equal(await page.getByText("재료 사용 설정").isVisible(), true);
-  assert.equal(await page.getByText("바꾼 규칙은 아직 적용 전이에요.", { exact: false }).isVisible(), true);
+  assert.equal(await page.getByText("적용 전", { exact: false }).isVisible(), true);
   await page.getByRole("button", { name: "순서·적용", exact: true }).click();
   assert.equal(await page.getByRole("button", { name: "운영 규칙 적용", exact: true }).isEnabled(), true);
   await page.evaluate(() => {
@@ -183,8 +215,8 @@ try {
     });
     window.testRender();
   });
-  await page.getByRole("button", { name: "다음", exact: true }).click();
-  await page.getByRole("button", { name: "산딸기 남은 횟수 빼기" }).click();
+  await page.getByLabel("대기 중인 작업").selectOption("q2");
+  await page.getByRole("button", { name: "선택한 작업 빼기" }).click();
   assert.deepEqual(await page.evaluate(() => window.removedQueue), { facilityId: "gather-yard", entryId: "q2" });
   await page.getByRole("button", { name: "작업 추가" }).click();
   await page.getByRole("button", { name: "횟수 늘리기 1", exact: true }).click();
@@ -224,7 +256,7 @@ try {
     window.testRender();
   });
   assert.equal(await page.getByRole("button", { name: /제작 2 목표 5/ }).count(), 0);
-  await page.getByRole("button", { name: "다음", exact: true }).click();
+  await page.getByLabel("순서와 켜짐을 바꿀 생산 물품").selectOption("p2");
   assert.equal(await page.getByRole("button", { name: /제작 2 목표 5/ }).count(), 1);
   await page.getByLabel("추가할 제작법").selectOption("r3");
   await page.getByRole("button", { name: "제작법 추가" }).click();

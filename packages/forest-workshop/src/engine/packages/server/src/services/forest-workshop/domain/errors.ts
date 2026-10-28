@@ -49,6 +49,7 @@ export type FwErrorCode =
   | "story_not_found"
   | "story_locked"
   | "story_not_ready"
+  | "story_archive_full"
   | "expedition_busy"
   | "expedition_not_found"
   | "resident_busy"
@@ -60,7 +61,8 @@ export type FwErrorCode =
   // Stored data
   | "unsupported_schema"
   | "corrupt_world"
-  | "invalid_backup";
+  | "invalid_backup"
+  | "backup_story_limit";
 
 const STATUS: Record<FwErrorCode, number> = {
   invalid_request: 400,
@@ -102,6 +104,7 @@ const STATUS: Record<FwErrorCode, number> = {
   story_not_found: 404,
   story_locked: 409,
   story_not_ready: 409,
+  story_archive_full: 409,
   expedition_busy: 409,
   expedition_not_found: 404,
   resident_busy: 409,
@@ -112,6 +115,7 @@ const STATUS: Record<FwErrorCode, number> = {
   unsupported_schema: 422,
   corrupt_world: 500,
   invalid_backup: 400,
+  backup_story_limit: 409,
 };
 
 const MESSAGES: Record<FwErrorCode, string> = {
@@ -154,6 +158,8 @@ const MESSAGES: Record<FwErrorCode, string> = {
   order_done: "오늘 이미 납품한 의뢰입니다.",
   story_not_found: "이야기를 찾을 수 없습니다.",
   story_locked: "아직 출발할 수 없는 이야기입니다. 조건을 확인해 주세요.",
+  backup_story_limit: "이야기가 백업의 최대 개수를 넘었어요. 이야기는 그대로 보관돼요. 백업 방식을 업데이트해야 해요.",
+  story_archive_full: "이 페어의 이야기 보관 공간이 가득 찼어요. 기존 이야기는 그대로 보관돼요.",
   story_not_ready: "이야기를 아직 쓰지 않았습니다. 이야기 읽기를 다시 눌러 주세요.",
   expedition_busy: "다른 탐험이 진행 중입니다. 끝난 뒤 출발할 수 있습니다.",
   expedition_not_found: "진행 중인 탐험이 없습니다.",

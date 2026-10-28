@@ -13,7 +13,7 @@ try {
     bundle = join(temp, "bundle.js");
   await writeFile(
     entry,
-    `import { renderInviteScreen } from ${JSON.stringify(join(client, "screens/invite/invite-screen.ts"))};\nimport { STYLES } from ${JSON.stringify(join(client, "styles.ts"))};\nimport { RESIDENT_STYLES } from ${JSON.stringify(join(client, "styles-residents.ts"))};\nimport { PRODUCTION_STYLES } from ${JSON.stringify(join(client, "styles-production.ts"))};\nwindow.renderInviteScreen = renderInviteScreen; window.fwStyles = STYLES + RESIDENT_STYLES + PRODUCTION_STYLES;`,
+    `import { renderInviteScreen } from ${JSON.stringify(join(client, "screens/invite/invite-screen.ts"))};\nimport { STYLES } from ${JSON.stringify(join(client, "styles.ts"))};\nimport { RESIDENT_STYLES } from ${JSON.stringify(join(client, "styles-residents.ts"))};\nimport { PRODUCTION_STYLES } from ${JSON.stringify(join(client, "styles-production.ts"))};\nimport { INVITE_STYLES } from ${JSON.stringify(join(client, "styles-invite.ts"))};\nimport { STORY_STYLES } from ${JSON.stringify(join(client, "styles-story.ts"))};\nimport { ART_STYLES } from ${JSON.stringify(join(client, "styles-art.ts"))};\nwindow.renderInviteScreen = renderInviteScreen; window.fwStyles = STYLES + RESIDENT_STYLES + PRODUCTION_STYLES + INVITE_STYLES + STORY_STYLES + ART_STYLES;`,
   );
   await build({
     entryPoints: [entry],
@@ -78,7 +78,12 @@ try {
         },
       },
       content: { crew: { maxBreakthrough: 5 }, invite: { tokensPerExchange: 5 } },
-      artReady: [],
+      artReady: [
+        "ui/title-sign.webp",
+        "ui/paper-panel.webp",
+        "ui/primary-button.webp",
+        "backgrounds/workshop-base-spring.webp",
+      ],
       seasonChoice: "spring",
       sheet: null,
       notice: null,
@@ -119,7 +124,7 @@ try {
   });
   assert.equal(await page.getByText("주민 0", { exact: true }).isVisible(), true);
   assert.equal(await page.getByText("주민 2", { exact: true }).count(), 0);
-  await page.getByRole("button", { name: "다음", exact: true }).click();
+  await page.getByLabel("교환 주민 목록 고르기").selectOption("1");
   await page.getByRole("button", { name: "주민 2와(과) 종표 교환" }).click();
   assert.equal(await page.evaluate(() => window.exchanged), "2");
   await page.evaluate(() => {
@@ -128,7 +133,7 @@ try {
   });
   const dialog = page.getByRole("dialog", { name: "희망 주민 설정" });
   assert.equal(await dialog.getByText("주민 2", { exact: true }).count(), 0);
-  await dialog.getByRole("button", { name: "다음", exact: true }).click();
+  await dialog.getByLabel("초대 목록 고르기").selectOption("1");
   await dialog.getByRole("button", { name: /주민 2/ }).click();
   assert.equal(await page.evaluate(() => window.wished), "2");
   console.log("Invite exchange pagination and target: OK");

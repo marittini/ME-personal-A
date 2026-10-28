@@ -1,3 +1,10 @@
+## 0.6.5 — 2026-10-28
+- Resident, storage, invite and story-history lists allow direct group selection; profile history uses the same control. Small ordering buttons have larger touch targets and keyboard focus is visible.
+- Work screens offer direct product selection, draft application, recommendations and facility upgrades; queue and priority selection no longer require paging. Home residents move slightly within their spots.
+- Read episodes appear in history immediately. The reader has a compact dialogue panel, placement-aware emotion marks and direct answers for shorter questions.
+- Completed stories no longer silently discard older arcs at 50. The 1,000-arc per-pair limit and 1,000-scene backup limit remain; older discarded progress is not recovered. Older package versions cannot load worlds with more than 50 completed arcs.
+- Android installation and device layout remain unverified; at 320×640 the work screen can require vertical scrolling. Home movement is not a walking animation.
+
 ## 0.6.4 — 2026-10-28
 - World selection keeps the new-world form closed when a world already exists and pages existing worlds. Tap a resident on Home to open their profile; profiles separate workshop settings, original settings and paged history, and retain an unfinished edit across refreshes. Resident registration and lists use smaller steps and pages; workshop controls, queues and ordering are separated into smaller views. Facilities, stock protection, storage and settings are separated into smaller views; inventory and protection editing use pages. Exploration groups preparation, journey and history, and invitation lists use pages. Full mobile layout and installation verification remain incomplete.
 

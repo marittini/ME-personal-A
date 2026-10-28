@@ -416,6 +416,8 @@ button.counter { cursor: pointer; }
 .fullscreen-toggle { min-height: 2.75em; padding: 0.35em 0.65em; border: var(--line-in) solid var(--ink); border-radius: 0.7em; background: var(--fw-surface); color: var(--fw-text); font: inherit; font-size: calc(var(--fs) * 0.8); font-weight: 800; cursor: pointer; }
 @media (max-height: 480px) { .home-layout .scroll { overflow-y: auto; } .home-layout .column { height: auto; min-height: 100%; } .home-layout .scene { flex: none; min-height: 12em; } }
 
+.page-picker { min-height: 44px; width: 100%; }
+button:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px solid #315eac; outline-offset: 2px; }
 /* ── 홈 (01-1) ─────────────────────────────────────────────────────────── */
 .top-home { padding-bottom: 0; }
 .chip-button.weather { color: var(--fw-text); }

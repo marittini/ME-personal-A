@@ -12,10 +12,19 @@ import assert from "node:assert/strict";
 import { FakeHost } from "./support/forest-workshop-fake-host";
 
 import { arcDefinition } from "../packages/forest-workshop/src/engine/packages/server/src/services/forest-workshop/content/stories";
+import {
+  departExpedition,
+  markStoryRead,
+} from "../packages/forest-workshop/src/engine/packages/server/src/services/forest-workshop/domain/commands/stories";
+import { seededUuid } from "../packages/forest-workshop/src/engine/packages/server/src/services/forest-workshop/domain/ids";
+import { worldStateSchema } from "../packages/forest-workshop/src/engine/packages/server/src/services/forest-workshop/domain/world-model";
 import { FwError } from "../packages/forest-workshop/src/engine/packages/server/src/services/forest-workshop/domain/errors";
 import { ABSENCE_LIMIT_MS } from "../packages/forest-workshop/src/engine/packages/server/src/services/forest-workshop/domain/model/production";
 import type { Fact } from "../packages/forest-workshop/src/engine/packages/server/src/services/forest-workshop/domain/model/memory";
-import { arcView } from "../packages/forest-workshop/src/engine/packages/server/src/services/forest-workshop/domain/stories/arcs";
+import {
+  arcView,
+  planArc,
+} from "../packages/forest-workshop/src/engine/packages/server/src/services/forest-workshop/domain/stories/arcs";
 import {
   knownBy,
   sharedBy,
@@ -30,7 +39,10 @@ import { createBackupService } from "../packages/forest-workshop/src/engine/pack
 import { createCommandService } from "../packages/forest-workshop/src/engine/packages/server/src/services/forest-workshop/services/command-service";
 import { createStoryService } from "../packages/forest-workshop/src/engine/packages/server/src/services/forest-workshop/services/story-service";
 import { createWorldService } from "../packages/forest-workshop/src/engine/packages/server/src/services/forest-workshop/services/world-service";
-import { findStory } from "../packages/forest-workshop/src/engine/packages/server/src/services/forest-workshop/store/story-repository";
+import {
+  createStory,
+  findStory,
+} from "../packages/forest-workshop/src/engine/packages/server/src/services/forest-workshop/store/story-repository";
 import { findWorld } from "../packages/forest-workshop/src/engine/packages/server/src/services/forest-workshop/store/world-repository";
 
 const WORLD = "44444444-4444-4444-8444-444444444444";
@@ -409,6 +421,125 @@ async function main() {
     const restoredScene = await findStory(env.host.persistence.documents, NEW, storyId);
     assert.equal(restoredScene?.worldId, NEW);
     assert.deepEqual(restoredScene?.segments, one.segments);
+
+    // An old world at the 50-arc boundary keeps its earliest entry and gets new IDs.
+    const latest = await env.worlds.get(WORLD);
+    const template = latest.state.stories.pairs[env.pairAB]!.current!;
+    const readEpisode = (episode: (typeof template.episodes)[number], id: string) => ({
+      ...episode,
+      storyId: id,
+      state: "read" as const,
+      readAt: iso(T0),
+    });
+    const history = Array.from({ length: 50 }, (_, round) => ({
+      ...template,
+      episodes: template.episodes.map((episode, index) =>
+        readEpisode(episode, seededUuid(`history:${round}:${index}`)),
+      ) as typeof template.episodes,
+    }));
+    const atBoundary = worldStateSchema.parse({
+      ...latest.state,
+      stories: {
+        ...latest.state.stories,
+        pairs: {
+          ...latest.state.stories.pairs,
+          [env.pairAB]: { current: null, completed: history },
+        },
+      },
+    });
+    const full = worldStateSchema.parse({
+      ...atBoundary,
+      stories: {
+        ...atBoundary.stories,
+        pairs: {
+          ...atBoundary.stories.pairs,
+          [env.pairAB]: { current: null, completed: Array.from({ length: 1000 }, () => history[0]) },
+        },
+      },
+    });
+    assert.throws(
+      () =>
+        departExpedition.apply(full, { pairId: env.pairAB, episode: 0 }, { now: iso(T0), commandId: "archive-full" }),
+      (error) => error instanceof FwError && error.code === "story_archive_full",
+    );
+    assert.equal(full.stories.pairs[env.pairAB]!.completed.length, 1000);
+    const next = planArc(atBoundary, env.pairAB, a!, iso(T0));
+    const oldId = seededUuid(`${WORLD}:story:${env.pairAB}:50:${next.arcId}:0`);
+    assert.notEqual(next.episodes[0].storyId, oldId, "50-entry legacy IDs must not be reused");
+    assert.notEqual(
+      next.episodes[0].storyId,
+      planArc(
+        {
+          ...atBoundary,
+          stories: {
+            ...atBoundary.stories,
+            pairs: {
+              ...atBoundary.stories.pairs,
+              [env.pairAB]: { current: null, completed: [...history, history[0]!] },
+            },
+          },
+        },
+        env.pairAB,
+        a!,
+        iso(T0),
+      ).episodes[0].storyId,
+    );
+    const finalId = next.episodes[2].storyId;
+    const current = {
+      ...next,
+      episodes: [
+        readEpisode(next.episodes[0], next.episodes[0].storyId),
+        readEpisode(next.episodes[1], next.episodes[1].storyId),
+        { ...next.episodes[2], state: "unlocked" as const, unlockedAt: iso(T0) },
+      ] as typeof template.episodes,
+    };
+    const beforeFinal = worldStateSchema.parse({
+      ...atBoundary,
+      stories: {
+        ...atBoundary.stories,
+        pairs: {
+          ...atBoundary.stories.pairs,
+          [env.pairAB]: { current, completed: history },
+        },
+      },
+    });
+    const finalScene = { ...one, storyId: finalId, arcId: next.arcId, episode: 2 };
+    const done = markStoryRead.apply(
+      beforeFinal,
+      { pairId: env.pairAB, episode: 2, storyId: finalId },
+      { now: iso(T0), commandId: "archive-boundary", prepared: { story: finalScene } },
+    );
+    const checked = worldStateSchema.parse(done.state);
+    assert.equal(checked.stories.pairs[env.pairAB]!.completed.length, 51);
+    assert.equal(checked.stories.pairs[env.pairAB]!.completed[0]!.episodes[0].storyId, history[0]!.episodes[0].storyId);
+    const currentRecord = (await findWorld(env.host.persistence.documents, WORLD))!;
+    await env.host.persistence.documents.update({
+      id: currentRecord.record.id,
+      packageId: currentRecord.record.packageId,
+      expectedRevision: currentRecord.revision,
+      name: currentRecord.record.name,
+      description: currentRecord.record.description,
+      data: checked,
+      updatedAt: iso(T0),
+    });
+    const archiveBackup = await backups.exportWorld(WORLD, async () => Buffer.alloc(0));
+    const NEW2 = "66666666-6666-4666-8666-666666666666";
+    const restored = await backups.restore(
+      { newWorldId: NEW2, backup: archiveBackup.backup },
+      { store: async () => ({ reference: "global-gallery:x", url: "/x" }), remove: async () => undefined },
+    );
+    assert.equal(restored.state.stories.pairs[env.pairAB]!.completed.length, 51);
+    for (let i = 0; i < 999; i++)
+      await createStory(env.host.persistence.documents, { ...one, storyId: seededUuid(`extra-story:${i}`) });
+    await rejects(
+      backups.exportWorld(WORLD, async () => Buffer.alloc(0)),
+      "backup_story_limit",
+      "oversized archive export",
+    );
+    assert.equal(
+      restored.state.stories.pairs[env.pairAB]!.completed[0]!.episodes[0].storyId,
+      history[0]!.episodes[0].storyId,
+    );
   }
 
   console.log("forest-workshop P4 regressions: OK");

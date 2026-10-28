@@ -151,6 +151,9 @@ export function createBackupService(
           data: bytes.toString("base64"),
         });
       }
+      const stories = await listStories(documents, world.state.worldId);
+      if (stories.length > MAX_BACKUP_STORIES)
+        throw new FwError("backup_story_limit", { details: { limit: MAX_BACKUP_STORIES } });
       return {
         fileName: `forest-workshop-${world.state.worldId.slice(0, 8)}-${stamp}.json`,
         backup: {
@@ -160,7 +163,7 @@ export function createBackupService(
           exportedAt,
           world: world.state,
           assets,
-          stories: await listStories(documents, world.state.worldId),
+          stories,
         },
       };
     },

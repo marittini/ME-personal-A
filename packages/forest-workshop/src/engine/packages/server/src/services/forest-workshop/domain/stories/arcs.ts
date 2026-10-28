@@ -48,7 +48,8 @@ export function planArc(state: WorldState, pairId: string, leadId: string, now: 
   const round = state.stories.pairs[pairId]?.completed.length ?? 0;
   const episode = (index: number) => ({
     state: "idle" as const,
-    storyId: seededUuid(`${state.worldId}:story:${pairId}:${round}:${arc.id}:${index}`),
+    // Old versions reused round 50 after truncation; use a separate namespace from that point onward.
+    storyId: seededUuid(`${state.worldId}:story:${pairId}:${round >= 50 ? "v2:" : ""}${round}:${arc.id}:${index}`),
     unlockedAt: null,
     readAt: null,
     choice: null,

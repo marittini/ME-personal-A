@@ -5,6 +5,7 @@ import type { AppState, Controller } from "../../app/controller";
 import { button, h } from "../../app/dom";
 import type { ResidentChange, WorldView } from "../../app/types";
 import { ICONS } from "../chrome/icons";
+import { pagePicker } from "../chrome/page-picker";
 import { kindTag } from "./resident-figure";
 
 const CHANGE_LABEL: Record<string, string> = {
@@ -105,22 +106,29 @@ export function renderProfileSheet(world: WorldView, state: AppState, controller
   const historyList = h("ol", { className: "change-list" });
   const historyCount = Math.max(1, Math.ceil(resident.changes.length / 2));
   let historyPage = Math.min(profile?.historyPage ?? 0, historyCount - 1);
-  const historyLabel = h("span", { attrs: { "aria-live": "polite" } });
-  const previous = button("이전", () => showHistory(historyPage - 1), { variant: "secondary" });
-  const next = button("다음", () => showHistory(historyPage + 1), { variant: "secondary" });
+
   function showHistory(page: number) {
     historyPage = Math.max(0, Math.min(historyCount - 1, page));
     controller.rememberProfile({ historyPage });
     historyList.replaceChildren(...resident.changes.slice(historyPage * 2, historyPage * 2 + 2).map(changeRow));
-    historyLabel.textContent = `${historyPage + 1} / ${historyCount}`;
-    previous.disabled = historyPage === 0;
-    next.disabled = historyPage === historyCount - 1;
   }
   showHistory(historyPage);
   const historyPanel = h("div", { className: "profile-panel" }, [
     h("h3", { className: "subhead", text: "변경 이력" }),
     resident.changes.length ? historyList : h("p", { className: "muted", text: "아직 변경 이력이 없어요." }),
-    historyCount > 1 ? h("div", { className: "resident-pages" }, [previous, historyLabel, next]) : null,
+    pagePicker(
+      "변경 이력 고르기",
+      historyPage,
+      Array.from(
+        { length: historyCount },
+        (_, index) =>
+          `${index + 1} · ${resident.changes
+            .slice(index * 2, index * 2 + 2)
+            .map((change) => CHANGE_LABEL[change.kind] ?? change.kind)
+            .join(" · ")}`,
+      ),
+      showHistory,
+    ),
   ]);
   const panels = [worldPanel, sourcePanel, historyPanel];
   const tabs = ["공방 설정", "원래 설정", "변경 이력"].map((label, index) =>

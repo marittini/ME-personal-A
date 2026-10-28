@@ -26,6 +26,8 @@ export interface ReaderState {
   index: number;
   auto: boolean;
   backlog: boolean;
+  choiceView?: "question" | "answers";
+  backlogPage?: number;
   /** The screen to return to. */
   from: Route;
 }
@@ -108,7 +110,7 @@ export function createStoryActions(core: ControllerCore) {
     const current = list[reader.index];
     // A question waits for the answer (once); after it, or when re-reading, it steps on.
     if (current?.kind === "choice" && !answered()) return;
-    if (reader.index < list.length) patchReader({ index: reader.index + 1 });
+    if (reader.index < list.length) patchReader({ index: reader.index + 1, choiceView: "question" });
     if (reader.index + 1 >= list.length) stopAuto();
   }
 
@@ -191,6 +193,10 @@ export function createStoryActions(core: ControllerCore) {
 
     advanceStory: advance,
 
+    setChoiceView(choiceView: NonNullable<ReaderState["choiceView"]>) {
+      patchReader({ choiceView });
+    },
+
     toggleAuto() {
       const reader = store.get().reader;
       if (!reader) return;
@@ -209,7 +215,11 @@ export function createStoryActions(core: ControllerCore) {
 
     toggleBacklog() {
       const reader = store.get().reader;
-      if (reader) patchReader({ backlog: !reader.backlog });
+      if (reader) patchReader({ backlog: !reader.backlog, backlogPage: undefined });
+    },
+
+    setBacklogPage(backlogPage: number) {
+      patchReader({ backlogPage: Math.max(0, backlogPage) });
     },
 
     async chooseAnswer(optionId: string) {
@@ -235,8 +245,9 @@ export function createStoryActions(core: ControllerCore) {
         storyId: reader.storyId,
       });
       if (!response) return;
+      patchExplore({ tab: "story", section: "history", pairId: reader.pairId, historyPage: 0 });
       store.set({ reader: null });
-      core.navigate(reader.from === "story" ? "explore" : reader.from);
+      core.navigate("explore");
       if (!response.result.alreadyRead) {
         core.notify(
           response.result.arcDone

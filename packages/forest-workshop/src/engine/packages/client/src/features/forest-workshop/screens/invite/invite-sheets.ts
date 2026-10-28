@@ -5,6 +5,7 @@ import type { AppState, Controller } from "../../app/controller";
 import { button, h } from "../../app/dom";
 import type { DrawResult, GameContent, WorldView } from "../../app/types";
 import { ICONS } from "../chrome/icons";
+import { pagePicker } from "../chrome/page-picker";
 import { sheetDialog } from "../chrome/sheet";
 import { kindTag, residentAvatar, residentFigure } from "../residents/resident-figure";
 
@@ -34,16 +35,15 @@ function pagedRows(state: AppState, controller: Controller, rows: HTMLElement[],
   const page = Math.min(current, count - 1);
   return h("div", { className: "paged-rows" }, [
     h(ordered ? "ol" : "ul", { className: listClass }, rows.slice(page * 2, page * 2 + 2)),
-    count > 1
-      ? h("div", { className: "resident-pages" }, [
-          button("이전", () => controller.setInviteSheetPage(page - 1), { variant: "secondary", disabled: page === 0 }),
-          h("span", { text: `${page + 1} / ${count}`, attrs: { "aria-live": "polite" } }),
-          button("다음", () => controller.setInviteSheetPage(page + 1), {
-            variant: "secondary",
-            disabled: page + 1 >= count,
-          }),
-        ])
-      : null,
+    pagePicker(
+      "초대 목록 고르기",
+      page,
+      Array.from(
+        { length: count },
+        (_, index) => `${index * 2 + 1}–${Math.min(rows.length, index * 2 + 2)} / ${rows.length}`,
+      ),
+      (value) => controller.setInviteSheetPage(value),
+    ),
   ]);
 }
 

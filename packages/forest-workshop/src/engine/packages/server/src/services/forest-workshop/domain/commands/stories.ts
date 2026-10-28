@@ -14,7 +14,7 @@ import { CHOICE_TRUST, arcDefinition } from "../../content/stories";
 import { FwError } from "../errors";
 import type { Fact } from "../model/memory";
 import { RELATION_RANGE } from "../model/pairs";
-import type { ArcProgress } from "../model/stories";
+import { MAX_COMPLETED_ARCS, type ArcProgress } from "../model/stories";
 import { storyDocumentSchema, type StoryDocument } from "../model/story-document";
 import { usableAmount } from "../production/stock";
 import { arcView, planArc } from "../stories/arcs";
@@ -64,6 +64,9 @@ export const departExpedition = defineCommand({
     const view = arcView(state, payload.pairId);
     if (!view) throw new FwError("pair_not_found");
     if (state.stories.expedition) throw new FwError("expedition_busy");
+    const savedStories = state.stories.pairs[payload.pairId];
+    if (!savedStories?.current && (savedStories?.completed.length ?? 0) >= MAX_COMPLETED_ARCS)
+      throw new FwError("story_archive_full");
     const episode = view.episodes[payload.episode]!;
     if (episode.status !== "available") {
       throw new FwError("story_locked", { details: { reasons: episode.reasons, status: episode.status } });
@@ -240,7 +243,9 @@ export const markStoryRead = defineCommand({
       ),
     };
     if (arcDone) {
-      const completed = [...(state.stories.pairs[payload.pairId]?.completed ?? []), arcProgress].slice(-50);
+      const previous = state.stories.pairs[payload.pairId]?.completed ?? [];
+      if (previous.length >= MAX_COMPLETED_ARCS) throw new FwError("story_archive_full");
+      const completed = [...previous, arcProgress];
       next = putArc(next, payload.pairId, null, completed);
     } else {
       next = putArc(next, payload.pairId, arcProgress);

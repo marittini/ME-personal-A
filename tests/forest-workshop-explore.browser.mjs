@@ -13,7 +13,7 @@ try {
     bundle = join(temp, "bundle.js");
   await writeFile(
     entry,
-    `import { renderExploreScreen } from ${JSON.stringify(join(client, "screens/explore/explore-screen.ts"))};\nimport { STYLES } from ${JSON.stringify(join(client, "styles.ts"))};\nimport { RESIDENT_STYLES } from ${JSON.stringify(join(client, "styles-residents.ts"))};\nimport { PRODUCTION_STYLES } from ${JSON.stringify(join(client, "styles-production.ts"))};\nwindow.renderExploreScreen = renderExploreScreen; window.fwStyles = STYLES + RESIDENT_STYLES + PRODUCTION_STYLES;`,
+    `import { renderExploreScreen } from ${JSON.stringify(join(client, "screens/explore/explore-screen.ts"))};\nimport { STYLES } from ${JSON.stringify(join(client, "styles.ts"))};\nimport { RESIDENT_STYLES } from ${JSON.stringify(join(client, "styles-residents.ts"))};\nimport { PRODUCTION_STYLES } from ${JSON.stringify(join(client, "styles-production.ts"))};\nimport { INVITE_STYLES } from ${JSON.stringify(join(client, "styles-invite.ts"))};\nimport { STORY_STYLES } from ${JSON.stringify(join(client, "styles-story.ts"))};\nimport { ART_STYLES } from ${JSON.stringify(join(client, "styles-art.ts"))};\nwindow.renderExploreScreen = renderExploreScreen; window.fwStyles = STYLES + RESIDENT_STYLES + PRODUCTION_STYLES + INVITE_STYLES + STORY_STYLES + ART_STYLES;`,
   );
   await build({
     entryPoints: [entry],
@@ -72,13 +72,21 @@ try {
             residents: { r: { displayName: "주민" } },
             inventory: {},
             production: { protectedStock: {}, facilities: {} },
-            stories: { expedition: null },
+            stories: {
+              expedition: null,
+              pairs: { a: { current: { episodes: [{ state: "read", storyId: "current-0" }] } } },
+            },
             wallet: { gold: 0, tickets: 0 },
           },
         },
       },
       content: { production: { absenceLimitMs: 259200000 }, items: [] },
-      artReady: [],
+      artReady: [
+        "ui/title-sign.webp",
+        "ui/paper-panel.webp",
+        "ui/primary-button.webp",
+        "backgrounds/workshop-base-spring.webp",
+      ],
       seasonChoice: "spring",
       sheet: null,
       notice: null,
@@ -123,7 +131,9 @@ try {
   assert.equal(await page.getByText("지금은 떠난 탐험이 없어요.").isVisible(), true);
   await page.getByRole("button", { name: "읽은 이야기", exact: true }).click();
   assert.equal(await page.getByText("기록 2", { exact: true }).isVisible(), true);
-  await page.getByRole("button", { name: "다음", exact: true }).click();
+  await page.getByRole("button", { name: "1편 다시 읽기", exact: true }).click();
+  assert.deepEqual(await page.evaluate(() => window.openedStory), { pairId: "a", episode: 0, storyId: "current-0" });
+  await page.getByLabel("읽은 이야기 목록 고르기").selectOption("1");
   assert.equal(await page.getByText("기록 0", { exact: true }).isVisible(), true);
   await page.getByRole("button", { name: "기록 0 1편 다시 읽기" }).click();
   assert.deepEqual(await page.evaluate(() => window.openedStory), { pairId: "a", episode: 0, storyId: "s0" });

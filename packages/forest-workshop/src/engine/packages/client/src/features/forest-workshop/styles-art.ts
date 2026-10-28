@@ -104,6 +104,7 @@ img.emotion-bubble.emotion-art { min-width: 0; width: 2.6em; height: 2.6em; padd
   box-shadow: none;
 }
 .art-paper .card { padding: 1.1em 1.2em; }
+.art-paper .resident-board { padding: 0.8em 1em; }
 /* Inside the paper, rows and boxes use a light tan line and no ink frame, as on the boards. */
 .art-paper .card :is(.facility-entry, .recipe, .plan-row, .plan-block, .setting-block, .detail-grid, .report-slot, .kit-item, .completed-arc, .segmented, .episode-tile:not(.selected)) {
   border-color: #dcc49a;

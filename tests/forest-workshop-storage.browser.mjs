@@ -13,7 +13,7 @@ try {
     bundle = join(temp, "bundle.js");
   await writeFile(
     entry,
-    `import { renderFacilitiesScreen } from ${JSON.stringify(join(client, "screens/work/facilities-screen.ts"))};\nimport { STYLES } from ${JSON.stringify(join(client, "styles.ts"))};\nimport { RESIDENT_STYLES } from ${JSON.stringify(join(client, "styles-residents.ts"))};\nimport { PRODUCTION_STYLES } from ${JSON.stringify(join(client, "styles-production.ts"))};\nwindow.renderFacilitiesScreen = renderFacilitiesScreen; window.fwStyles = STYLES + RESIDENT_STYLES + PRODUCTION_STYLES;`,
+    `import { renderFacilitiesScreen } from ${JSON.stringify(join(client, "screens/work/facilities-screen.ts"))};\nimport { STYLES } from ${JSON.stringify(join(client, "styles.ts"))};\nimport { RESIDENT_STYLES } from ${JSON.stringify(join(client, "styles-residents.ts"))};\nimport { PRODUCTION_STYLES } from ${JSON.stringify(join(client, "styles-production.ts"))};\nimport { INVITE_STYLES } from ${JSON.stringify(join(client, "styles-invite.ts"))};\nimport { STORY_STYLES } from ${JSON.stringify(join(client, "styles-story.ts"))};\nimport { ART_STYLES } from ${JSON.stringify(join(client, "styles-art.ts"))};\nwindow.renderFacilitiesScreen = renderFacilitiesScreen; window.fwStyles = STYLES + RESIDENT_STYLES + PRODUCTION_STYLES + INVITE_STYLES + STORY_STYLES + ART_STYLES;`,
   );
   await build({
     entryPoints: [entry],
@@ -64,7 +64,12 @@ try {
       sheet: null,
       notice: null,
       seasonChoice: "spring",
-      artReady: [],
+      artReady: [
+        "ui/title-sign.webp",
+        "ui/paper-panel.webp",
+        "ui/primary-button.webp",
+        "backgrounds/workshop-base-spring.webp",
+      ],
       busy: {},
     };
     window.testController = {
@@ -113,7 +118,9 @@ try {
   });
   assert.ok(size.content <= size.available + 1, `storage should fit: ${JSON.stringify(size)}`);
   assert.equal(await page.getByText("물건 3", { exact: true }).count(), 0);
-  await page.getByRole("button", { name: "다음", exact: true }).click();
+  await page.getByLabel("재고 목록 고르기").selectOption("2");
+  assert.equal(await page.getByText("물건 6", { exact: true }).count(), 1);
+  await page.getByLabel("재고 목록 고르기").selectOption("1");
   assert.equal(await page.getByText("물건 3", { exact: true }).count(), 1);
   await page.setViewportSize({ width: 320, height: 640 });
   await page.locator("#host").evaluate((host) => {
@@ -129,7 +136,7 @@ try {
   assert.deepEqual(await page.evaluate(() => window.openedSheet), { kind: "sell", itemId: "item-3" });
   await page.getByRole("tab", { name: "재고 보호" }).click();
   assert.equal(await page.getByText("물건 0", { exact: true }).count(), 1);
-  await page.getByRole("button", { name: "다음", exact: true }).click();
+  await page.getByLabel("재고 목록 고르기").selectOption("1");
   assert.equal(await page.getByText("물건 3", { exact: true }).count(), 1);
   await page.getByRole("button", { name: "편집하기" }).click();
   await page.getByRole("button", { name: "늘리기 1", exact: true }).click();

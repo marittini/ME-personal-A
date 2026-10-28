@@ -120,7 +120,12 @@ try {
       selectFacility() {},
       setMode() {},
       openSheet() {},
-      navigate() {},
+      setFacilitiesTab(tab) {
+        window.facilitiesTab = tab;
+      },
+      navigate(route) {
+        window.destination = route;
+      },
       openResidents() {},
       changeTarget() {},
       recommendRules() {},
@@ -143,6 +148,9 @@ try {
     window.testRender();
   });
   assert.equal(await page.getByText("적용 전", { exact: false }).isVisible(), true);
+  await page.getByRole("button", { name: "채집터 — 시설과 창고 열기" }).click();
+  assert.equal(await page.evaluate(() => window.facilitiesTab), "facilities");
+  assert.equal(await page.evaluate(() => window.destination), "facilities");
   await page.getByRole("button", { name: "채집터 강화 50 골드" }).click();
   assert.deepEqual(await page.evaluate(() => window.upgraded), { facilityId: "gather-yard", level: 1 });
   await page.getByRole("button", { name: "적용하기" }).click();

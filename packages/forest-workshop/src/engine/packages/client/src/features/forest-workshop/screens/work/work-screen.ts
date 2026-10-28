@@ -158,7 +158,12 @@ function facilityCard(
       {
         className: "facility-open",
         attrs: { type: "button", "aria-label": `${definition?.name ?? "시설"} — 시설과 창고 열기` },
-        on: { click: () => controller.navigate("facilities") },
+        on: {
+          click: () => {
+            controller.setFacilitiesTab("facilities");
+            controller.navigate("facilities");
+          },
+        },
       },
       [
         h("span", { className: "facility-art" }, [facilityPicture(facilityId)]),

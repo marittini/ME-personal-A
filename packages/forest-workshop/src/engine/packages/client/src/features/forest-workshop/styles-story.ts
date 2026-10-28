@@ -49,6 +49,7 @@ export const STORY_STYLES = `
 .story-layout .page { display: flex; flex: 1 1 auto; min-height: 0; flex-direction: column; gap: 0.45em; }
 .story-layout .story-stage { flex: 1 1 auto; height: auto; min-height: 3em; }
 .story-layout .dialogue-box { flex: none; margin-top: 0; min-height: 0; padding: 0.85em 1em; border-radius: 0.7em; }
+.story-layout .dialogue-box:not(.choice):not(.loading):not(.error):not(.end) { height: 9em; overflow-y: auto; align-content: start; }
 .story-layout .speaker-tag { position: static; justify-self: start; padding: 0; border: 0; background: transparent; color: var(--fw-wood-dark); }
 .story-layout .dialogue-box .line { font-size: var(--fs); font-weight: 600; line-height: 1.45; }
 .story-layout .reader-foot { flex: none; display: flex; align-items: center; margin-top: 0; }

@@ -146,7 +146,7 @@ function body(resident: Resident, state: AppState, controller: Controller) {
             slider(
               "markerHeight",
               ICONS.updown,
-              "기호 높이",
+              "감정 표시 높이",
               draft.markerHeight,
               limits.markerHeight,
               controller,

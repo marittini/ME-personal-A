@@ -99,7 +99,14 @@ try {
       toggleAuto() {},
       closeStory() {},
       advanceStory() {
-        window.testState.reader.index++;
+        const reader = window.testState.reader;
+        const segment = reader.story.value.segments[reader.index];
+        const count = segment.kind === "choice" ? 0 : Math.ceil(Array.from(segment.text).length / 52);
+        if ((reader.textPage ?? 0) + 1 < count) reader.textPage = (reader.textPage ?? 0) + 1;
+        else {
+          reader.index++;
+          reader.textPage = 0;
+        }
         window.testRender();
       },
       setChoiceView(choiceView) {
@@ -130,6 +137,17 @@ try {
     });
   const lineSize = await fit();
   assert.ok(lineSize.content <= lineSize.available + 1, `story line should fit: ${JSON.stringify(lineSize)}`);
+  const firstBox = await page.locator("#host").evaluate((host) => {
+    const rect = host.shadowRoot.querySelector(".dialogue-box").getBoundingClientRect();
+    return { top: rect.top, height: rect.height };
+  });
+  await page.getByRole("button", { name: "계속" }).click();
+  const secondBox = await page.locator("#host").evaluate((host) => {
+    const rect = host.shadowRoot.querySelector(".dialogue-box").getBoundingClientRect();
+    return { top: rect.top, height: rect.height };
+  });
+  assert.deepEqual(secondBox, firstBox);
+  await page.getByRole("button", { name: "계속" }).click();
   await page.getByRole("button", { name: "계속" }).click();
   assert.equal(await page.getByRole("button", { name: "다 읽고 보관" }).isDisabled(), true);
   const choiceSize = await fit();

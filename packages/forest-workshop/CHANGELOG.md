@@ -1,4 +1,8 @@
+## 0.6.8 — 2026-10-28
+- Edit the rectangular movement area directly over the home background by dragging its four edges. Save, cancel and reset are available on Home. Home residents move horizontally and vertically within this range. Ground is included in world backups. Schema 8 worlds cannot be opened by older packages. Obstacles, polygon editing and full interaction behavior remain in development.
+
 ## 0.6.7 — 2026-10-28
+- Resident profiles show a portrait and give direct access to their relationships.
 - Align facility and stock actions evenly and keep the work status compact.
 - Work status provides direct access to protected stock and the sales storeroom.
 - Facility details always open the selected facility instead of a previously viewed storage tab.

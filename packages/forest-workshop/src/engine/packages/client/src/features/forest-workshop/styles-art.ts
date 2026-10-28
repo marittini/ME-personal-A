@@ -118,4 +118,16 @@ img.emotion-bubble.emotion-art { min-width: 0; width: 2.6em; height: 2.6em; padd
 .facility-entry:has(.facility-image) > :not(.facility-open) { margin-left: auto; }
 .work-card .facility-entry:has(.facility-image) > .outline-button { width: 100%; margin: 0; justify-content: center; text-align: center; white-space: nowrap; font-size: calc(var(--fs) * 0.85); }
 .work-stock-actions .outline-button { justify-content: center; text-align: center; }
+.work-fields { margin-bottom: 0; }
+.work-fields .field-tab { min-height: 44px; padding: 0.3em 0.1em; border-bottom: var(--line) solid var(--ink); border-radius: 0.65em; }
+.work-fields .field-glyph { display: none; }
+.work-card .facility-art, .work-card .facility-image { width: 44px; height: 44px; }
+.work-card .facility-text strong { font-size: var(--fs); }
+.work-card .facility-open { gap: 0.4em; }
+.work-card .segment { min-height: 44px; }
+.work-card .facility-entry .outline-button { min-height: 44px; }
+.work-card .plan-row.current-work { grid-template-columns: auto minmax(0, 1fr) auto; }
+.work-card .current-work .plan-label { grid-column: 1 / -1; }
+.work-card .current-work .plan-progress { grid-column: auto; }
+.art-paper .work-card { padding: 0.6em 0.8em; gap: 0.25em; }
 `;

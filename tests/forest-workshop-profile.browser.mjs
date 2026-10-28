@@ -38,6 +38,8 @@ try {
     const resident = {
       residentId: "r",
       displayName: "주민",
+      recruited: true,
+      image: { current: null },
       kind: "character",
       worldSetting: "기존 설정",
       source: { name: "원본", takenAt: "2026-10-27", description: "원본 설명", personality: "", scenario: "" },
@@ -55,6 +57,12 @@ try {
     window.testController = {
       rememberProfile(patch) {
         Object.assign(window.testState.sheet, patch);
+      },
+      notify(message) {
+        window.profileNotice = message;
+      },
+      openRelations(id) {
+        window.related = id;
       },
       closeSheet() {},
       updateWorldSetting() {},
@@ -75,7 +83,11 @@ try {
     };
     window.testRender();
   });
+  await page.getByRole("button", { name: "관계 보기" }).click();
+  assert.equal(await page.evaluate(() => window.related), "r");
   await page.locator("#host").locator("textarea").fill("새 설정");
+  await page.getByRole("button", { name: "관계 보기" }).click();
+  assert.match(await page.evaluate(() => window.profileNotice), /저장/);
   await page.getByRole("button", { name: "원래 설정", exact: true }).click();
   assert.equal(await page.getByText("원본 설명").isVisible(), true);
   await page.evaluate(() => window.testRender());

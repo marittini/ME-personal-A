@@ -25,7 +25,6 @@ import {
   jobProgress,
   recipeOf,
   runMs,
-  speedPercent,
   waitingText,
 } from "./production-view";
 
@@ -40,7 +39,7 @@ const FIELDS: ReadonlyArray<{ field: string; label: string; icon: IconFactory }>
 function fieldTabs(content: GameContent, world: WorldView, facilityId: string, controller: Controller) {
   return h(
     "div",
-    { className: "field-tabs", attrs: { role: "tablist", "aria-label": "작업 분야" } },
+    { className: "field-tabs work-fields", attrs: { role: "tablist", "aria-label": "작업 분야" } },
     FIELDS.map((field) => {
       const facility = content.facilities.find((candidate) => candidate.field === field.field);
       if (!facility) return null;
@@ -169,7 +168,6 @@ function facilityCard(
         h("span", { className: "facility-art" }, [facilityPicture(facilityId)]),
         h("span", { className: "facility-text" }, [
           h("strong", { text: `${definition?.name ?? facilityId} Lv. ${facility.level}` }),
-          h("span", { text: `처리 속도 +${speedPercent(content, facility.level)}%` }),
           h("span", { className: "crew-line" }, [
             bonus.resident ? residentAvatar(bonus.resident) : null,
             bonus.resident
@@ -512,11 +510,11 @@ function body(state: AppState, content: GameContent, world: WorldView, controlle
     card(
       null,
       [
+        section !== "status" ? modeToggle(state, facilityId, facility, controller) : null,
         ...(section === "status"
           ? [
-              modeToggle(state, facilityId, facility, controller),
-              facilityCard(state, content, world, facilityId, facility, controller),
               currentWork(state, content, world, facility),
+              facilityCard(state, content, world, facilityId, facility, controller),
               facility.waiting
                 ? h("p", { className: "hint center", text: waitingText(content, facility.waiting) })
                 : null,

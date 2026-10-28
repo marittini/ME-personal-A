@@ -5,7 +5,11 @@ export interface WorldState {
   schemaVersion: number;
   worldId: string;
   createdAt: string;
-  settings: { worldName: string; playerNickname: string };
+  settings: {
+    worldName: string;
+    playerNickname: string;
+    ground: { left: number; right: number; top: number; bottom: number };
+  };
   /** gold · 초대권 · 종표 */
   wallet: { gold: number; tickets: number; tokens: number };
   inventory: Record<string, number>;

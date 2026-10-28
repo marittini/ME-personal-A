@@ -93,6 +93,30 @@ export const RESIDENT_STYLES = `
 .detail-action { display: flex; align-items: center; justify-content: center; gap: 0.35em; min-height: 3em; padding: 0.3em; border-radius: 0.8em; border: var(--line-in) solid var(--ink); background: var(--fw-surface-3); color: var(--fw-text); font: inherit; font-weight: 800; cursor: pointer; }
 .detail-action .icon { color: var(--fw-wood-dark); }
 
+.ground-launch { position: absolute; right: 0.6em; bottom: 0.5em; z-index: 4; min-height: 44px; }
+.ground-overlay { position: absolute; inset: 0; z-index: 5; }
+.ground-selection { position: absolute; border: 3px dashed #fff; outline: 2px solid #286c4b; background: #4f8f6e55; }
+.ground-caption { position: absolute; top: 0; left: 50%; transform: translate(-50%, -100%); padding: 0.2em 0.4em; white-space: nowrap; color: #fff; background: #286c4b; font-size: 12px; }
+.ground-handle { position: absolute; width: 44px; height: 44px; border: 2px solid #286c4b; border-radius: 50%; color: #243d2c; background: #fff8e8; font: inherit; font-weight: 900; touch-action: none; cursor: grab; padding: 0; }
+.ground-handle.left { left: 0; top: 50%; transform: translate(-50%, -50%); }
+.ground-handle.right { right: 0; top: 50%; transform: translate(50%, -50%); }
+.ground-handle.top { left: 50%; top: 0; transform: translate(-50%, -50%); }
+.ground-handle.bottom { left: 50%; bottom: 0; transform: translate(-50%, 50%); }
+.editing-ground .resident-spot { pointer-events: none; }
+.editing-ground .resident-spot:not(.filled) { visibility: hidden; }
+.editing-ground .resident-spot.filled, .editing-ground .resident-spot.filled .figure { animation-play-state: paused; }
+.ground-actions { grid-column: 1 / -1; display: grid; gap: 0.4em; font-size: calc(var(--fs) * 0.85); }
+.ground-action-row { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 0.3em; }
+.ground-action-row .button { min-width: 0; min-height: 44px; padding: 0.3em; }
+/* Foot positions follow the saved world's ground rectangle. */
+.ground-stage .resident-spot { position: absolute; transform: translate(-50%, -100%); top: 65%; }
+.ground-stage .resident-spot.left { left: 22%; }
+.ground-stage .resident-spot.right { left: 78%; }
+.ground-stage .resident-spot.filled.left { animation: fw-ground-left 18s ease-in-out infinite; }
+.ground-stage .resident-spot.filled.right { animation: fw-ground-right 18s ease-in-out infinite; }
+@keyframes fw-ground-left { 0%, 20%, 95%, 100% { left: 22%; top: 65%; } 45%, 70% { left: 40%; top: 35%; } }
+@keyframes fw-ground-right { 0%, 20%, 95%, 100% { left: 78%; top: 40%; } 45%, 70% { left: 60%; top: 65%; } }
+@media (prefers-reduced-motion: reduce) { .ground-stage .resident-spot.filled.left, .ground-stage .resident-spot.filled.right { animation: none; } }
 /* Home scene: residents standing in their places. */
 .resident-spot.filled { width: 8.5em; height: 11em; border: 0; border-radius: 0; background: none; }
 .resident-spot.filled.left { animation: fw-stroll-left 12s ease-in-out infinite; }
@@ -112,6 +136,10 @@ export const RESIDENT_STYLES = `
 
 /* ── 프로필 sheet ──────────────────────────────────────────────────────── */
 .sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5em; }
+.profile-identity { display: flex; align-items: center; gap: 0.8em; padding: 0.6em; border-radius: 0.9em; background: var(--fw-surface-3); }
+.profile-identity-text { display: grid; gap: 0.2em; min-width: 0; }
+.profile-identity-text strong { overflow-wrap: anywhere; font-size: calc(var(--fs) * 1.1); }
+.profile-identity-text .outline-button { min-height: 44px; justify-content: center; }
 .profile-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.35em; }
 .profile-tab { min-height: 44px; padding: 0.3em; border: 2px solid var(--ink); border-radius: 0.6em; background: var(--fw-surface-3); color: var(--fw-text); font: inherit; font-weight: 700; cursor: pointer; }
 .profile-tab[aria-pressed="true"] { background: var(--fw-accent); color: var(--fw-on-accent); }

@@ -6,7 +6,7 @@ import { button, h } from "../../app/dom";
 import type { ResidentChange, WorldView } from "../../app/types";
 import { ICONS } from "../chrome/icons";
 import { pagePicker } from "../chrome/page-picker";
-import { kindTag } from "./resident-figure";
+import { kindTag, residentAvatar } from "./resident-figure";
 
 const CHANGE_LABEL: Record<string, string> = {
   registered: "등록",
@@ -158,6 +158,27 @@ export function renderProfileSheet(world: WorldView, state: AppState, controller
           h("h2", { className: "section-title", text: `${resident.displayName} 프로필`, attrs: { id: "fw-profile" } }),
           kindTag(resident),
           button("닫기", () => controller.closeSheet(), { variant: "secondary" }),
+        ]),
+        h("div", { className: "profile-identity" }, [
+          residentAvatar(resident, "large"),
+          h("div", { className: "profile-identity-text" }, [
+            h("strong", { text: resident.displayName }),
+            h("span", { text: resident.recruited ? "공방 주민" : "초대 대기" }),
+            h("button", {
+              className: "outline-button",
+              text: "관계 보기",
+              attrs: { type: "button" },
+              on: {
+                click: () => {
+                  if (textarea.value !== resident.worldSetting) {
+                    controller.notify("수정한 공방 설정을 저장한 뒤 관계를 볼 수 있어요.");
+                    return;
+                  }
+                  controller.openRelations(residentId);
+                },
+              },
+            }),
+          ]),
         ]),
         h("div", { className: "profile-tabs", attrs: { "aria-label": "프로필 내용 선택" } }, tabs),
         ...panels,

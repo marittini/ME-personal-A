@@ -93,6 +93,8 @@ export interface AppState {
   worldDraft?: { worldName: string; nickname: string };
   settingsSection?: "workshop" | "display" | "manage";
   settingsNicknameDraft?: { worldId: string; value: string };
+  groundEditingWorld?: string;
+  settingsGroundDraft?: { worldId: string; value: WorldView["state"]["settings"]["ground"] };
   /** 저장·백업 → 저장 공간 사용량, loaded when that screen opens. */
   storage: Loadable<StorageUsage> | null;
   /** The welcome-package sheet was put off for this session ("나중에"). */
@@ -465,6 +467,45 @@ export function createController() {
       const draft = store.get().settingsNicknameDraft;
       if (result && draft?.worldId === worldId && draft.value === value) {
         store.remember({ settingsNicknameDraft: undefined });
+      }
+      return result;
+    },
+
+    openGroundEditor() {
+      const world = currentWorld();
+      if (!world) return;
+      navigate("home");
+      store.set({
+        groundEditingWorld: world.worldId,
+        settingsGroundDraft: { worldId: world.worldId, value: { ...world.state.settings.ground } },
+      });
+    },
+
+    resetGroundEditor() {
+      const world = currentWorld();
+      if (world)
+        store.set({
+          settingsGroundDraft: { worldId: world.worldId, value: { left: 12, right: 88, top: 58, bottom: 90 } },
+        });
+    },
+
+    cancelGroundEditor() {
+      store.set({ groundEditingWorld: undefined, settingsGroundDraft: undefined });
+    },
+
+    rememberGround(worldId: string, value: WorldView["state"]["settings"]["ground"]) {
+      store.remember({ settingsGroundDraft: { worldId, value: { ...value } } });
+    },
+
+    async saveGround(ground: WorldView["state"]["settings"]["ground"]) {
+      const worldId = currentWorld()?.worldId;
+      const sent = { ...ground };
+      const result = await runCommand("ground-save", "settings.update", { ground: sent });
+      if (result) {
+        const draft = store.get().settingsGroundDraft;
+        if (draft && draft.worldId === worldId && JSON.stringify(draft.value) === JSON.stringify(sent))
+          store.remember({ settingsGroundDraft: undefined, groundEditingWorld: undefined });
+        core.notify("지면 설정을 저장했어요.");
       }
       return result;
     },

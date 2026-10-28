@@ -53,6 +53,7 @@ try {
         state: "ready",
         value: {
           state: {
+            settings: { ground: { left: 12, right: 88, top: 58, bottom: 90 } },
             progress: { starterResidentId: "r" },
             residents: { r: resident },
             production: {
@@ -100,6 +101,27 @@ try {
   if (process.env.FW_HOME_SCREENSHOT) await page.screenshot({ path: process.env.FW_HOME_SCREENSHOT });
   assert.equal(await page.locator(".spot-name").count(), 0);
   const resident = page.getByRole("button", { name: "숲 주민 프로필 보기" });
+  const feet = await resident.evaluate((node) => {
+    const animation = node.getAnimations()[0];
+    animation.pause();
+    animation.currentTime = 0;
+    const a = node.getBoundingClientRect();
+    animation.currentTime = 9000;
+    const b = node.getBoundingClientRect();
+    const ground = node.parentElement.getBoundingClientRect();
+    animation.cancel();
+    return {
+      xMoved: b.x !== a.x,
+      yMoved: b.y !== a.y,
+      inside:
+        b.x + b.width / 2 >= ground.left &&
+        b.x + b.width / 2 <= ground.right &&
+        b.bottom >= ground.top &&
+        b.bottom <= ground.bottom,
+    };
+  });
+  assert.deepEqual(feet, { xMoved: true, yMoved: true, inside: true });
+
   await resident.click();
   assert.equal(await page.evaluate(() => window.selected), "r");
   assert.deepEqual(await page.evaluate(() => window.sheet), { kind: "profile", residentId: "r" });

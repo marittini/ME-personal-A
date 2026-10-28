@@ -16,7 +16,7 @@ import { productionSchema } from "./model/production";
 import { initialProduction } from "./production/initial";
 import { MAX_RESIDENTS, residentSchema } from "./model/residents";
 
-export const CURRENT_SCHEMA_VERSION = 7;
+export const CURRENT_SCHEMA_VERSION = 8;
 
 const nonNegativeInt = z.number().int().min(0).max(Number.MAX_SAFE_INTEGER);
 const displayText = (max: number) =>
@@ -35,12 +35,29 @@ export const inventorySchema = z
   .record(z.string(), nonNegativeInt)
   .refine((inventory) => Object.keys(inventory).every(isKnownItem), { message: "unknown item" });
 
+export const DEFAULT_GROUND = { left: 12, right: 88, top: 58, bottom: 90 };
+export const groundSchema = z
+  .object({
+    left: z.number().min(0).max(80),
+    right: z.number().min(20).max(100),
+    top: z.number().min(35).max(85),
+    bottom: z.number().min(55).max(100),
+  })
+  .strict()
+  .refine((g) => g.right - g.left >= 20 && g.bottom - g.top >= 10, { message: "이동영역이 너무 좁아요" });
+
 const worldShape = z
   .object({
     schemaVersion: z.literal(CURRENT_SCHEMA_VERSION),
     worldId: z.string().uuid(),
     createdAt: z.string().datetime(),
-    settings: z.object({ worldName: worldNameSchema, playerNickname: nicknameSchema }).strict(),
+    settings: z
+      .object({
+        worldName: worldNameSchema,
+        playerNickname: nicknameSchema,
+        ground: groundSchema.default(DEFAULT_GROUND),
+      })
+      .strict(),
     /** gold · 초대권 · 종표 (선택 영입 증표). */
     wallet: z.object({ gold: nonNegativeInt, tickets: nonNegativeInt, tokens: nonNegativeInt }).strict(),
     inventory: inventorySchema,

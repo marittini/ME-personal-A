@@ -53,6 +53,18 @@ function nicknameRow(view: WorldView, state: AppState, controller: Controller) {
   );
 }
 
+function groundEditor(_view: WorldView, _state: AppState, controller: Controller) {
+  return h("div", { className: "setting-row" }, [
+    h("span", { className: "setting-label", text: "지면 설정" }),
+    h("button", {
+      className: "button small",
+      text: "홈에서 영역 편집",
+      attrs: { type: "button" },
+      on: { click: () => controller.openGroundEditor() },
+    }),
+  ]);
+}
+
 function weatherRow(controller: Controller) {
   return h("div", { className: "setting-row" }, [
     ICONS.leaf("icon row-leaf"),
@@ -182,7 +194,11 @@ export function renderSettingsScreen(state: AppState, controller: Controller) {
           ),
         ),
         section === "workshop"
-          ? card("내 공방", [nicknameRow(world, state, controller), weatherRow(controller)], { id: "fw-mine" })
+          ? card(
+              "내 공방",
+              [nicknameRow(world, state, controller), groundEditor(world, state, controller), weatherRow(controller)],
+              { id: "fw-mine" },
+            )
           : null,
         section === "display"
           ? card(

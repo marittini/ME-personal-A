@@ -14,6 +14,12 @@
 const HEDGE = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 48'%3E%3Cpath d='M0 0h120v26c-8 0-10 12-20 12S88 22 78 22 66 36 56 36 44 20 34 20 22 34 12 34 4 26 0 26z' fill='%2394bf74' stroke='%235f8f45' stroke-width='3'/%3E%3C/svg%3E")`;
 
 export const STYLES = `
+.ground-preview { position: relative; height: 110px; background: #dcebc4; border: 2px solid var(--ink); border-radius: 12px; }
+.ground-area { position: absolute; border: 2px dashed var(--fw-accent); background: #8fbf6e; }
+.ground-editor { display: grid; gap: 0.5em; }
+.ground-row { display: grid; grid-template-columns: 3em minmax(0,1fr) 2em; gap: 0.5em; align-items: center; min-height: 44px; }
+.ground-row input { width: 100%; min-height: 44px; }
+
 :host {
   --fs: var(--fw-font-size, 16px);
   --ink: #4b2e1a;

@@ -107,8 +107,9 @@ try {
     await resident.locator(".figure").evaluate((node) => getComputedStyle(node).animationName),
     "fw-facing-left",
   );
-  await page.getByRole("button", { name: "산딸기 진행 중 · 작업 보고 열기" }).click();
-  assert.deepEqual(await page.evaluate(() => window.sheet), { kind: "work-report" });
+  await page.getByRole("button", { name: "산딸기 진행 중 · 작업 관리 열기" }).click();
+  assert.equal(await page.evaluate(() => window.facility), "gather");
+  assert.equal(await page.evaluate(() => window.route), "work");
   await page.evaluate(() => {
     const state = window.homeTestState;
     state.world.value.state.production.reports.push({ reportId: 1 });

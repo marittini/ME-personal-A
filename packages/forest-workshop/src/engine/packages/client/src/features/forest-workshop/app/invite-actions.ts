@@ -17,14 +17,20 @@ export type InviteSheet =
 export function createInviteActions(core: ControllerCore) {
   const { store } = core;
 
+  let deliveryRequest = 0;
+
   async function loadDeliveries() {
     const world = core.currentWorld();
     if (!world) return;
+    const request = ++deliveryRequest;
     store.set({ deliveries: { state: "loading" } });
     try {
-      store.set({ deliveries: { state: "ready", value: await gameApi.getDeliveries(world.worldId) } });
+      const value = await gameApi.getDeliveries(world.worldId);
+      if (request === deliveryRequest && core.currentWorld()?.worldId === world.worldId)
+        store.set({ deliveries: { state: "ready", value } });
     } catch (error) {
-      store.set({ deliveries: { state: "error", message: errorMessage(error, "납품 의뢰를 불러오지 못했습니다.") } });
+      if (request === deliveryRequest && core.currentWorld()?.worldId === world.worldId)
+        store.set({ deliveries: { state: "error", message: errorMessage(error, "납품 의뢰를 불러오지 못했습니다.") } });
     }
   }
 

@@ -8,30 +8,6 @@ import { h, type Child } from "../../app/dom";
 import { featureButton } from "./locked";
 import { ICONS } from "./icons";
 
-/** Fullscreen requires a player gesture; the persistent shadow host survives in-game navigation. */
-function fullscreenButton(controller: Controller) {
-  if (!document.fullscreenEnabled) return null;
-  const control = h("button", {
-    className: "fullscreen-toggle",
-    text: document.fullscreenElement ? "전체 화면 종료" : "전체 화면",
-    attrs: { type: "button" },
-    on: {
-      click: () => {
-        const root = control.getRootNode();
-        const target = root instanceof ShadowRoot ? root.host : control.closest(".shell");
-        if (!target) return;
-        const action = document.fullscreenElement ? document.exitFullscreen() : target.requestFullscreen();
-        void action
-          .then(() => {
-            control.textContent = document.fullscreenElement ? "전체 화면 종료" : "전체 화면";
-          })
-          .catch(() => controller.notify("이 환경에서는 전체 화면을 열 수 없어요."));
-      },
-    },
-  });
-  return control;
-}
-
 /** 초대권: the count, and a tap opens 초대권 받기 (today's 납품 의뢰). */
 export function ticketCounter(state: AppState, controller: Controller) {
   const world = state.world?.state === "ready" ? state.world.value : null;
@@ -100,7 +76,6 @@ export function renderTopBar(state: AppState, controller: Controller, bar: TopBa
           label: "현실 날씨",
           children: [ICONS.weather(), h("span", { text: "날씨" })],
         }),
-        fullscreenButton(controller),
         featureButton(controller, "mail", {
           className: "icon-button mail",
           label: "우편함",

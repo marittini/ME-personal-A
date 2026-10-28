@@ -88,6 +88,9 @@ export interface AppState {
   /** 시설과 창고: which tab is open. */
   facilitiesTab: "facilities" | "protection" | "storage";
   invitePage?: number;
+  worldsPage?: number;
+  worldCreateOpen?: boolean;
+  worldDraft?: { worldName: string; nickname: string };
   settingsSection?: "workshop" | "display" | "manage";
   settingsNicknameDraft?: { worldId: string; value: string };
   /** 저장·백업 → 저장 공간 사용량, loaded when that screen opens. */
@@ -413,6 +416,18 @@ export function createController() {
     openWorld,
     reloadWorld,
 
+    setWorldsPage(page: number) {
+      store.set({ worldsPage: Math.max(0, page) });
+    },
+
+    rememberWorldDraft(worldDraft: NonNullable<AppState["worldDraft"]>) {
+      store.remember({ worldDraft });
+    },
+
+    rememberWorldCreateOpen(worldCreateOpen: boolean) {
+      store.remember({ worldCreateOpen });
+    },
+
     navigate,
     notify: core.notify,
 
@@ -474,7 +489,10 @@ export function createController() {
         () => gameApi.createWorld({ worldId, worldName, playerNickname }),
         "세계를 만들지 못했습니다.",
       );
-      if (created) enterWorld(created, created.content);
+      if (created) {
+        store.remember({ worldDraft: undefined, worldCreateOpen: false });
+        enterWorld(created, created.content);
+      }
     },
 
     runCommand,

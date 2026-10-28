@@ -145,6 +145,90 @@ try {
   assert.equal(await page.getByText("바꾼 규칙은 아직 적용 전이에요.", { exact: false }).isVisible(), true);
   await page.getByRole("button", { name: "순서·적용", exact: true }).click();
   assert.equal(await page.getByRole("button", { name: "운영 규칙 적용", exact: true }).isEnabled(), true);
+  await page.evaluate(() => {
+    const state = window.testState;
+    state.work.section = "recipe";
+    const facility = state.world.value.state.production.facilities["gather-yard"];
+    facility.mode = "count";
+    facility.queue = Array.from({ length: 3 }, (_, i) => ({
+      entryId: `q${i}`,
+      recipeId: "berry",
+      started: 0,
+      total: 1,
+    }));
+    state.content.production.queueSlotLevels = [1, 1, 1, 1, 1];
+    state.content.production.queueCount = { min: 1, max: 99 };
+    Object.assign(window.testController, {
+      setQueueView(queueView) {
+        state.work.queueView = queueView;
+        window.testRender();
+      },
+      setQueuePage(queuePage) {
+        state.work.queuePage = queuePage;
+        window.testRender();
+      },
+      rememberQueueCount(facilityId, count) {
+        state.work.queueCounts = { ...state.work.queueCounts, [facilityId]: count };
+      },
+      selectQueueRecipe(facilityId, recipeId) {
+        state.work.queueRecipe[facilityId] = recipeId;
+        window.testRender();
+      },
+      removeQueue(facilityId, entryId) {
+        window.removedQueue = { facilityId, entryId };
+      },
+      addQueue(facilityId, recipeId, count) {
+        window.addedQueue = { facilityId, recipeId, count };
+      },
+    });
+    window.testRender();
+  });
+  await page.getByRole("button", { name: "다음", exact: true }).click();
+  await page.getByRole("button", { name: "산딸기 남은 횟수 빼기" }).click();
+  assert.deepEqual(await page.evaluate(() => window.removedQueue), { facilityId: "gather-yard", entryId: "q2" });
+  await page.getByRole("button", { name: "작업 추가" }).click();
+  await page.getByRole("button", { name: "횟수 늘리기 1", exact: true }).click();
+  await page.getByRole("button", { name: "대기열 보기" }).click();
+  await page.getByRole("button", { name: "작업 추가" }).click();
+  await page.getByRole("button", { name: "대기열에 추가" }).click();
+  assert.deepEqual(await page.evaluate(() => window.addedQueue), {
+    facilityId: "gather-yard",
+    recipeId: "berry",
+    count: 2,
+  });
+  await page.evaluate(() => {
+    const state = window.testState;
+    const facility = state.world.value.state.production.facilities["gather-yard"];
+    facility.mode = "auto";
+    state.work.section = "priority";
+    state.work.priorityPage = 0;
+    state.content.recipes = Array.from({ length: 4 }, (_, i) => ({
+      id: `r${i}`,
+      name: `제작 ${i}`,
+      facilityId: "gather-yard",
+      inputs: {},
+      outputs: { berry: 1 },
+      minutes: 1,
+      description: "",
+    }));
+    state.work.drafts["gather-yard"] = state.content.recipes
+      .slice(0, 3)
+      .map((recipe, i) => ({ policyId: `p${i}`, recipeId: recipe.id, targetStock: 5, priority: i + 1, enabled: true }));
+    window.testController.setPriorityPage = (priorityPage) => {
+      state.work.priorityPage = priorityPage;
+      window.testRender();
+    };
+    window.testController.addRule = (facilityId, recipeId) => {
+      window.addedRule = { facilityId, recipeId };
+    };
+    window.testRender();
+  });
+  assert.equal(await page.getByRole("button", { name: /제작 2 목표 5/ }).count(), 0);
+  await page.getByRole("button", { name: "다음", exact: true }).click();
+  assert.equal(await page.getByRole("button", { name: /제작 2 목표 5/ }).count(), 1);
+  await page.getByLabel("추가할 제작법").selectOption("r3");
+  await page.getByRole("button", { name: "제작법 추가" }).click();
+  assert.deepEqual(await page.evaluate(() => window.addedRule), { facilityId: "gather-yard", recipeId: "r3" });
   console.log("Work sections and draft visibility: OK");
 } finally {
   await browser?.close();

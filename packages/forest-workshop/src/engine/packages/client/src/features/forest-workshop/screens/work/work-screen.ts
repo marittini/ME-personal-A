@@ -299,6 +299,7 @@ function materialsBlock(content: GameContent, world: WorldView, rule: Rule | und
 }
 
 function priorityList(
+  state: AppState,
   content: GameContent,
   facilityId: string,
   rules: Rule[],
@@ -307,12 +308,20 @@ function priorityList(
 ) {
   const used = new Set(rules.map((rule) => rule.recipeId));
   const addable = content.recipes.filter((recipe) => recipe.facilityId === facilityId && !used.has(recipe.id));
+  const count = Math.max(1, Math.ceil(rules.length / 2));
+  const page = Math.min(state.work.priorityPage ?? 0, count - 1);
+  const addSelect = h(
+    "select",
+    { className: "input", attrs: { "aria-label": "추가할 제작법" } },
+    addable.map((recipe) => h("option", { text: recipe.name, attrs: { value: recipe.id } })),
+  );
   return h("div", { className: "plan-block" }, [
     h("span", { className: "plan-label" }, [
       "제작 우선순위 ",
       h("small", { text: "(위의 아이템부터 순서대로 제작해요)" }),
     ]),
-    ...rules.map((rule, index) => {
+    ...rules.slice(page * 2, page * 2 + 2).map((rule, offset) => {
+      const index = page * 2 + offset;
       const recipe = recipeOf(content, rule.recipeId);
       const output = recipe ? Object.keys(recipe.outputs)[0]! : "";
       return h(
@@ -373,22 +382,35 @@ function priorityList(
         ],
       );
     }),
+    count > 1
+      ? h("div", { className: "resident-pages" }, [
+          h("button", {
+            className: "outline-button",
+            text: "이전",
+            attrs: { type: "button" },
+            disabled: page === 0,
+            on: { click: () => controller.setPriorityPage(page - 1) },
+          }),
+          h("span", { text: `${page + 1} / ${count}`, attrs: { "aria-live": "polite" } }),
+          h("button", {
+            className: "outline-button",
+            text: "다음",
+            attrs: { type: "button" },
+            disabled: page + 1 >= count,
+            on: { click: () => controller.setPriorityPage(page + 1) },
+          }),
+        ])
+      : null,
     addable.length
-      ? h(
-          "div",
-          { className: "add-rules" },
-          addable.map((recipe) =>
-            h(
-              "button",
-              {
-                className: "outline-button small",
-                attrs: { type: "button" },
-                on: { click: () => controller.addRule(facilityId, recipe.id) },
-              },
-              [ICONS.plus("icon"), h("span", { text: recipe.name })],
-            ),
-          ),
-        )
+      ? h("div", { className: "add-rules" }, [
+          addSelect,
+          h("button", {
+            className: "outline-button",
+            text: "제작법 추가",
+            attrs: { type: "button" },
+            on: { click: () => controller.addRule(facilityId, addSelect.value) },
+          }),
+        ])
       : null,
   ]);
 }
@@ -482,7 +504,7 @@ function body(state: AppState, content: GameContent, world: WorldView, controlle
             ? [queuePanel(state, content, world, facilityId, controller)]
             : []),
         section === "priority" && auto
-          ? priorityList(content, facilityId, rules, selected?.policyId, controller)
+          ? priorityList(state, content, facilityId, rules, selected?.policyId, controller)
           : null,
         section === "status" && auto && facility.queue.length
           ? h("p", {

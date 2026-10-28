@@ -27,11 +27,13 @@ function worldList(state: AppState, controller: Controller) {
   } else if (worlds.value.length === 0) {
     section.append(h("p", { className: "empty", text: "아직 세계가 없습니다. 아래에서 새로 만들어 주세요." }));
   } else {
+    const count = Math.ceil(worlds.value.length / 2);
+    const page = Math.min(state.worldsPage ?? 0, count - 1);
     section.append(
       h(
         "ul",
         { className: "menu-list" },
-        worlds.value.map((world) =>
+        worlds.value.slice(page * 2, page * 2 + 2).map((world) =>
           h("li", {}, [
             h(
               "button",
@@ -59,6 +61,17 @@ function worldList(state: AppState, controller: Controller) {
         ),
       ),
     );
+    if (count > 1)
+      section.append(
+        h("div", { className: "resident-pages" }, [
+          button("이전", () => controller.setWorldsPage(page - 1), { variant: "secondary", disabled: page === 0 }),
+          h("span", { text: `${page + 1} / ${count}`, attrs: { "aria-live": "polite" } }),
+          button("다음", () => controller.setWorldsPage(page + 1), {
+            variant: "secondary",
+            disabled: page + 1 >= count,
+          }),
+        ]),
+      );
   }
   return section;
 }
@@ -73,7 +86,9 @@ function createForm(state: AppState, controller: Controller) {
       maxlength: String(NAME_LIMIT.world),
       autocomplete: "off",
       required: "",
+      value: state.worldDraft?.worldName ?? "",
     },
+    on: { input: () => controller.rememberWorldDraft({ worldName: worldName.value, nickname: nickname.value }) },
   });
   const nickname = h("input", {
     className: "input",
@@ -83,7 +98,9 @@ function createForm(state: AppState, controller: Controller) {
       maxlength: String(NAME_LIMIT.nickname),
       autocomplete: "off",
       required: "",
+      value: state.worldDraft?.nickname ?? "",
     },
+    on: { input: () => controller.rememberWorldDraft({ worldName: worldName.value, nickname: nickname.value }) },
   });
   const form = h(
     "form",
@@ -122,12 +139,18 @@ function createForm(state: AppState, controller: Controller) {
 export function renderWorldsScreen(state: AppState, controller: Controller) {
   const open = state.world?.state === "ready";
   const firstWorld = state.worlds.state === "ready" && state.worlds.value.length === 0;
-  const create = firstWorld
-    ? createForm(state, controller)
-    : h("details", { className: "card restore-details" }, [
-        h("summary", { className: "section-title", text: "새 세계 만들기" }),
-        createForm(state, controller),
-      ]);
+  const createDetails: HTMLDetailsElement | null = firstWorld
+    ? null
+    : h(
+        "details",
+        {
+          className: "card restore-details",
+          attrs: { open: state.worldCreateOpen ? "" : undefined },
+          on: { toggle: () => controller.rememberWorldCreateOpen(Boolean(createDetails?.open)) },
+        },
+        [h("summary", { className: "section-title", text: "새 세계 만들기" }), createForm(state, controller)],
+      );
+  const create = firstWorld ? createForm(state, controller) : createDetails;
   const restore = h("details", { className: "card restore-details", attrs: { open: state.restore ? "" : undefined } }, [
     h("summary", { className: "section-title", text: "백업에서 복원" }),
     renderRestorePanel(state, controller, "fw-worlds-restore"),

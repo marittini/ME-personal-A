@@ -17,6 +17,10 @@ export interface WorkView {
   queueRecipe: Record<string, string>;
   section?: "status" | "recipe" | "priority";
   inventoryPage?: number;
+  queueView?: "list" | "add";
+  queuePage?: number;
+  queueCounts?: Record<string, number>;
+  priorityPage?: number;
 }
 
 export type ProductionSheet =
@@ -131,7 +135,7 @@ export function createProductionActions(core: ControllerCore) {
     },
 
     selectFacility(facilityId: string) {
-      patchWork({ facilityId, section: "status" });
+      patchWork({ facilityId, section: "status", queueView: undefined, queuePage: 0, priorityPage: 0 });
     },
 
     setWorkSection(section: NonNullable<WorkView["section"]>) {
@@ -140,6 +144,24 @@ export function createProductionActions(core: ControllerCore) {
 
     setInventoryPage(page: number) {
       patchWork({ inventoryPage: Math.max(0, page) });
+    },
+
+    setQueueView(queueView: NonNullable<WorkView["queueView"]>) {
+      patchWork({ queueView });
+    },
+
+    setQueuePage(queuePage: number) {
+      patchWork({ queuePage: Math.max(0, queuePage) });
+    },
+
+    setPriorityPage(priorityPage: number) {
+      patchWork({ priorityPage: Math.max(0, priorityPage) });
+    },
+
+    rememberQueueCount(facilityId: string, count: number) {
+      store.remember((state) => ({
+        work: { ...state.work, queueCounts: { ...state.work.queueCounts, [facilityId]: count } },
+      }));
     },
 
     rememberProtection(patch: { page?: number; itemId?: string; amount?: number }) {

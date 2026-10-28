@@ -170,6 +170,14 @@ try {
     host.style.width = "320px";
     host.style.height = "640px";
   });
+  const smallHeight = await page.locator("#host").evaluate((host) => {
+    const scroller = host.shadowRoot.querySelector(".scroll");
+    return { content: scroller.scrollHeight, available: scroller.clientHeight };
+  });
+  assert.ok(
+    smallHeight.content <= smallHeight.available + 1,
+    `small status should fit: ${JSON.stringify(smallHeight)}`,
+  );
   const smallSize = await page.locator("#host").evaluate((host) => {
     const scroller = host.shadowRoot.querySelector(".scroll");
     return { content: scroller.scrollWidth, available: scroller.clientWidth };

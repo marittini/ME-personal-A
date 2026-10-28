@@ -9,6 +9,7 @@
 //   styles*.ts        scoped portrait styles (styles-residents.ts for the resident boards), sized from the player's
 //                     text size
 import { createController, type AppState, type Controller } from "./app/controller";
+import { screenPageKey } from "./app/screen-page";
 import { renderFrame } from "./screens/chrome/frame";
 import { DiagnosticsPanel } from "./screens/diagnostics-panel";
 import { renderHomeScreen } from "./screens/home/home-screen";
@@ -41,6 +42,7 @@ class ForestWorkshopElement extends HTMLElement {
   private unsubscribe: (() => void) | null = null;
   private readonly styleNode = document.createElement("style");
   private renderedRoute: AppState["route"] | null = null;
+  private renderedPage: string | null = null;
   private ticker: ReturnType<typeof setInterval> | undefined;
   /** Countdown ends already asked about, so a finished run triggers one refresh, not one per second. */
   private refreshedEnds = new Set<string>();
@@ -162,9 +164,14 @@ class ForestWorkshopElement extends HTMLElement {
       focused && "selectionStart" in focused && typeof focused.selectionStart === "number"
         ? [focused.selectionStart, focused.selectionEnd ?? focused.selectionStart]
         : null;
-    const scrollTop = state.route === this.renderedRoute ? (this.root.querySelector(".scroll")?.scrollTop ?? 0) : 0;
+    const page = screenPageKey(state);
+    const scrollTop =
+      state.route === this.renderedRoute && page === this.renderedPage
+        ? (this.root.querySelector(".scroll")?.scrollTop ?? 0)
+        : 0;
     this.root.replaceChildren(this.styleNode, screen);
     this.renderedRoute = state.route;
+    this.renderedPage = page;
     const scroller = this.root.querySelector(".scroll");
     if (scroller) scroller.scrollTop = scrollTop;
     if (focusedId) {

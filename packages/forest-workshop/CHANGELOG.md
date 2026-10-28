@@ -1,3 +1,6 @@
+## 0.6.5 — 2026-10-28
+- Read episodes in an unfinished arc appear in the reading history immediately, including for archived pairs. The last line can be recorded directly. The reader uses a compact dialogue panel and places emotion marks closer to the cast; short questions show their answers directly. Home residents move gently within their existing spots, respecting reduced-motion settings. This is not a walking sprite animation. Real Android installation and mobile-device layout remain unverified. Completed arc history retains its existing 50-arc limit.
+
 ## 0.6.4 — 2026-10-28
 - World selection keeps the new-world form closed when a world already exists and pages existing worlds. Tap a resident on Home to open their profile; profiles separate workshop settings, original settings and paged history, and retain an unfinished edit across refreshes. Resident registration and lists use smaller steps and pages; workshop controls, queues and ordering are separated into smaller views. Facilities, stock protection, storage and settings are separated into smaller views; inventory and protection editing use pages. Exploration groups preparation, journey and history, and invitation lists use pages. Full mobile layout and installation verification remain incomplete.
 

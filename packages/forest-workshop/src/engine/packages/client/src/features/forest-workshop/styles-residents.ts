@@ -95,6 +95,11 @@ export const RESIDENT_STYLES = `
 
 /* Home scene: residents standing in their places. */
 .resident-spot.filled { width: 8.5em; height: 11em; border: 0; border-radius: 0; background: none; }
+.resident-spot.filled.left { animation: fw-stroll-left 12s ease-in-out infinite; }
+.resident-spot.filled.right { animation: fw-stroll-right 15s ease-in-out infinite; }
+@keyframes fw-stroll-left { 0%, 100% { transform: translate(0, 0); } 25% { transform: translate(0.65em, -0.15em); } 50% { transform: translate(1.2em, 0); } 75% { transform: translate(0.65em, -0.15em); } }
+@keyframes fw-stroll-right { 0%, 100% { transform: translate(0, 0); } 25% { transform: translate(-0.6em, -0.15em); } 50% { transform: translate(-1.1em, 0); } 75% { transform: translate(-0.6em, -0.15em); } }
+@media (prefers-reduced-motion: reduce) { .resident-spot.filled { animation: none; } }
 .resident-spot.filled .figure { position: absolute; inset: 0; }
 .spot-name { position: absolute; left: 50%; bottom: -0.4em; transform: translateX(-50%); padding: 0.05em 0.6em; border-radius: 999px; border: var(--line-in) solid var(--ink); background: var(--fw-surface-3); font-size: calc(var(--fs) * 0.78); font-weight: 800; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
 .resident-spot.invite { border-style: solid; background: var(--fw-surface-3); color: var(--fw-accent); box-shadow: var(--drop); }

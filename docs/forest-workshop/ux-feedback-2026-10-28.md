@@ -1,0 +1,14 @@
+# Mobile UX feedback: investigation and limits
+
+The owner reported excessive navigation, a busy story view, emotion icons too high, missing read stories, and motionless Home residents. The merged 0.6.4 code only listed completed three-episode arcs in history, although generated scene documents and the current arc's read state were stored. Each read episode in the current arc is now visible, and archived pairs can be selected in history. Existing completed-arc retention is capped at 50 arcs; this change does not claim unlimited archival or recover records already lost.
+
+## External evidence and design interpretation
+
+- In an [80 Days developer interview](https://www.vice.com/en/article/the-makers-of-mobile-hit-80-days-on-the-importance-of-amazing-ui-852/), Jon Ingold discusses what players want to press at a given moment and consistent interfaces. Interpretation: present short questions with their choices together and make the final reading action explicit.
+- [Apple game interface guidance](https://developer.apple.com/videos/play/meet-with-apple/243/) recommends adequate touch targets and layouts that adapt to screen size. Interpretation: retain readable controls and use a separate choice step only for longer text; the threshold still needs real-device usability testing.
+- [Animal Crossing players discussing repetitive dialogue](https://www.reddit.com/r/AnimalCrossing/comments/1331zpp) describe repeated confirmations as frustrating. These comments are individual opinions, not a representative survey. Interpretation: finish from the last line instead of adding a confirmation screen.
+- [Nintendo producer Katsuya Eguchi on Animal Crossing](https://www.gamedeveloper.com/design/an-inviting-mini-world-how-nintendo-made-i-animal-crossing-i-) describes a living town and ongoing discoveries. Interpretation: add restrained movement to existing resident images, not a claim of simulated character behavior.
+
+## Remaining verification and known limits
+
+No interviews or user studies were conducted for this project. Browser fixture checks do not establish actual Android installed-web-app behavior, touch comfort, long translations, screen reader usability, or usability for children and people with ADHD. The host app's top bar and system safety toast in the owner's screenshot are outside this package. The small CSS translation is not full pathfinding or frame-by-frame walking; only the two residents shown on Home move. The existing 50-completed-arc limit needs a separate storage/migration design if unlimited history is required. Broader navigation and visual hierarchy still need observation with players rather than assuming pagination is universally easier.

@@ -106,9 +106,20 @@ function dialogue(state: AppState, world: WorldView, reader: ReaderState, contro
     const progress = findProgress(world, reader);
     const chosen = progress?.choice?.optionId ?? null;
     const busy = Boolean(state.busy[`choose:${reader.storyId}`]);
+    const splitChoice =
+      segment.question.length + segment.options.reduce((sum, option) => sum + option.text.length, 0) > 150;
+    if (splitChoice && (reader.choiceView ?? "question") === "question") {
+      return h("div", { className: "dialogue-box choice" }, [
+        h("span", { className: "speaker-tag" }, [ICONS.leaf("icon tiny"), nameOf(world, segment.askerId)]),
+        h("p", { className: "line", text: segment.question }),
+        button("답변 고르기", () => controller.setChoiceView("answers")),
+      ]);
+    }
     return h("div", { className: "dialogue-box choice" }, [
       h("span", { className: "speaker-tag" }, [ICONS.leaf("icon tiny"), nameOf(world, segment.askerId)]),
-      h("p", { className: "line", text: segment.question }),
+      splitChoice
+        ? button("질문 다시 보기", () => controller.setChoiceView("question"), { variant: "secondary" })
+        : h("p", { className: "line", text: segment.question }),
       h(
         "div",
         { className: "choice-options", attrs: { role: "group", "aria-label": "대답 고르기" } },
@@ -144,21 +155,35 @@ function findProgress(world: WorldView, reader: ReaderState) {
 function backlogSheet(world: WorldView, reader: ReaderState, controller: Controller) {
   const story = reader.story.state === "ready" ? reader.story.value : null;
   const shown = story ? story.segments.slice(0, Math.min(reader.index + 1, story.segments.length)) : [];
+  const count = Math.max(1, shown.length);
+  const page = Math.min(reader.backlogPage ?? count - 1, count - 1);
   return sheetDialog("fw-backlog", "기록", [
     h(
       "ol",
       { className: "backlog-list" },
-      shown.map((segment) =>
-        h("li", { className: `backlog-${segment.kind}` }, [
-          segment.kind === "line"
-            ? h("strong", { text: nameOf(world, segment.speakerId) })
-            : segment.kind === "choice"
-              ? h("strong", { text: nameOf(world, segment.askerId) })
-              : null,
-          h("span", { text: segment.kind === "choice" ? segment.question : segment.text }),
-        ]),
-      ),
+      shown
+        .slice(page, page + 1)
+        .map((segment) =>
+          h("li", { className: `backlog-${segment.kind}` }, [
+            segment.kind === "line"
+              ? h("strong", { text: nameOf(world, segment.speakerId) })
+              : segment.kind === "choice"
+                ? h("strong", { text: nameOf(world, segment.askerId) })
+                : null,
+            h("span", { text: segment.kind === "choice" ? segment.question : segment.text }),
+          ]),
+        ),
     ),
+    count > 1
+      ? h("div", { className: "resident-pages" }, [
+          button("이전", () => controller.setBacklogPage(page - 1), { variant: "secondary", disabled: page === 0 }),
+          h("span", { text: `${page + 1} / ${count}`, attrs: { "aria-live": "polite" } }),
+          button("다음", () => controller.setBacklogPage(page + 1), {
+            variant: "secondary",
+            disabled: page + 1 >= count,
+          }),
+        ])
+      : null,
     button("닫기", () => controller.toggleBacklog(), { variant: "secondary", attrs: { "data-wide": "" } }),
   ]);
 }
@@ -210,16 +235,24 @@ export function renderStoryReader(state: AppState, controller: Controller) {
       counters,
     },
     backdrop: "wood",
+    storyLayout: true,
     body: [
       stage(currentSeason(state), world, story, current),
       dialogue(state, world, reader, controller),
       story && reader.index < total
         ? h("div", { className: "reader-foot" }, [
             h("span", { className: "count-pill", text: `${reader.index + 1} / ${total}` }),
-            button("계속", () => controller.advanceStory(), {
-              disabled: waitingAnswer,
-              attrs: { "data-wide": "" },
-            }),
+            button(
+              reader.index === total - 1 ? "다 읽고 보관" : "계속",
+              () => {
+                if (reader.index === total - 1) void controller.finishStory();
+                else controller.advanceStory();
+              },
+              {
+                disabled: waitingAnswer,
+                attrs: { "data-wide": "" },
+              },
+            ),
           ])
         : null,
     ],

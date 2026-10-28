@@ -229,11 +229,26 @@ function details(
 }
 
 function completedList(state: AppState, pair: PairStoryView, controller: Controller) {
-  if (pair.completed.length === 0)
+  const current = state.world?.state === "ready" ? state.world.value.state.stories.pairs?.[pair.pairId]?.current : null;
+  const readEpisodes =
+    current?.episodes.flatMap((episode, index) =>
+      episode.state === "read" ? [{ index, storyId: episode.storyId }] : [],
+    ) ?? [];
+  if (pair.completed.length === 0 && readEpisodes.length === 0)
     return card("읽은 이야기", [h("p", { className: "empty", text: "아직 읽은 이야기가 없어요." })]);
-  const count = Math.ceil(pair.completed.length / 2);
+  const count = Math.max(1, Math.ceil(pair.completed.length / 2));
   const page = Math.min(state.explore.historyPage ?? 0, count - 1);
   return card("읽은 이야기", [
+    readEpisodes.length && page === 0
+      ? h("div", { className: "completed-arc" }, [
+          h("strong", { text: pair.arc.title }),
+          ...readEpisodes.map(({ index, storyId }) =>
+            button(`${index + 1}편 다시 읽기`, () => controller.openStory(pair.pairId, index, storyId), {
+              variant: "secondary",
+            }),
+          ),
+        ])
+      : null,
     h(
       "ul",
       { className: "menu-list" },
@@ -306,7 +321,9 @@ function body(state: AppState, world: WorldView, content: GameContent, controlle
       card(null, [errorLine(overview.message), button("다시 불러오기", () => void controller.loadStoryOverview())]),
     ];
   }
-  const pairs = overview.value.pairs.filter((pair) => !world.state.pairs[pair.pairId]?.archived);
+  const pairs = overview.value.pairs.filter(
+    (pair) => state.explore.section === "history" || !world.state.pairs[pair.pairId]?.archived,
+  );
   if (pairs.length === 0) {
     return [
       tabs(controller),

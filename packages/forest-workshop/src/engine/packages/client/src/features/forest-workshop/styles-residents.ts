@@ -112,6 +112,10 @@ export const RESIDENT_STYLES = `
 
 /* ── 프로필 sheet ──────────────────────────────────────────────────────── */
 .sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5em; }
+.profile-identity { display: flex; align-items: center; gap: 0.8em; padding: 0.6em; border-radius: 0.9em; background: var(--fw-surface-3); }
+.profile-identity-text { display: grid; gap: 0.2em; min-width: 0; }
+.profile-identity-text strong { overflow-wrap: anywhere; font-size: calc(var(--fs) * 1.1); }
+.profile-identity-text .outline-button { min-height: 44px; justify-content: center; }
 .profile-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.35em; }
 .profile-tab { min-height: 44px; padding: 0.3em; border: 2px solid var(--ink); border-radius: 0.6em; background: var(--fw-surface-3); color: var(--fw-text); font: inherit; font-weight: 700; cursor: pointer; }
 .profile-tab[aria-pressed="true"] { background: var(--fw-accent); color: var(--fw-on-accent); }

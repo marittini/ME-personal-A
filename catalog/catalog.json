@@ -137,8 +137,8 @@
           },
           {
             "path": "client.js",
-            "sha256": "5c0853326e0c7c68d8d8ccea162922ad50dd5bb6dd9c78c5a96e765b83830814",
-            "bytes": 291344
+            "sha256": "352e5714458cc3461cf78e4c7f460235b86d456b9e69aa367733fbecf656cd83",
+            "bytes": 292082
           },
           {
             "path": "assets/asset-manifest.json",
@@ -567,8 +567,8 @@
       "iconUrl": "https://raw.githubusercontent.com/marittini/ME-personal-A/main/artwork/agent-covers/forest-workshop.png",
       "artifact": {
         "url": "https://raw.githubusercontent.com/marittini/ME-personal-A/main/artifacts/forest-workshop-0.6.7.zip",
-        "sha256": "d0b8fdb510a81b61cc9563d96061d48a76fcbf08982991e2e3529a22c761b496",
-        "bytes": 10124466
+        "sha256": "d07be2475d99af242ed04fe180fc8c4834f495f59583437a5de0cdafebc837b1",
+        "bytes": 10125204
       },
       "documentationUrl": "https://github.com/marittini/ME-personal-A/blob/main/packages/forest-workshop/README.md"
     }

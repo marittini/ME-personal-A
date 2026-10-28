@@ -12,7 +12,7 @@ export type InviteSheet =
   | { kind: "invite-chances"; page?: number }
   | { kind: "invite-log"; page?: number }
   | { kind: "invite-wish"; page?: number }
-  | { kind: "deliveries" };
+  | { kind: "deliveries"; selectedOrderId?: string };
 
 export function createInviteActions(core: ControllerCore) {
   const { store } = core;
@@ -71,6 +71,10 @@ export function createInviteActions(core: ControllerCore) {
     openDeliveries() {
       store.set({ sheet: { kind: "deliveries" } });
       void loadDeliveries();
+    },
+
+    selectDelivery(selectedOrderId: string) {
+      store.set((state) => (state.sheet?.kind === "deliveries" ? { sheet: { ...state.sheet, selectedOrderId } } : {}));
     },
 
     async deliver(orderId: string) {

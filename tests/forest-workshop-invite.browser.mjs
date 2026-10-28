@@ -13,7 +13,7 @@ try {
     bundle = join(temp, "bundle.js");
   await writeFile(
     entry,
-    `import { renderInviteScreen } from ${JSON.stringify(join(client, "screens/invite/invite-screen.ts"))};\nimport { STYLES } from ${JSON.stringify(join(client, "styles.ts"))};\nimport { RESIDENT_STYLES } from ${JSON.stringify(join(client, "styles-residents.ts"))};\nimport { PRODUCTION_STYLES } from ${JSON.stringify(join(client, "styles-production.ts"))};\nimport { INVITE_STYLES } from ${JSON.stringify(join(client, "styles-invite.ts"))};\nimport { STORY_STYLES } from ${JSON.stringify(join(client, "styles-story.ts"))};\nimport { ART_STYLES } from ${JSON.stringify(join(client, "styles-art.ts"))};\nwindow.renderInviteScreen = renderInviteScreen; window.fwStyles = STYLES + RESIDENT_STYLES + PRODUCTION_STYLES + INVITE_STYLES + STORY_STYLES + ART_STYLES;`,
+    `import { renderInviteScreen } from ${JSON.stringify(join(client, "screens/invite/invite-screen.ts"))};\nimport { renderDeliveriesSheet } from ${JSON.stringify(join(client, "screens/invite/deliveries-sheet.ts"))};\nimport { STYLES } from ${JSON.stringify(join(client, "styles.ts"))};\nimport { RESIDENT_STYLES } from ${JSON.stringify(join(client, "styles-residents.ts"))};\nimport { PRODUCTION_STYLES } from ${JSON.stringify(join(client, "styles-production.ts"))};\nimport { INVITE_STYLES } from ${JSON.stringify(join(client, "styles-invite.ts"))};\nimport { STORY_STYLES } from ${JSON.stringify(join(client, "styles-story.ts"))};\nimport { ART_STYLES } from ${JSON.stringify(join(client, "styles-art.ts"))};\nwindow.renderInviteScreen = renderInviteScreen; window.renderDeliveriesSheet = renderDeliveriesSheet; window.fwStyles = STYLES + RESIDENT_STYLES + PRODUCTION_STYLES + INVITE_STYLES + STORY_STYLES + ART_STYLES;`,
   );
   await build({
     entryPoints: [entry],
@@ -109,6 +109,13 @@ try {
       setWish(residentId) {
         window.wished = residentId;
       },
+      selectDelivery(id) {
+        window.testState.sheet.selectedOrderId = id;
+        window.testRender();
+      },
+      deliver(id) {
+        window.delivered = id;
+      },
       closeSheet() {},
       navigate() {},
       openResidents() {},
@@ -118,7 +125,12 @@ try {
       root.innerHTML = "";
       const style = document.createElement("style");
       style.textContent = window.fwStyles;
-      root.append(style, window.renderInviteScreen(window.testState, window.testController));
+      root.append(
+        style,
+        window.testState.sheet?.kind === "deliveries"
+          ? window.renderDeliveriesSheet(window.testState, window.testController)
+          : window.renderInviteScreen(window.testState, window.testController),
+      );
     };
     window.testRender();
   });
@@ -136,7 +148,36 @@ try {
   await dialog.getByLabel("초대 목록 고르기").selectOption("1");
   await dialog.getByRole("button", { name: /주민 2/ }).click();
   assert.equal(await page.evaluate(() => window.wished), "2");
-  console.log("Invite exchange pagination and target: OK");
+  await page.evaluate(() => {
+    window.testState.world.value.state.inventory = { wood: 5, leaf: 4 };
+    window.testState.world.value.state.production = { protectedStock: { wood: 3 } };
+    window.testState.content.items = [
+      { id: "wood", name: "나무" },
+      { id: "leaf", name: "잎" },
+    ];
+    window.testState.deliveries = {
+      state: "ready",
+      value: {
+        orders: [
+          { id: "a", title: "나무 의뢰", items: { wood: 3 }, reward: { tickets: 1, gold: 5 } },
+          { id: "b", title: "잎 의뢰", items: { leaf: 2 }, reward: { tickets: 2, gold: 10 } },
+          { id: "c", title: "완료 의뢰", items: { leaf: 1 }, reward: { tickets: 1, gold: 3 } },
+        ],
+        done: ["c"],
+      },
+    };
+    window.testState.sheet = { kind: "deliveries" };
+    window.testRender();
+  });
+  const orders = page.getByRole("dialog", { name: "초대권 받기 · 오늘의 납품" });
+  assert.equal(await orders.getByText("보유 5 · 보호 3").isVisible(), true);
+  assert.equal(await orders.getByRole("button", { name: "재료가 부족해요" }).isDisabled(), true);
+  await orders.getByRole("button", { name: "잎 의뢰", exact: true }).click();
+  await orders.getByRole("button", { name: "납품하기" }).click();
+  assert.equal(await page.evaluate(() => window.delivered), "b");
+  await orders.getByRole("button", { name: "완료 의뢰 납품 완료" }).click();
+  assert.equal(await orders.getByText("납품 완료", { exact: true }).isVisible(), true);
+  console.log("Invite exchange and delivery selection: OK");
 } finally {
   await browser?.close();
   await rm(temp, { recursive: true, force: true });

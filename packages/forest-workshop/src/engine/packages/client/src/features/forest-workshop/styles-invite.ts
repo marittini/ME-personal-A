@@ -79,6 +79,12 @@ export const INVITE_STYLES = `
 .result-badge.token { background: #b9cf7a; color: #2f4a26; }
 
 /* 초대권 받기 · 납품 */
+.delivery-board { display: grid; gap: 0.5em; }
+.delivery-choices { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.35em; }
+.delivery-choice { display: grid; justify-items: center; gap: 0.15em; min-width: 0; min-height: 44px; padding: 0.35em 0.2em; border: 2px solid var(--ink); border-radius: 0.7em; background: var(--fw-surface-3); color: var(--fw-text); font: inherit; text-align: center; cursor: pointer; }
+.delivery-choice span:not(.item-tile) { overflow-wrap: anywhere; font-weight: 800; font-size: calc(var(--fs) * 0.8); }
+.delivery-choice small { font-size: calc(var(--fs) * 0.7); }
+.delivery-choice.selected { background: var(--fw-leaf-soft); outline: 2px solid var(--fw-accent); }
 .order { display: grid; gap: 0.45em; padding: 0.7em; border-radius: 0.9em; border: var(--line-in) solid var(--ink); background: var(--fw-surface-3); }
 .order.done { background: var(--fw-surface-2); }
 .order-title { font-size: calc(var(--fs) * 1.05); }

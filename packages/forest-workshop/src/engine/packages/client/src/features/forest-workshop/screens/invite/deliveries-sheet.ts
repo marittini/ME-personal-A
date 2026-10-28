@@ -13,18 +13,20 @@ function orderCard(state: AppState, world: WorldView, order: DeliveryOrder, done
     Math.max(0, (world.state.inventory[itemId] ?? 0) - (world.state.production.protectedStock[itemId] ?? 0));
   const ready = Object.entries(order.items).every(([itemId, amount]) => usable(itemId) >= amount);
   const busy = Boolean(state.busy[`deliver:${order.id}`]);
-  return h("li", { className: `order${done ? " done" : ""}` }, [
+  return h("div", { className: `order${done ? " done" : ""}` }, [
     h("strong", { className: "order-title", text: order.title }),
     h(
       "ul",
       { className: "order-items" },
-      Object.entries(order.items).map(([itemId, amount]) =>
-        h("li", { className: usable(itemId) >= amount ? "enough" : "short" }, [
+      Object.entries(order.items).map(([itemId, amount]) => {
+        const held = world.state.inventory[itemId] ?? 0;
+        const protectedAmount = world.state.production.protectedStock[itemId] ?? 0;
+        return h("li", { className: usable(itemId) >= amount ? "enough" : "short" }, [
           itemTile(itemId),
-          h("span", { text: `${itemName(content, itemId)} ${amount}` }),
-          h("small", { className: "muted", text: `쓸 수 있는 양 ${usable(itemId)}` }),
-        ]),
-      ),
+          h("span", { text: `${itemName(content, itemId)} ${usable(itemId)}/${amount}` }),
+          protectedAmount ? h("small", { className: "muted", text: `보유 ${held} · 보호 ${protectedAmount}` }) : null,
+        ]);
+      }),
     ),
     h("p", { className: "order-reward" }, [
       ICONS.ticket("icon tiny"),
@@ -35,11 +37,50 @@ function orderCard(state: AppState, world: WorldView, order: DeliveryOrder, done
       : button(
           busy ? "납품하는 중…" : ready ? "납품하기" : "재료가 부족해요",
           () => void controller.deliver(order.id),
-          {
-            disabled: busy || !ready,
-            variant: ready ? undefined : "secondary",
-          },
+          { disabled: busy || !ready, variant: ready ? undefined : "secondary" },
         ),
+  ]);
+}
+
+function orderPicker(
+  state: AppState,
+  world: WorldView,
+  orders: DeliveryOrder[],
+  done: string[],
+  controller: Controller,
+) {
+  const selectedId = state.sheet?.kind === "deliveries" ? state.sheet.selectedOrderId : undefined;
+  const selected =
+    orders.find((order) => order.id === selectedId) ?? orders.find((order) => !done.includes(order.id)) ?? orders[0];
+  if (!selected) return h("p", { className: "empty", text: "오늘의 의뢰가 없어요." });
+  return h("div", { className: "delivery-board" }, [
+    h(
+      "div",
+      { className: "delivery-choices", attrs: { role: "group", "aria-label": "납품 의뢰 선택" } },
+      orders.map((order) => {
+        const first = Object.keys(order.items)[0] ?? "";
+        return h(
+          "button",
+          {
+            className: `delivery-choice${order.id === selected.id ? " selected" : ""}`,
+            attrs: {
+              type: "button",
+              "aria-pressed": order.id === selected.id ? "true" : "false",
+              "aria-label": `${order.title}${done.includes(order.id) ? " 납품 완료" : ""}`,
+            },
+            on: { click: () => controller.selectDelivery(order.id) },
+          },
+          [
+            itemTile(first),
+            h("span", { text: order.title }),
+            h("small", {
+              text: done.includes(order.id) ? "완료" : `초대권 ${order.reward.tickets} · ${order.reward.gold} G`,
+            }),
+          ],
+        );
+      }),
+    ),
+    orderCard(state, world, selected, done.includes(selected.id), controller),
   ]);
 }
 
@@ -56,13 +97,7 @@ export function renderDeliveriesSheet(state: AppState, controller: Controller) {
               className: "muted",
               text: "의뢰는 하루(UTC 기준)마다 바뀌어요. 지난 날의 의뢰는 모아 두지 않아요. 보호한 재고는 납품하지 않아요.",
             }),
-            h(
-              "ul",
-              { className: "order-list" },
-              list.value.orders.map((order) =>
-                orderCard(state, world, order, list.value.done.includes(order.id), controller),
-              ),
-            ),
+            orderPicker(state, world, list.value.orders, list.value.done, controller),
           ];
   return sheetDialog("fw-deliveries", "초대권 받기 · 오늘의 납품", [
     ...body,

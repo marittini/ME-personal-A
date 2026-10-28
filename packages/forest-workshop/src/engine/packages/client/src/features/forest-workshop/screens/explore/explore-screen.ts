@@ -95,24 +95,40 @@ function pairChooser(state: AppState, world: WorldView, overview: PairStoryView[
   return chooser;
 }
 
-function episodeTiles(pair: PairStoryView, selected: number) {
+function episodeTiles(pair: PairStoryView, selected: number, controller: Controller) {
   return h(
     "ol",
     { className: "episode-row", attrs: { "aria-label": "이야기 편" } },
     pair.episodes.map((episode) =>
-      h("li", { className: `episode-tile ${episode.status}${episode.index === selected ? " selected" : ""}` }, [
-        h("span", { className: "episode-icon" }, [
-          (episode.status === "locked" ? ICONS.lock : ICONS.book)("icon big"),
-          episode.status === "read" ? h("span", { className: "episode-check" }, [ICONS.check("icon tiny")]) : null,
-        ]),
-        h("span", { className: "episode-text" }, [
-          h("strong", { text: `${episode.index + 1}편` }),
-          h("span", { text: episode.title }),
-          h("small", {
-            text:
-              episode.status === "locked" ? (episode.reasons[0] ?? STATUS_TEXT.locked) : STATUS_TEXT[episode.status],
-          }),
-        ]),
+      h("li", {}, [
+        h(
+          "button",
+          {
+            className: `episode-tile ${episode.status}${episode.index === selected ? " selected" : ""}`,
+            attrs: {
+              type: "button",
+              "aria-pressed": episode.index === selected ? "true" : "false",
+              "aria-label": `${episode.index + 1}편 ${episode.title} ${STATUS_TEXT[episode.status]}`,
+            },
+            on: { click: () => controller.selectStoryEpisode(episode.index) },
+          },
+          [
+            h("span", { className: "episode-icon" }, [
+              (episode.status === "locked" ? ICONS.lock : ICONS.book)("icon big"),
+              episode.status === "read" ? h("span", { className: "episode-check" }, [ICONS.check("icon tiny")]) : null,
+            ]),
+            h("span", { className: "episode-text" }, [
+              h("strong", { text: `${episode.index + 1}편` }),
+              h("span", { text: episode.title }),
+              h("small", {
+                text:
+                  episode.status === "locked"
+                    ? (episode.reasons[0] ?? STATUS_TEXT.locked)
+                    : STATUS_TEXT[episode.status],
+              }),
+            ]),
+          ],
+        ),
       ]),
     ),
   );
@@ -338,7 +354,9 @@ function body(state: AppState, world: WorldView, content: GameContent, controlle
     ];
   }
   const pair = pairs.find((candidate) => candidate.pairId === state.explore.pairId) ?? pairs[0]!;
-  const selected = pair.episodes.find((episode) => episode.status !== "read")?.index ?? 2;
+  const selected = pair.episodes.some((episode) => episode.index === state.explore.selectedEpisode)
+    ? state.explore.selectedEpisode!
+    : (pair.episodes.find((episode) => episode.status !== "read")?.index ?? 2);
   const section = state.explore.section ?? "episode";
   const sections = [
     ["episode", "탐험 준비"],
@@ -369,7 +387,10 @@ function body(state: AppState, world: WorldView, content: GameContent, controlle
     section === "episode"
       ? card(
           pair.arc.title,
-          [episodeTiles(pair, selected), details(state, world, content, pair, pair.episodes[selected]!, controller)],
+          [
+            episodeTiles(pair, selected, controller),
+            details(state, world, content, pair, pair.episodes[selected]!, controller),
+          ],
           { className: "arc-card" },
         )
       : null,

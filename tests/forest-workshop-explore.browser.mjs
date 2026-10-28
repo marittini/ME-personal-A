@@ -104,7 +104,10 @@ try {
         update({ historyPage });
       },
       selectStoryPair(pairId) {
-        update({ pairId, historyPage: 0 });
+        update({ pairId, historyPage: 0, selectedEpisode: undefined });
+      },
+      selectStoryEpisode(selectedEpisode) {
+        update({ selectedEpisode });
       },
       depart(pairId, episode) {
         window.departed = { pairId, episode };
@@ -125,6 +128,9 @@ try {
     };
     window.testRender();
   });
+  await page.getByRole("button", { name: /2편 이야기 2/ }).click();
+  assert.equal(await page.locator("li").filter({ hasText: "이전 이야기 읽기" }).last().isVisible(), true);
+  await page.getByRole("button", { name: /1편 이야기 1/ }).click();
   await page.getByRole("button", { name: "탐험 출발" }).click();
   assert.deepEqual(await page.evaluate(() => window.departed), { pairId: "a", episode: 0 });
   await page.getByRole("button", { name: "여정", exact: true }).click();

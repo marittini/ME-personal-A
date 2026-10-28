@@ -16,6 +16,7 @@ export interface ExploreView {
   overview: Loadable<StoryOverview> | null;
   section?: "journey" | "episode" | "history";
   historyPage?: number;
+  selectedEpisode?: number;
 }
 
 export interface ReaderState {
@@ -167,7 +168,11 @@ export function createStoryActions(core: ControllerCore) {
     },
 
     selectStoryPair(pairId: string) {
-      patchExplore({ pairId, historyPage: 0 });
+      patchExplore({ pairId, historyPage: 0, selectedEpisode: undefined });
+    },
+
+    selectStoryEpisode(selectedEpisode: number) {
+      patchExplore({ selectedEpisode });
     },
 
     async depart(pairId: string, episode: number) {

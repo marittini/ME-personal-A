@@ -132,8 +132,8 @@
     },
     {
       "path": "client.js",
-      "sha256": "cafd2c3f7633eefb800a15ea084fde17142542b7cc8a124553fcb00391c15d0f",
-      "bytes": 295408
+      "sha256": "8e69477b2c8708d8716e5cd2a29f92fe83dbd502bb4041c82ae0044478596e25",
+      "bytes": 296243
     },
     {
       "path": "assets/asset-manifest.json",

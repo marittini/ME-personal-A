@@ -54,7 +54,11 @@ function nicknameRow(view: WorldView, state: AppState, controller: Controller) {
 }
 
 function groundEditor(view: WorldView, state: AppState, controller: Controller) {
-  const ground = { ...(view.state.settings.ground ?? { left: 12, right: 88, top: 58, bottom: 90 }) };
+  const initial = view.state.settings.ground ?? { left: 12, right: 88, top: 58, bottom: 90 };
+  const ground = {
+    ...(state.settingsGroundDraft?.worldId === view.worldId ? state.settingsGroundDraft.value : initial),
+  };
+  const controls: Array<{ key: keyof typeof ground; input: HTMLInputElement; output: HTMLOutputElement }> = [];
   const preview = h("div", { className: "ground-preview", attrs: { "aria-label": "지면 이동영역 미리보기" } });
   const area = h("span", { className: "ground-area" });
   preview.append(area);
@@ -81,13 +85,24 @@ function groundEditor(view: WorldView, state: AppState, controller: Controller) 
       on: {
         input: () => {
           ground[key] = Number(input.value);
+          controller.rememberGround(view.worldId, ground);
           value.textContent = input.value;
           draw();
         },
       },
     });
+    controls.push({ key, input, output: value });
     return h("label", { className: "ground-row" }, [label, input, value]);
   });
+  const restore = (next: typeof ground) => {
+    Object.assign(ground, next);
+    controller.rememberGround(view.worldId, ground);
+    controls.forEach(({ key, input, output }) => {
+      input.value = String(ground[key]);
+      output.textContent = input.value;
+    });
+    draw();
+  };
   draw();
   return h(
     "form",
@@ -106,6 +121,20 @@ function groundEditor(view: WorldView, state: AppState, controller: Controller) 
     },
     [
       h("h3", { text: "지면 설정" }),
+      h("div", { className: "row-actions" }, [
+        h("button", {
+          className: "outline-button",
+          text: "기본 범위",
+          attrs: { type: "button" },
+          on: { click: () => restore({ left: 12, right: 88, top: 58, bottom: 90 }) },
+        }),
+        h("button", {
+          className: "outline-button",
+          text: "변경 취소",
+          attrs: { type: "button" },
+          on: { click: () => restore(initial) },
+        }),
+      ]),
       preview,
       ...rows,
       h("p", { className: "muted", text: "주민 발이 움직일 범위를 정해요. 저장 전 변경은 적용되지 않아요." }),

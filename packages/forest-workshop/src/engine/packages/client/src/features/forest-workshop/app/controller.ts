@@ -93,6 +93,7 @@ export interface AppState {
   worldDraft?: { worldName: string; nickname: string };
   settingsSection?: "workshop" | "display" | "manage";
   settingsNicknameDraft?: { worldId: string; value: string };
+  settingsGroundDraft?: { worldId: string; value: WorldView["state"]["settings"]["ground"] };
   /** 저장·백업 → 저장 공간 사용량, loaded when that screen opens. */
   storage: Loadable<StorageUsage> | null;
   /** The welcome-package sheet was put off for this session ("나중에"). */
@@ -469,9 +470,20 @@ export function createController() {
       return result;
     },
 
+    rememberGround(worldId: string, value: WorldView["state"]["settings"]["ground"]) {
+      store.remember({ settingsGroundDraft: { worldId, value: { ...value } } });
+    },
+
     async saveGround(ground: WorldView["state"]["settings"]["ground"]) {
-      const result = await runCommand("ground-save", "settings.update", { ground });
-      if (result) core.notify("지면 설정을 저장했어요.");
+      const worldId = currentWorld()?.worldId;
+      const sent = { ...ground };
+      const result = await runCommand("ground-save", "settings.update", { ground: sent });
+      if (result) {
+        const draft = store.get().settingsGroundDraft;
+        if (draft && draft.worldId === worldId && JSON.stringify(draft.value) === JSON.stringify(sent))
+          store.remember({ settingsGroundDraft: undefined });
+        core.notify("지면 설정을 저장했어요.");
+      }
       return result;
     },
 

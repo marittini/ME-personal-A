@@ -63,7 +63,14 @@ export const RESIDENT_STYLES = `
 .pill-tabs.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .pill-tab { min-height: 2.6em; border-radius: 0.7em; border: var(--line-in) solid var(--ink); background: var(--fw-surface-2); color: var(--fw-text); font: inherit; font-weight: 800; cursor: pointer; }
 .pill-tab.current { background: #4f8f6e; color: #fff; box-shadow: 0 0.15em 0 var(--ink); }
-.resident-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.6em; }
+.resident-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr; gap: 0.4em; }
+.resident-list-open { display: flex; align-items: center; gap: 0.65em; width: 100%; min-height: 4.2em; padding: 0.35em 0.55em; border: var(--line-in) solid var(--ink); border-radius: 0.8em; background: var(--fw-surface-3); color: var(--fw-text); font: inherit; text-align: left; cursor: pointer; }
+.resident-list-copy { display: grid; flex: 1; min-width: 0; line-height: 1.3; }
+.resident-list-copy strong { overflow-wrap: anywhere; }
+.resident-list-copy span { color: var(--fw-muted); font-size: calc(var(--fs) * 0.85); }
+.resident-pages { display: flex; align-items: center; justify-content: space-between; gap: 0.5em; }
+.resident-pages .outline-button { min-width: 4em; }
+.residents-back { justify-self: start; }
 .resident-card { display: grid; justify-items: center; gap: 0.4em; padding: 0.5em 0.5em 0.65em; border-radius: 0.9em; border: var(--line-in) solid var(--ink); background: var(--fw-surface-3); min-width: 0; }
 .resident-card.selected { background: #eef6e2; box-shadow: 0 0 0 var(--line-in) #4f8f6e, var(--drop); }
 .resident-card-main { display: grid; justify-items: center; gap: 0.35em; width: 100%; padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; }
@@ -95,6 +102,10 @@ export const RESIDENT_STYLES = `
 
 /* ── 프로필 sheet ──────────────────────────────────────────────────────── */
 .sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5em; }
+.profile-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.35em; }
+.profile-tab { min-height: 3em; padding: 0.3em; border: 2px solid var(--ink); border-radius: 0.6em; background: var(--fw-surface-3); color: var(--fw-text); font: inherit; font-weight: 700; cursor: pointer; }
+.profile-tab[aria-pressed="true"] { background: var(--fw-accent); color: var(--fw-on-accent); }
+.profile-panel[hidden] { display: none; }
 .compare { display: grid; gap: 0.6em; }
 .compare-box { display: grid; gap: 0.4em; padding: 0.7em; border-radius: 0.8em; border: var(--line-in) solid var(--ink); }
 .compare-box.source { background: var(--fw-surface-2); }
@@ -108,7 +119,7 @@ export const RESIDENT_STYLES = `
 .source-details[open] > :not(summary) { margin-top: 0.6em; }
 .sheet-head { flex-wrap: wrap; }
 .sheet-head .section-title { flex: 1 1 10em; }
-.change-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 0.3em; max-height: 14em; overflow-y: auto; }
+.change-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 0.3em; }
 .change-row { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0 0.6em; padding: 0.4em 0.6em; border-radius: 0.6em; background: var(--fw-surface-3); font-size: calc(var(--fs) * 0.85); }
 .change-kind { font-weight: 800; }
 .change-detail { overflow-wrap: anywhere; }
@@ -158,6 +169,8 @@ export const RESIDENT_STYLES = `
 .step-label { font-weight: 900; font-size: calc(var(--fs) * 0.92); white-space: nowrap; }
 .step-arrow { color: var(--fw-muted); font-weight: 800; }
 .source-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.45em; }
+.source-pages { display: grid; gap: 0.5em; }
+.source-row .menu-detail { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .source-row:disabled { opacity: 0.65; cursor: default; }
 .selected-source { padding: 0.5em; }
 .selected-source .menu-row { border: 0; background: none; }

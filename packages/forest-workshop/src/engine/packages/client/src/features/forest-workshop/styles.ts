@@ -48,6 +48,7 @@ export const STYLES = `
   word-break: keep-all;
   overflow-wrap: anywhere;
 }
+:host(:fullscreen) { width: 100%; height: 100%; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); background: var(--fw-page); }
 * { box-sizing: border-box; }
 p { margin: 0; }
 .icon { width: 1.35em; height: 1.35em; flex: none; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
@@ -547,7 +548,7 @@ button.counter { cursor: pointer; }
 .button.wide-main { font-size: calc(var(--fs) * 1.15); }
 
 /* ── 시설과 창고 (01-3) ────────────────────────────────────────────────── */
-.big-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 0.3em; margin-bottom: -0.95em; }
+.big-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.3em; margin-bottom: -0.95em; }
 .big-tab {
   display: flex;
   align-items: center;
@@ -588,9 +589,9 @@ button.counter { cursor: pointer; }
 .num.available { color: var(--fw-pass); }
 .item-dot { display: inline-block; width: 1.1em; height: 1.1em; margin-right: 0.35em; vertical-align: -0.15em; border-radius: 50%; border: 2px solid var(--ink); background: var(--fw-wood); }
 .item-dot.big { width: 2.2em; height: 2.2em; margin: 0; border-width: var(--line-in); }
-.storage-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(6.5em, 1fr)); gap: 0.55em; }
-.storage-item { display: grid; justify-items: center; gap: 0.2em; padding: 0.7em 0.3em; border-radius: 0.9em; border: var(--line-in) solid var(--ink); background: var(--fw-surface-3); text-align: center; }
-.storage-name { font-weight: 800; overflow-wrap: anywhere; }
+.storage-grid { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.35em; }
+.storage-item { display: flex; align-items: center; gap: 0.5em; min-height: 3em; padding: 0.3em 0.5em; border-radius: 0.9em; border: var(--line-in) solid var(--ink); background: var(--fw-surface-3); text-align: left; }
+.storage-name { flex: 1; min-width: 0; font-weight: 800; overflow-wrap: anywhere; }
 .storage-item strong { font-size: calc(var(--fs) * 1.2); font-variant-numeric: tabular-nums; }
 .toggle-row {
   position: relative;

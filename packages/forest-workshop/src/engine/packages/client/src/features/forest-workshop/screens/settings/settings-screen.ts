@@ -17,7 +17,13 @@ function nicknameRow(view: WorldView, state: AppState, controller: Controller) {
   const current = view.state.settings.playerNickname;
   const input = h("input", {
     className: "input",
-    attrs: { id: "fw-set-nick", maxlength: "24", autocomplete: "off", value: current },
+    attrs: {
+      id: "fw-set-nick",
+      maxlength: "24",
+      autocomplete: "off",
+      value: state.settingsNicknameDraft?.worldId === view.worldId ? state.settingsNicknameDraft.value : current,
+    },
+    on: { input: () => controller.rememberSettingsNickname(view.worldId, input.value) },
   });
   return h(
     "form",
@@ -27,8 +33,7 @@ function nicknameRow(view: WorldView, state: AppState, controller: Controller) {
         submit: (event) => {
           event.preventDefault();
           const next = input.value.trim();
-          if (next && next !== current)
-            void controller.runCommand("rename-nickname", "settings.update", { playerNickname: input.value });
+          if (next && next !== current) void controller.saveSettingsNickname(view.worldId, input.value);
         },
       },
     },
@@ -156,37 +161,63 @@ function manageRow(
 
 export function renderSettingsScreen(state: AppState, controller: Controller) {
   const world = state.world?.state === "ready" ? state.world.value : null;
+  const section = state.settingsSection ?? "workshop";
+  const choices = [
+    ["workshop", "내 공방"],
+    ["display", "표시"],
+    ["manage", "관리"],
+  ] as const;
   const body = world
     ? [
-        card("내 공방", [nicknameRow(world, state, controller), weatherRow(controller)], { id: "fw-mine" }),
-        card(
-          "표시",
-          [
-            fontSizeRow(state, controller),
-            seasonRow(state, controller),
-            toggleRow(controller, "weather-effects", ICONS.leaf, "날씨 효과", "공방 배경에 현재 날씨를 반영해요."),
-            toggleRow(controller, "auto-read", ICONS.book, "자동 읽기", "이야기를 자동으로 넘겨요."),
-          ],
-          { id: "fw-display" },
+        h(
+          "div",
+          { className: "pill-tabs", attrs: { role: "group", "aria-label": "설정 항목" } },
+          choices.map(([id, label]) =>
+            h("button", {
+              className: `pill-tab${section === id ? " current" : ""}`,
+              text: label,
+              attrs: { type: "button", "aria-pressed": section === id ? "true" : "false" },
+              on: { click: () => controller.setSettingsSection(id) },
+            }),
+          ),
         ),
-        card(
-          "관리",
-          [
-            manageRow(controller, ICONS.image, "주민 그림 관리", { route: "residents" }),
-            manageRow(controller, ICONS.flower, "AI 지침 관리", { feature: "ai-guidelines" }),
-            manageRow(controller, ICONS.people, "기억 관리", { feature: "memory" }),
-            manageRow(controller, ICONS.folder, "저장 · 백업", { route: "backup" }),
-            h("div", { className: "note-box" }, [
-              ICONS.clock("icon"),
-              h("span", {}, [
-                h("strong", { text: "미접속 누적 상한 72시간" }),
-                h("span", { text: "72시간이 지나면 일부 자동 진행이 멈춰요." }),
-              ]),
-            ]),
-          ],
-          { id: "fw-manage" },
-        ),
-        h("p", { className: "footnote", text: "자동화 규칙은 작업 화면에서 바꿀 수 있어요." }),
+        section === "workshop"
+          ? card("내 공방", [nicknameRow(world, state, controller), weatherRow(controller)], { id: "fw-mine" })
+          : null,
+        section === "display"
+          ? card(
+              "표시",
+              [
+                fontSizeRow(state, controller),
+                seasonRow(state, controller),
+                toggleRow(controller, "weather-effects", ICONS.leaf, "날씨 효과", "공방 배경에 현재 날씨를 반영해요."),
+                toggleRow(controller, "auto-read", ICONS.book, "자동 읽기", "이야기를 자동으로 넘겨요."),
+              ],
+              { id: "fw-display" },
+            )
+          : null,
+        section === "manage"
+          ? card(
+              "관리",
+              [
+                manageRow(controller, ICONS.image, "주민 그림 관리", { route: "residents" }),
+                manageRow(controller, ICONS.flower, "AI 지침 관리", { feature: "ai-guidelines" }),
+                manageRow(controller, ICONS.people, "기억 관리", { feature: "memory" }),
+                manageRow(controller, ICONS.folder, "저장 · 백업", { route: "backup" }),
+                h("div", { className: "note-box" }, [
+                  ICONS.clock("icon"),
+                  h("span", {}, [
+                    h("strong", { text: "미접속 누적 상한 72시간" }),
+                    h("span", { text: "72시간이 지나면 일부 자동 진행이 멈춰요." }),
+                  ]),
+                ]),
+              ],
+              { id: "fw-manage" },
+            )
+          : null,
+        section === "manage"
+          ? h("p", { className: "footnote", text: "자동화 규칙은 작업 화면에서 바꿀 수 있어요." })
+          : null,
       ]
     : [statusLine("세계를 불러오는 중…")];
   return renderFrame(state, controller, {

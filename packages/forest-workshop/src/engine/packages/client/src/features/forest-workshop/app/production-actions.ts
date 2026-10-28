@@ -15,11 +15,17 @@ export interface WorkView {
   selected: Record<string, string>;
   /** 지정 횟수: the recipe chosen for the next queue entry, per facility. */
   queueRecipe: Record<string, string>;
+  section?: "status" | "recipe" | "priority";
+  inventoryPage?: number;
+  queueView?: "list" | "add";
+  queuePage?: number;
+  queueCounts?: Record<string, number>;
+  priorityPage?: number;
 }
 
 export type ProductionSheet =
   | { kind: "work-report" }
-  | { kind: "protect-edit" }
+  | { kind: "protect-edit"; page?: number; drafts?: Record<string, number> }
   | { kind: "sell"; itemId: string }
   | { kind: "assign"; facilityId: string }
   | { kind: "auto-sell" };
@@ -129,7 +135,42 @@ export function createProductionActions(core: ControllerCore) {
     },
 
     selectFacility(facilityId: string) {
-      patchWork({ facilityId });
+      patchWork({ facilityId, section: "status", queueView: undefined, queuePage: 0, priorityPage: 0 });
+    },
+
+    setWorkSection(section: NonNullable<WorkView["section"]>) {
+      patchWork({ section });
+    },
+
+    setInventoryPage(page: number) {
+      patchWork({ inventoryPage: Math.max(0, page) });
+    },
+
+    setQueueView(queueView: NonNullable<WorkView["queueView"]>) {
+      patchWork({ queueView });
+    },
+
+    setQueuePage(queuePage: number) {
+      patchWork({ queuePage: Math.max(0, queuePage) });
+    },
+
+    setPriorityPage(priorityPage: number) {
+      patchWork({ priorityPage: Math.max(0, priorityPage) });
+    },
+
+    rememberQueueCount(facilityId: string, count: number) {
+      store.remember((state) => ({
+        work: { ...state.work, queueCounts: { ...state.work.queueCounts, [facilityId]: count } },
+      }));
+    },
+
+    rememberProtection(patch: { page?: number; itemId?: string; amount?: number }) {
+      store.remember((state) => {
+        if (state.sheet?.kind !== "protect-edit") return {};
+        const drafts = { ...state.sheet.drafts };
+        if (patch.itemId !== undefined && patch.amount !== undefined) drafts[patch.itemId] = patch.amount;
+        return { sheet: { ...state.sheet, page: patch.page ?? state.sheet.page, drafts } };
+      });
     },
 
     selectRule(facilityId: string, policyId: string) {
@@ -227,7 +268,14 @@ export function createProductionActions(core: ControllerCore) {
     },
 
     async setProtected(itemId: string, amount: number) {
-      await core.runCommand(`protect:${itemId}`, "production.setProtected", { itemId, amount });
+      const result = await core.runCommand(`protect:${itemId}`, "production.setProtected", { itemId, amount });
+      if (result)
+        store.remember((state) => {
+          if (state.sheet?.kind !== "protect-edit" || state.sheet.drafts?.[itemId] !== amount) return {};
+          const drafts = { ...state.sheet.drafts };
+          delete drafts[itemId];
+          return { sheet: { ...state.sheet, drafts } };
+        });
     },
 
     async sell(itemId: string, amount: number) {

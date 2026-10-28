@@ -2,6 +2,7 @@
 // 초대권 받기). Same storybook rules as styles.ts: flat fills, one dark-brown ink line (--line / --line-in), flat
 // drops, no thin strokes, no blended gradients.
 export const INVITE_STYLES = `
+.paged-rows { display: grid; gap: 0.5em; }
 /* Top counters (초대권 + · 종표) */
 .invite-counters { gap: 0.35em; }
 .counter-plus { display: inline-flex; align-items: center; justify-content: center; width: 1.45em; height: 1.45em; margin-left: 0.1em; border-radius: 50%; border: 2px solid var(--ink); background: var(--fw-accent); color: var(--fw-on-accent); }

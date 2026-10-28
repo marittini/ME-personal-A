@@ -74,25 +74,24 @@ function trail(pair: PairStoryView, current: number) {
 
 function pairChooser(state: AppState, world: WorldView, overview: PairStoryView[], controller: Controller) {
   if (overview.length < 2) return null;
-  return h(
-    "div",
-    { className: "chip-row pair-chips", attrs: { role: "group", "aria-label": "페어 고르기" } },
+  const chooser = h(
+    "select",
+    {
+      className: "input",
+      attrs: { "aria-label": "페어 고르기" },
+      on: { change: () => controller.selectStoryPair(chooser.value) },
+    },
     overview.map((pair) => {
       const names = world.state.pairs[pair.pairId]!.residentIds.map(
         (id) => world.state.residents[id]?.displayName ?? "주민",
       );
-      const current = pair.pairId === state.explore.pairId;
-      return h(
-        "button",
-        {
-          className: `pill-tab${current ? " current" : ""}`,
-          attrs: { type: "button", "aria-pressed": current ? "true" : "false" },
-          on: { click: () => controller.selectStoryPair(pair.pairId) },
-        },
-        [h("span", { text: names.join(" · ") })],
-      );
+      return h("option", { text: names.join(" · "), attrs: { value: pair.pairId } });
     }),
   );
+  chooser.value = overview.some((pair) => pair.pairId === state.explore.pairId)
+    ? state.explore.pairId!
+    : overview[0]!.pairId;
+  return chooser;
 }
 
 function episodeTiles(pair: PairStoryView, selected: number) {
@@ -229,8 +228,11 @@ function details(
   ]);
 }
 
-function completedList(pair: PairStoryView, controller: Controller) {
-  if (pair.completed.length === 0) return null;
+function completedList(state: AppState, pair: PairStoryView, controller: Controller) {
+  if (pair.completed.length === 0)
+    return card("읽은 이야기", [h("p", { className: "empty", text: "아직 읽은 이야기가 없어요." })]);
+  const count = Math.ceil(pair.completed.length / 2);
+  const page = Math.min(state.explore.historyPage ?? 0, count - 1);
   return card("읽은 이야기", [
     h(
       "ul",
@@ -238,6 +240,7 @@ function completedList(pair: PairStoryView, controller: Controller) {
       pair.completed
         .slice()
         .reverse()
+        .slice(page * 2, page * 2 + 2)
         .map((arc) =>
           h("li", { className: "completed-arc" }, [
             h("strong", { text: arc.title }),
@@ -256,6 +259,19 @@ function completedList(pair: PairStoryView, controller: Controller) {
           ]),
         ),
     ),
+    count > 1
+      ? h("div", { className: "resident-pages" }, [
+          button("이전", () => controller.setExploreHistoryPage(page - 1), {
+            variant: "secondary",
+            disabled: page === 0,
+          }),
+          h("span", { text: `${page + 1} / ${count}`, attrs: { "aria-live": "polite" } }),
+          button("다음", () => controller.setExploreHistoryPage(page + 1), {
+            variant: "secondary",
+            disabled: page + 1 >= count,
+          }),
+        ])
+      : null,
   ]);
 }
 
@@ -303,20 +319,42 @@ function body(state: AppState, world: WorldView, content: GameContent, controlle
   }
   const pair = pairs.find((candidate) => candidate.pairId === state.explore.pairId) ?? pairs[0]!;
   const selected = pair.episodes.find((episode) => episode.status !== "read")?.index ?? 2;
+  const section = state.explore.section ?? "episode";
+  const sections = [
+    ["episode", "탐험 준비"],
+    ["journey", "여정"],
+    ["history", "읽은 이야기"],
+  ] as const;
   return [
     tabs(controller),
     pairChooser(state, world, pairs, controller),
-    h("section", { className: "card trail-card", attrs: { "aria-label": `${pair.arc.place} 지도` } }, [
-      trail(pair, selected),
-      h("span", { className: "place-sign", text: pair.arc.place }),
-    ]),
-    card(
-      pair.arc.title,
-      [episodeTiles(pair, selected), details(state, world, content, pair, pair.episodes[selected]!, controller)],
-      { className: "arc-card" },
+    h(
+      "div",
+      { className: "pill-tabs", attrs: { role: "group", "aria-label": "이야기 화면" } },
+      sections.map(([id, label]) =>
+        h("button", {
+          className: `pill-tab${section === id ? " current" : ""}`,
+          text: label,
+          attrs: { type: "button", "aria-pressed": section === id ? "true" : "false" },
+          on: { click: () => controller.setExploreSection(id) },
+        }),
+      ),
     ),
-    statusStrip(state, world, pairs, content),
-    completedList(pair, controller),
+    section === "journey"
+      ? h("section", { className: "card trail-card", attrs: { "aria-label": `${pair.arc.place} 지도` } }, [
+          trail(pair, selected),
+          h("span", { className: "place-sign", text: pair.arc.place }),
+        ])
+      : null,
+    section === "episode"
+      ? card(
+          pair.arc.title,
+          [episodeTiles(pair, selected), details(state, world, content, pair, pair.episodes[selected]!, controller)],
+          { className: "arc-card" },
+        )
+      : null,
+    section === "journey" ? statusStrip(state, world, pairs, content) : null,
+    section === "history" ? completedList(state, pair, controller) : null,
   ];
 }
 

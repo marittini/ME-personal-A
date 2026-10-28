@@ -11,10 +11,12 @@ export interface ResidentsView {
   query: string;
   filter: "all" | "recruited" | "waiting";
   selectedId: string | null;
+  page?: number;
+  detailOpen?: boolean;
 }
 
 export type ResidentSheet =
-  | { kind: "profile"; residentId: string }
+  | { kind: "profile"; residentId: string; panel?: number; draft?: string; historyPage?: number }
   | { kind: "pair-add"; residentId: string }
   | { kind: "image-history"; residentId: string }
   | { kind: "history-cleanup" }
@@ -60,13 +62,15 @@ export function createResidentActions(core: ControllerCore) {
   }
 
   return {
-    setResidentsTab: (tab: ResidentsView["tab"]) => patchView({ tab }),
-    setResidentsQuery: (query: string) => patchView({ query }),
-    setResidentsFilter: (filter: ResidentsView["filter"]) => patchView({ filter }),
-    selectResident: (residentId: string) => patchView({ selectedId: residentId }),
+    setResidentsTab: (tab: ResidentsView["tab"]) => patchView({ tab, page: 0 }),
+    setResidentsQuery: (query: string) => patchView({ query, page: 0 }),
+    setResidentsFilter: (filter: ResidentsView["filter"]) => patchView({ filter, page: 0 }),
+    setResidentsPage: (page: number) => patchView({ page: Math.max(0, page) }),
+    showResidentsList: () => patchView({ detailOpen: false }),
+    selectResident: (residentId: string) => patchView({ selectedId: residentId, detailOpen: true }),
 
     openResidents(residentId?: string) {
-      if (residentId) patchView({ selectedId: residentId });
+      patchView(residentId ? { selectedId: residentId, detailOpen: true } : { detailOpen: false });
       core.navigate("residents");
     },
 
@@ -89,6 +93,10 @@ export function createResidentActions(core: ControllerCore) {
       store.set({ sheet: null });
     },
 
+    rememberProfile(patch: { panel?: number; draft?: string; historyPage?: number }) {
+      store.remember((state) => (state.sheet?.kind === "profile" ? { sheet: { ...state.sheet, ...patch } } : {}));
+    },
+
     toggleRelationsEditing() {
       store.set((state) => ({ relationsEditing: !state.relationsEditing }));
     },
@@ -98,7 +106,12 @@ export function createResidentActions(core: ControllerCore) {
         residentId,
         worldSetting,
       });
-      if (response) core.notify("공방 세계 설정을 고쳤어요. 변경 이력에 남았어요.");
+      if (response) {
+        store.remember((state) =>
+          state.sheet?.kind === "profile" ? { sheet: { ...state.sheet, draft: undefined } } : {},
+        );
+        core.notify("공방 세계 설정을 고쳤어요. 변경 이력에 남았어요.");
+      }
       return response;
     },
 

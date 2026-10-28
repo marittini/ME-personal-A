@@ -11,7 +11,7 @@ import { card, renderFrame } from "../chrome/frame";
 import { ICONS, type IconFactory } from "../chrome/icons";
 import { FIELD_ICONS, FIELD_LABELS, passiveOf, percent, talentOf } from "../work/production-view";
 import { searchField } from "../chrome/search-field";
-import { kindTag, residentFigure } from "./resident-figure";
+import { kindTag, residentAvatar, residentFigure } from "./resident-figure";
 import { renderFieldSheet } from "./field-sheet";
 import { renderProfileSheet } from "./profile-sheet";
 
@@ -78,36 +78,27 @@ function fieldTag(resident: Resident, controller: Controller) {
   );
 }
 
-function residentCard(resident: Resident, selected: boolean, controller: Controller) {
-  return h("li", { className: `resident-card${selected ? " selected" : ""}` }, [
+function residentCard(resident: Resident, controller: Controller) {
+  return h("li", { className: "resident-list-item" }, [
     h(
       "button",
       {
-        className: "resident-card-main",
+        className: "resident-list-open",
         attrs: {
           type: "button",
-          "aria-pressed": selected ? "true" : "false",
-          "aria-label": `${resident.displayName} 보기`,
+          "aria-label": `${resident.displayName} 자세히 보기`,
         },
         on: { click: () => controller.selectResident(resident.residentId) },
       },
       [
-        h("span", { className: "card-stage" }, [residentFigure(resident)]),
-        h("strong", { className: "resident-name", text: resident.displayName }),
+        residentAvatar(resident),
+        h("span", { className: "resident-list-copy" }, [
+          h("strong", { text: resident.displayName }),
+          h("span", { text: `${FIELD_LABELS[resident.field]} · ${resident.recruited ? "영입 완료" : "초대 대기"}` }),
+        ]),
+        ICONS.chevron("icon"),
       ],
     ),
-    h("span", { className: "tag-row" }, [kindTag(resident), fieldTag(resident, controller)]),
-    resident.recruited
-      ? h("span", { className: "status-pill done", text: "영입 완료" })
-      : h(
-          "button",
-          {
-            className: "status-pill waiting",
-            attrs: { type: "button", "aria-label": `${resident.displayName} 초대 대기 — 초대 화면 열기` },
-            on: { click: () => controller.navigate("invite") },
-          },
-          [h("span", { text: "초대 대기" })],
-        ),
   ]);
 }
 
@@ -181,6 +172,14 @@ function detail(resident: Resident, world: WorldView, content: GameContent | nul
         ),
         actionButton(ICONS.heart, "관계", () => controller.openRelations(resident.residentId)),
       ]),
+      resident.recruited
+        ? null
+        : h("button", {
+            className: "button",
+            text: "초대하러 가기",
+            attrs: { type: "button" },
+            on: { click: () => controller.navigate("invite") },
+          }),
     ],
     { className: "detail-card" },
   );
@@ -190,7 +189,21 @@ function body(world: WorldView, state: AppState, controller: Controller) {
   const view = state.residentsView;
   const all = Object.values(world.state.residents);
   const shown = visibleResidents(world.state, view);
-  const selected = world.state.residents[view.selectedId ?? ""] ?? shown[0] ?? null;
+  const selected = world.state.residents[view.selectedId ?? ""] ?? null;
+  if (view.detailOpen && selected) {
+    return [
+      h("button", {
+        className: "outline-button residents-back",
+        text: "← 주민 목록",
+        attrs: { type: "button" },
+        on: { click: () => controller.showResidentsList() },
+      }),
+      detail(selected, world, state.content, controller),
+    ];
+  }
+  const pageSize = 2;
+  const pageCount = Math.max(1, Math.ceil(shown.length / pageSize));
+  const page = Math.min(view.page ?? 0, pageCount - 1);
   const grid =
     all.length === 0
       ? h("div", { className: "empty-state" }, [
@@ -202,15 +215,33 @@ function body(world: WorldView, state: AppState, controller: Controller) {
         : h(
             "ul",
             { className: "resident-grid" },
-            shown.map((resident) => residentCard(resident, resident.residentId === selected?.residentId, controller)),
+            shown.slice(page * pageSize, (page + 1) * pageSize).map((resident) => residentCard(resident, controller)),
           );
   return [
     searchBar(view, controller),
     h("section", { className: "card resident-board", attrs: { "aria-label": "주민 목록" } }, [
       tabs(view, controller),
       grid,
+      pageCount > 1
+        ? h("div", { className: "resident-pages", attrs: { "aria-label": "주민 목록 페이지" } }, [
+            h("button", {
+              className: "outline-button",
+              text: "이전",
+              attrs: { type: "button" },
+              disabled: page === 0,
+              on: { click: () => controller.setResidentsPage(page - 1) },
+            }),
+            h("span", { text: `${page + 1} / ${pageCount}`, attrs: { "aria-live": "polite" } }),
+            h("button", {
+              className: "outline-button",
+              text: "다음",
+              attrs: { type: "button" },
+              disabled: page + 1 === pageCount,
+              on: { click: () => controller.setResidentsPage(page + 1) },
+            }),
+          ])
+        : null,
     ]),
-    selected ? detail(selected, world, state.content, controller) : null,
     h(
       "button",
       {
@@ -232,7 +263,7 @@ export function renderResidentsScreen(state: AppState, controller: Controller) {
         ? renderFieldSheet(state, world, controller, state.sheet.residentId)
         : null;
   return renderFrame(state, controller, {
-    top: { kind: "sub", title: "주민", subtitle: "숲을 함께하는 소중한 이웃들", resources: false },
+    top: { kind: "sub", title: "주민", resources: false },
     backdrop: "forest",
     body: world ? body(world, state, controller) : [statusLine("세계를 불러오는 중…")],
     nav: true,

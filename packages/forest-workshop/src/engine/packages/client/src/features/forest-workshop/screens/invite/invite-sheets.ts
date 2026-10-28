@@ -20,7 +20,40 @@ function closeButton(controller: Controller) {
   return button("닫기", () => controller.closeSheet(), { variant: "secondary", attrs: { "data-wide": "" } });
 }
 
-function resultSheet(world: WorldView, content: GameContent, draws: DrawResult[], controller: Controller) {
+function pagedRows(state: AppState, controller: Controller, rows: HTMLElement[], listClass: string, ordered = false) {
+  const sheet = state.sheet;
+  const current =
+    sheet &&
+    (sheet.kind === "invite-result" ||
+      sheet.kind === "invite-chances" ||
+      sheet.kind === "invite-log" ||
+      sheet.kind === "invite-wish")
+      ? (sheet.page ?? 0)
+      : 0;
+  const count = Math.max(1, Math.ceil(rows.length / 2));
+  const page = Math.min(current, count - 1);
+  return h("div", { className: "paged-rows" }, [
+    h(ordered ? "ol" : "ul", { className: listClass }, rows.slice(page * 2, page * 2 + 2)),
+    count > 1
+      ? h("div", { className: "resident-pages" }, [
+          button("이전", () => controller.setInviteSheetPage(page - 1), { variant: "secondary", disabled: page === 0 }),
+          h("span", { text: `${page + 1} / ${count}`, attrs: { "aria-live": "polite" } }),
+          button("다음", () => controller.setInviteSheetPage(page + 1), {
+            variant: "secondary",
+            disabled: page + 1 >= count,
+          }),
+        ])
+      : null,
+  ]);
+}
+
+function resultSheet(
+  state: AppState,
+  world: WorldView,
+  content: GameContent,
+  draws: DrawResult[],
+  controller: Controller,
+) {
   const single = draws.length === 1 ? draws[0]! : null;
   const resident = single ? world.state.residents[single.residentId] : null;
   return sheetDialog("fw-invite-result", draws.length > 1 ? `${draws.length}회 초대 결과` : "초대 결과", [
@@ -31,9 +64,9 @@ function resultSheet(world: WorldView, content: GameContent, draws: DrawResult[]
           h("span", { className: `result-badge ${single.outcome}`, text: OUTCOME_LABEL[single.outcome] }),
           h("p", { className: "muted", text: outcomeText(single, content.crew.maxBreakthrough) }),
         ])
-      : h(
-          "ol",
-          { className: "result-list" },
+      : pagedRows(
+          state,
+          controller,
           draws.map((draw) => {
             const who = world.state.residents[draw.residentId];
             return h("li", { className: `result-row ${draw.outcome}` }, [
@@ -46,12 +79,14 @@ function resultSheet(world: WorldView, content: GameContent, draws: DrawResult[]
               }),
             ]);
           }),
+          "result-list",
+          true,
         ),
     closeButton(controller),
   ]);
 }
 
-function chancesSheet(world: WorldView, content: GameContent, controller: Controller) {
+function chancesSheet(state: AppState, world: WorldView, content: GameContent, controller: Controller) {
   const ids = Object.keys(world.state.residents).sort();
   const wish = world.state.invite.wishResidentId;
   const weight = (id: string) => (id === wish ? content.invite.wishWeight : content.invite.baseWeight);
@@ -63,9 +98,9 @@ function chancesSheet(world: WorldView, content: GameContent, controller: Contro
     }),
     ids.length === 0
       ? h("p", { className: "empty", text: "등록된 주민이 없어요." })
-      : h(
-          "ul",
-          { className: "chance-list" },
+      : pagedRows(
+          state,
+          controller,
           ids.map((id) => {
             const resident = world.state.residents[id]!;
             const chance = total ? (weight(id) / total) * 100 : 0;
@@ -78,6 +113,7 @@ function chancesSheet(world: WorldView, content: GameContent, controller: Contro
               h("strong", { className: "chance-value", text: `${chance.toFixed(chance < 10 ? 2 : 1)}%` }),
             ]);
           }),
+          "chance-list",
         ),
     h("p", {
       className: "muted",
@@ -87,15 +123,15 @@ function chancesSheet(world: WorldView, content: GameContent, controller: Contro
   ]);
 }
 
-function logSheet(world: WorldView, content: GameContent, controller: Controller) {
+function logSheet(state: AppState, world: WorldView, content: GameContent, controller: Controller) {
   const log = world.state.invite.log;
   const formatter = new Intl.DateTimeFormat("ko-KR", { dateStyle: "short", timeStyle: "short" });
   return sheetDialog("fw-invite-log", "초대 기록", [
     log.length === 0
       ? h("p", { className: "empty", text: "아직 초대 기록이 없어요." })
-      : h(
-          "ol",
-          { className: "result-list" },
+      : pagedRows(
+          state,
+          controller,
           log.map((entry) =>
             h("li", { className: `result-row ${entry.outcome}` }, [
               residentAvatar(world.state.residents[entry.residentId] ?? null),
@@ -107,6 +143,8 @@ function logSheet(world: WorldView, content: GameContent, controller: Controller
               }),
             ]),
           ),
+          "result-list",
+          true,
         ),
     h("p", { className: "muted", text: `최근 ${content.invite.logLimit}건까지 보관해요.` }),
     closeButton(controller),
@@ -123,9 +161,9 @@ function wishSheet(state: AppState, world: WorldView, controller: Controller) {
     h("p", { className: "muted", text: "등록된 캐릭터·페르소나 중 한 명을 고르면 그 주민을 더 잘 만나요." }),
     residents.length === 0
       ? h("p", { className: "empty", text: "등록된 주민이 없어요." })
-      : h(
-          "ul",
-          { className: "pick-list" },
+      : pagedRows(
+          state,
+          controller,
           residents.map((resident) =>
             h("li", {}, [
               h(
@@ -146,6 +184,7 @@ function wishSheet(state: AppState, world: WorldView, controller: Controller) {
               ),
             ]),
           ),
+          "pick-list",
         ),
     current
       ? button("희망 주민 해제", () => void controller.setWish(null), { variant: "secondary", disabled: busy })
@@ -157,9 +196,9 @@ function wishSheet(state: AppState, world: WorldView, controller: Controller) {
 export function renderInviteSheet(state: AppState, world: WorldView, content: GameContent, controller: Controller) {
   const sheet = state.sheet;
   if (!sheet) return null;
-  if (sheet.kind === "invite-result") return resultSheet(world, content, sheet.draws, controller);
-  if (sheet.kind === "invite-chances") return chancesSheet(world, content, controller);
-  if (sheet.kind === "invite-log") return logSheet(world, content, controller);
+  if (sheet.kind === "invite-result") return resultSheet(state, world, content, sheet.draws, controller);
+  if (sheet.kind === "invite-chances") return chancesSheet(state, world, content, controller);
+  if (sheet.kind === "invite-log") return logSheet(state, world, content, controller);
   if (sheet.kind === "invite-wish") return wishSheet(state, world, controller);
   return null;
 }

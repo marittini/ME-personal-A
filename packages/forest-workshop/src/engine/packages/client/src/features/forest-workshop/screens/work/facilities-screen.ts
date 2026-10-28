@@ -33,6 +33,7 @@ function tabs(state: AppState, controller: Controller) {
     );
   return h("div", { className: "big-tabs", attrs: { role: "tablist", "aria-label": "시설과 창고" } }, [
     tab("facilities", "시설", ICONS.house("icon big")),
+    tab("protection", "재고 보호", ICONS.lock("icon big")),
     tab("storage", "창고", ICONS.box("icon big")),
   ]);
 }
@@ -155,8 +156,19 @@ function autoSellRow(world: WorldView, controller: Controller) {
   );
 }
 
-function protectionCard(world: WorldView, content: GameContent, controller: Controller) {
+function inventoryPages(page: number, total: number, controller: Controller) {
+  const count = Math.max(1, Math.ceil(total / 3));
+  if (count === 1) return null;
+  return h("div", { className: "resident-pages", attrs: { "aria-label": "재고 페이지" } }, [
+    button("이전", () => controller.setInventoryPage(page - 1), { disabled: page === 0, variant: "secondary" }),
+    h("span", { text: `${page + 1} / ${count}`, attrs: { "aria-live": "polite" } }),
+    button("다음", () => controller.setInventoryPage(page + 1), { disabled: page + 1 >= count, variant: "secondary" }),
+  ]);
+}
+
+function protectionCard(state: AppState, world: WorldView, content: GameContent, controller: Controller) {
   const rows = holdings(world, content);
+  const page = Math.min(state.work.inventoryPage ?? 0, Math.max(0, Math.ceil(rows.length / 3) - 1));
   const guarded = world.state.production.protectedStock;
   return card(
     null,
@@ -191,7 +203,7 @@ function protectionCard(world: WorldView, content: GameContent, controller: Cont
             h(
               "tbody",
               {},
-              rows.map((row) => {
+              rows.slice(page * 3, page * 3 + 3).map((row) => {
                 const protectedAmount = guarded[row.itemId] ?? 0;
                 return h("tr", {}, [
                   h("th", { attrs: { scope: "row" } }, [itemTile(row.itemId), row.name]),
@@ -209,14 +221,16 @@ function protectionCard(world: WorldView, content: GameContent, controller: Cont
               }),
             ),
           ]),
+      inventoryPages(page, rows.length, controller),
       autoSellRow(world, controller),
     ],
     { id: "fw-protect" },
   );
 }
 
-function storageCard(world: WorldView, content: GameContent, controller: Controller) {
+function storageCard(state: AppState, world: WorldView, content: GameContent, controller: Controller) {
   const rows = holdings(world, content);
+  const page = Math.min(state.work.inventoryPage ?? 0, Math.max(0, Math.ceil(rows.length / 3) - 1));
   return card(
     "창고",
     [
@@ -225,9 +239,9 @@ function storageCard(world: WorldView, content: GameContent, controller: Control
         : h(
             "ul",
             { className: "storage-grid" },
-            rows.map((row) =>
+            rows.slice(page * 3, page * 3 + 3).map((row) =>
               h("li", { className: "storage-item" }, [
-                itemTile(row.itemId, "big"),
+                itemTile(row.itemId),
                 h("span", { className: "storage-name", text: row.name }),
                 h("strong", { text: row.amount.toLocaleString("ko-KR") }),
                 h(
@@ -242,6 +256,7 @@ function storageCard(world: WorldView, content: GameContent, controller: Control
               ]),
             ),
           ),
+      inventoryPages(page, rows.length, controller),
     ],
     { id: "fw-storage" },
   );
@@ -249,12 +264,14 @@ function storageCard(world: WorldView, content: GameContent, controller: Control
 
 function protectSheet(state: AppState, world: WorldView, content: GameContent, controller: Controller) {
   const range = content.production.protectedStock;
+  const edit = state.sheet?.kind === "protect-edit" ? state.sheet : null;
   const rows = content.items.map((item) => {
     const picker = amountPicker(
       `fw-protect-${item.id}`,
-      world.state.production.protectedStock[item.id] ?? 0,
+      edit?.drafts?.[item.id] ?? world.state.production.protectedStock[item.id] ?? 0,
       range.min,
       range.max,
+      { onChange: (amount) => controller.rememberProtection({ itemId: item.id, amount }) },
     );
     const busy = Boolean(state.busy[`protect:${item.id}`]);
     return h("li", { className: "protect-row" }, [
@@ -270,6 +287,29 @@ function protectSheet(state: AppState, world: WorldView, content: GameContent, c
       }),
     ]);
   });
+  let page = Math.max(0, Math.min(rows.length - 1, edit?.page ?? 0));
+  const label = h("span", { attrs: { "aria-live": "polite" } });
+  const previous = button("이전", () => showPage(page - 1), { variant: "secondary" });
+  const next = button("다음", () => showPage(page + 1), { variant: "secondary" });
+  const picker = h(
+    "select",
+    {
+      className: "input",
+      attrs: { "aria-label": "보호할 아이템" },
+      on: { change: () => showPage(Number(picker.value)) },
+    },
+    content.items.map((item, index) => h("option", { text: item.name, attrs: { value: String(index) } })),
+  );
+  function showPage(index: number) {
+    page = Math.max(0, Math.min(rows.length - 1, index));
+    rows.forEach((row, rowIndex) => (row.hidden = rowIndex !== page));
+    picker.value = String(page);
+    label.textContent = rows.length ? `${page + 1} / ${rows.length}` : "0 / 0";
+    previous.disabled = page === 0;
+    next.disabled = page >= rows.length - 1;
+    controller.rememberProtection({ page });
+  }
+  showPage(page);
   return h("div", { className: "sheet-backdrop" }, [
     h(
       "section",
@@ -280,7 +320,9 @@ function protectSheet(state: AppState, world: WorldView, content: GameContent, c
       [
         h("h2", { className: "section-title", text: "재고 보호 편집", attrs: { id: "fw-protect-edit" } }),
         h("p", { className: "muted", text: "보호한 수량은 자동 제작과 판매에 쓰지 않아요. 0이면 보호하지 않아요." }),
+        picker,
         h("ul", { className: "protect-list" }, rows),
+        h("div", { className: "resident-pages" }, [previous, label, next]),
         button("닫기", () => controller.closeSheet(), { variant: "secondary", attrs: { "data-wide": "" } }),
       ],
     ),
@@ -335,8 +377,10 @@ export function renderFacilitiesScreen(state: AppState, controller: Controller) 
       ? [
           tabs(state, controller),
           ...(state.facilitiesTab === "facilities"
-            ? [facilityCard(state, content, world, controller), protectionCard(world, content, controller)]
-            : [storageCard(world, content, controller)]),
+            ? [facilityCard(state, content, world, controller)]
+            : state.facilitiesTab === "protection"
+              ? [protectionCard(state, world, content, controller)]
+              : [storageCard(state, world, content, controller)]),
         ]
       : [statusLine("세계를 불러오는 중…")],
     nav: true,

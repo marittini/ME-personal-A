@@ -299,6 +299,7 @@ function materialsBlock(content: GameContent, world: WorldView, rule: Rule | und
 }
 
 function priorityList(
+  state: AppState,
   content: GameContent,
   facilityId: string,
   rules: Rule[],
@@ -307,12 +308,20 @@ function priorityList(
 ) {
   const used = new Set(rules.map((rule) => rule.recipeId));
   const addable = content.recipes.filter((recipe) => recipe.facilityId === facilityId && !used.has(recipe.id));
+  const count = Math.max(1, Math.ceil(rules.length / 2));
+  const page = Math.min(state.work.priorityPage ?? 0, count - 1);
+  const addSelect = h(
+    "select",
+    { className: "input", attrs: { "aria-label": "추가할 제작법" } },
+    addable.map((recipe) => h("option", { text: recipe.name, attrs: { value: recipe.id } })),
+  );
   return h("div", { className: "plan-block" }, [
     h("span", { className: "plan-label" }, [
       "제작 우선순위 ",
       h("small", { text: "(위의 아이템부터 순서대로 제작해요)" }),
     ]),
-    ...rules.map((rule, index) => {
+    ...rules.slice(page * 2, page * 2 + 2).map((rule, offset) => {
+      const index = page * 2 + offset;
       const recipe = recipeOf(content, rule.recipeId);
       const output = recipe ? Object.keys(recipe.outputs)[0]! : "";
       return h(
@@ -325,7 +334,12 @@ function priorityList(
             {
               className: "priority-main",
               attrs: { type: "button", "aria-pressed": rule.policyId === selectedId ? "true" : "false" },
-              on: { click: () => controller.selectRule(facilityId, rule.policyId) },
+              on: {
+                click: () => {
+                  controller.selectRule(facilityId, rule.policyId);
+                  controller.setWorkSection("recipe");
+                },
+              },
             },
             [
               itemTile(output),
@@ -368,22 +382,35 @@ function priorityList(
         ],
       );
     }),
+    count > 1
+      ? h("div", { className: "resident-pages" }, [
+          h("button", {
+            className: "outline-button",
+            text: "이전",
+            attrs: { type: "button" },
+            disabled: page === 0,
+            on: { click: () => controller.setPriorityPage(page - 1) },
+          }),
+          h("span", { text: `${page + 1} / ${count}`, attrs: { "aria-live": "polite" } }),
+          h("button", {
+            className: "outline-button",
+            text: "다음",
+            attrs: { type: "button" },
+            disabled: page + 1 >= count,
+            on: { click: () => controller.setPriorityPage(page + 1) },
+          }),
+        ])
+      : null,
     addable.length
-      ? h(
-          "div",
-          { className: "add-rules" },
-          addable.map((recipe) =>
-            h(
-              "button",
-              {
-                className: "outline-button small",
-                attrs: { type: "button" },
-                on: { click: () => controller.addRule(facilityId, recipe.id) },
-              },
-              [ICONS.plus("icon"), h("span", { text: recipe.name })],
-            ),
-          ),
-        )
+      ? h("div", { className: "add-rules" }, [
+          addSelect,
+          h("button", {
+            className: "outline-button",
+            text: "제작법 추가",
+            attrs: { type: "button" },
+            on: { click: () => controller.addRule(facilityId, addSelect.value) },
+          }),
+        ])
       : null,
   ]);
 }
@@ -428,27 +455,58 @@ function body(state: AppState, content: GameContent, world: WorldView, controlle
   const applying = Boolean(state.busy[`rules:${facilityId}`]);
   const auto = facility.mode === "auto";
   const crew = crewBonus(content, world.state, facilityId);
+  const section = !auto && state.work.section === "priority" ? "recipe" : (state.work.section ?? "status");
+  const sections = auto
+    ? ([
+        ["status", "현재 작업"],
+        ["recipe", "제작 설정"],
+        ["priority", "순서·적용"],
+      ] as const)
+    : ([
+        ["status", "현재 작업"],
+        ["recipe", "대기열"],
+      ] as const);
   return [
     fieldTabs(content, world, facilityId, controller),
+    h(
+      "div",
+      { className: "work-sections", attrs: { role: "group", "aria-label": "작업 화면" } },
+      sections.map(([id, label]) =>
+        h("button", {
+          className: "pill-tab",
+          text: label,
+          attrs: { type: "button", "aria-pressed": section === id ? "true" : "false" },
+          on: { click: () => controller.setWorkSection(id) },
+        }),
+      ),
+    ),
     card(
       null,
       [
-        modeToggle(state, facilityId, facility, controller),
-        facilityCard(content, world, facilityId, facility, controller),
-        ...(auto
+        ...(section === "status"
+          ? [
+              modeToggle(state, facilityId, facility, controller),
+              facilityCard(content, world, facilityId, facility, controller),
+              currentWork(state, content, world, facility),
+              h("p", { className: "hint center" }, [
+                ICONS.info("icon"),
+                facility.waiting ? waitingText(content, facility.waiting) : "재료가 부족하면 기다렸다 다시 시작해요.",
+              ]),
+            ]
+          : []),
+        ...(section === "recipe" && auto
           ? [
               recipeCard(content, selected, facility.level, crew),
               selected ? targetRow(content, world, facilityId, selected, controller) : null,
               materialsBlock(content, world, selected),
-              priorityList(content, facilityId, rules, selected?.policyId, controller),
             ]
-          : [queuePanel(state, content, world, facilityId, controller)]),
-        currentWork(state, content, world, facility),
-        h("p", { className: "hint center" }, [
-          ICONS.info("icon"),
-          facility.waiting ? waitingText(content, facility.waiting) : "재료가 부족하면 기다렸다 다시 시작해요.",
-        ]),
-        auto && facility.queue.length
+          : section === "recipe"
+            ? [queuePanel(state, content, world, facilityId, controller)]
+            : []),
+        section === "priority" && auto
+          ? priorityList(state, content, facilityId, rules, selected?.policyId, controller)
+          : null,
+        section === "status" && auto && facility.queue.length
           ? h("p", {
               className: "hint center",
               text: `지정 횟수 대기열 ${facility.queue.length}개는 멈춘 채 그대로 남아 있어요.`,
@@ -456,7 +514,9 @@ function body(state: AppState, content: GameContent, world: WorldView, controlle
           : null,
         auto && dirty
           ? h("p", { className: "draft-note" }, [
-              "바꾼 규칙은 아직 적용 전이에요. ",
+              section === "priority"
+                ? "바꾼 규칙은 아직 적용 전이에요. "
+                : "바꾼 규칙은 아직 적용 전이에요. ‘순서·적용’에서 적용해 주세요. ",
               h("button", {
                 className: "link-button",
                 text: "되돌리기",
@@ -468,7 +528,7 @@ function body(state: AppState, content: GameContent, world: WorldView, controlle
       ],
       { className: "work-card" },
     ),
-    auto
+    auto && section === "priority"
       ? h("div", { className: "rule-actions" }, [
           h(
             "button",

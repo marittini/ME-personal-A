@@ -13,6 +13,8 @@ export interface ExploreView {
   tab: ExploreTab;
   pairId: string | null;
   overview: Loadable<StoryOverview> | null;
+  section?: "journey" | "episode" | "history";
+  historyPage?: number;
 }
 
 export interface ReaderState {
@@ -147,8 +149,16 @@ export function createStoryActions(core: ControllerCore) {
       patchExplore({ tab });
     },
 
+    setExploreSection(section: NonNullable<ExploreView["section"]>) {
+      patchExplore({ section });
+    },
+
+    setExploreHistoryPage(historyPage: number) {
+      patchExplore({ historyPage: Math.max(0, historyPage) });
+    },
+
     selectStoryPair(pairId: string) {
-      patchExplore({ pairId });
+      patchExplore({ pairId, historyPage: 0 });
     },
 
     async depart(pairId: string, episode: number) {

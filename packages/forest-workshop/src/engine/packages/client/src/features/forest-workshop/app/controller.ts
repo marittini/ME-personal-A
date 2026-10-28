@@ -86,7 +86,13 @@ export interface AppState {
   /** Pack files that loaded (app/assets.ts probeAsset); the frame turns their CSS art on. */
   artReady: string[];
   /** 시설과 창고: which tab is open. */
-  facilitiesTab: "facilities" | "storage";
+  facilitiesTab: "facilities" | "protection" | "storage";
+  invitePage?: number;
+  worldsPage?: number;
+  worldCreateOpen?: boolean;
+  worldDraft?: { worldName: string; nickname: string };
+  settingsSection?: "workshop" | "display" | "manage";
+  settingsNicknameDraft?: { worldId: string; value: string };
   /** 저장·백업 → 저장 공간 사용량, loaded when that screen opens. */
   storage: Loadable<StorageUsage> | null;
   /** The welcome-package sheet was put off for this session ("나중에"). */
@@ -410,6 +416,18 @@ export function createController() {
     openWorld,
     reloadWorld,
 
+    setWorldsPage(page: number) {
+      store.set({ worldsPage: Math.max(0, page) });
+    },
+
+    rememberWorldDraft(worldDraft: NonNullable<AppState["worldDraft"]>) {
+      store.remember({ worldDraft });
+    },
+
+    rememberWorldCreateOpen(worldCreateOpen: boolean) {
+      store.remember({ worldCreateOpen });
+    },
+
     navigate,
     notify: core.notify,
 
@@ -431,7 +449,24 @@ export function createController() {
     },
 
     setFacilitiesTab(tab: AppState["facilitiesTab"]) {
-      store.set({ facilitiesTab: tab });
+      store.set((state) => ({ facilitiesTab: tab, work: { ...state.work, inventoryPage: 0 } }));
+    },
+
+    setSettingsSection(settingsSection: NonNullable<AppState["settingsSection"]>) {
+      store.set({ settingsSection });
+    },
+
+    rememberSettingsNickname(worldId: string, value: string) {
+      store.remember({ settingsNicknameDraft: { worldId, value } });
+    },
+
+    async saveSettingsNickname(worldId: string, value: string) {
+      const result = await runCommand("rename-nickname", "settings.update", { playerNickname: value });
+      const draft = store.get().settingsNicknameDraft;
+      if (result && draft?.worldId === worldId && draft.value === value) {
+        store.remember({ settingsNicknameDraft: undefined });
+      }
+      return result;
     },
 
     hideStarterSheet() {
@@ -454,7 +489,10 @@ export function createController() {
         () => gameApi.createWorld({ worldId, worldName, playerNickname }),
         "세계를 만들지 못했습니다.",
       );
-      if (created) enterWorld(created, created.content);
+      if (created) {
+        store.remember({ worldDraft: undefined, worldCreateOpen: false });
+        enterWorld(created, created.content);
+      }
     },
 
     runCommand,

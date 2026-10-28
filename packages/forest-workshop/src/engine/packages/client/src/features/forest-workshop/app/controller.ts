@@ -87,6 +87,7 @@ export interface AppState {
   artReady: string[];
   /** 시설과 창고: which tab is open. */
   facilitiesTab: "facilities" | "protection" | "storage";
+  invitePage?: number;
   settingsSection?: "workshop" | "display" | "manage";
   settingsNicknameDraft?: { worldId: string; value: string };
   /** 저장·백업 → 저장 공간 사용량, loaded when that screen opens. */

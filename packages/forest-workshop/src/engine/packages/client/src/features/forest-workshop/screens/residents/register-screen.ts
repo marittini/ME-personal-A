@@ -52,34 +52,51 @@ function sourceList(register: RegisterState, controller: Controller) {
         : `${KIND_LABEL[register.kindTab]}가 아직 없어요. 엔진의 서재에서 먼저 만들어 주세요.`,
     });
   }
-  return h(
-    "ul",
-    { className: "source-list" },
-    shown.map((source: SourceEntry) =>
-      h("li", {}, [
-        h(
-          "button",
-          {
-            className: "menu-row source-row",
-            attrs: { type: "button" },
-            disabled: source.residentId !== null,
-            on: { click: () => void controller.chooseSource(source) },
-          },
-          [
-            h("span", { className: "menu-icon light" }, [ICONS.document()]),
-            h("span", { className: "menu-text" }, [
-              h("span", { className: "menu-title", text: source.name }),
-              h("span", {
-                className: "menu-detail",
-                text: source.residentId ? "이미 이 세계의 주민이에요" : source.summary || "설명 없음",
-              }),
-            ]),
-            h("span", { className: "menu-chevron" }, [source.residentId ? ICONS.check() : ICONS.chevron()]),
-          ],
-        ),
-      ]),
+  const count = Math.ceil(shown.length / 2);
+  const page = Math.min(register.sourcePage ?? 0, count - 1);
+  return h("div", { className: "source-pages" }, [
+    h(
+      "ul",
+      { className: "source-list" },
+      shown.slice(page * 2, page * 2 + 2).map((source: SourceEntry) =>
+        h("li", {}, [
+          h(
+            "button",
+            {
+              className: "menu-row source-row",
+              attrs: { type: "button" },
+              disabled: source.residentId !== null,
+              on: { click: () => void controller.chooseSource(source) },
+            },
+            [
+              h("span", { className: "menu-icon light" }, [ICONS.document()]),
+              h("span", { className: "menu-text" }, [
+                h("span", { className: "menu-title", text: source.name }),
+                h("span", {
+                  className: "menu-detail",
+                  text: source.residentId ? "이미 이 세계의 주민이에요" : source.summary || "설명 없음",
+                }),
+              ]),
+              h("span", { className: "menu-chevron" }, [source.residentId ? ICONS.check() : ICONS.chevron()]),
+            ],
+          ),
+        ]),
+      ),
     ),
-  );
+    count > 1
+      ? h("div", { className: "resident-pages" }, [
+          button("이전", () => controller.setRegisterSourcePage(page - 1), {
+            variant: "secondary",
+            disabled: page === 0,
+          }),
+          h("span", { text: `${page + 1} / ${count}`, attrs: { "aria-live": "polite" } }),
+          button("다음", () => controller.setRegisterSourcePage(page + 1), {
+            variant: "secondary",
+            disabled: page + 1 >= count,
+          }),
+        ])
+      : null,
+  ]);
 }
 
 function stepOne(register: RegisterState, controller: Controller) {
@@ -209,11 +226,16 @@ function stepTwo(register: RegisterState, state: AppState, controller: Controlle
       input: () => {
         counter.textContent = `${textarea.value.length} / ${max}`;
         controller.setDraft(textarea.value);
+        settingNext.disabled = !textarea.value.trim();
       },
     },
   });
   textarea.value = register.draft;
   const ready = register.preview?.state === "ready";
+  const panel = register.panel ?? "source";
+  const settingNext = button("다음: 주민 그림", () => controller.setRegisterPanel("image"), {
+    disabled: !register.draft.trim(),
+  });
   return [
     h("section", { className: "card selected-source" }, [
       h(
@@ -229,77 +251,98 @@ function stepTwo(register: RegisterState, state: AppState, controller: Controlle
         ],
       ),
     ]),
-    h("section", { className: "card rebuild", attrs: { "aria-labelledby": "fw-original" } }, [
-      h("h2", { className: "section-title doc", text: "원래 설정", attrs: { id: "fw-original" } }),
-      originalSetting(register.preview),
-      talentBox(state, register.preview),
-      h("label", { className: "section-title", text: "공방 세계 설정", attrs: { for: "fw-world-setting" } }),
-      h("div", { className: "textarea-wrap" }, [textarea, counter]),
-      h("div", { className: "rule-actions even" }, [
-        h(
+    panel === "source"
+      ? h("section", { className: "card rebuild", attrs: { "aria-labelledby": "fw-original" } }, [
+          h("h2", { className: "section-title doc", text: "원래 설정", attrs: { id: "fw-original" } }),
+          originalSetting(register.preview),
+          talentBox(state, register.preview),
+          button("다음: 공방 설정", () => controller.setRegisterPanel("setting"), { disabled: !ready }),
+        ])
+      : null,
+    panel === "setting"
+      ? h("section", { className: "card rebuild" }, [
+          h("label", { className: "section-title", text: "공방 세계 설정", attrs: { for: "fw-world-setting" } }),
+          h("div", { className: "textarea-wrap" }, [textarea, counter]),
+          h("div", { className: "rule-actions even" }, [
+            h(
+              "button",
+              {
+                className: "button",
+                attrs: { type: "button" },
+                on: {
+                  click: () => {
+                    textarea.focus();
+                    textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+                  },
+                },
+              },
+              [ICONS.pencil("icon"), h("span", { text: "수정" })],
+            ),
+            h(
+              "button",
+              {
+                className: "button secondary",
+                attrs: { type: "button" },
+                disabled: suggesting || !ready,
+                on: { click: () => void controller.suggestSetting() },
+              },
+              [ICONS.sparkle("icon"), h("span", { text: suggesting ? "제안 받는 중…" : "다시 제안" })],
+            ),
+          ]),
+          h("p", {
+            className: "hint",
+            text: "다시 제안은 엔진의 기본 언어 모델에 한 번 요청해요. 확정하기 전에는 저장되지 않아요.",
+          }),
+          h("div", { className: "rule-actions even" }, [
+            button("이전", () => controller.setRegisterPanel("source"), { variant: "secondary" }),
+            settingNext,
+          ]),
+        ])
+      : null,
+    panel === "image"
+      ? card(
+          "주민 그림 직접 등록",
+          [
+            imagePicker(register, controller, state.content?.residents.maxImageBytes ?? 20 * 1024 * 1024),
+            h("p", { className: "hint center" }, [ICONS.info("icon"), "원본 프로필은 바뀌지 않아요."]),
+          ],
+          { id: "fw-register-image-title" },
+        )
+      : null,
+    panel === "image"
+      ? h(
           "button",
           {
-            className: "button",
-            attrs: { type: "button" },
+            className: "button big-action",
+            attrs: { type: "button", "data-wide": "" },
+            disabled: busy || !ready,
             on: {
-              click: () => {
-                textarea.focus();
-                textarea.setSelectionRange(textarea.value.length, textarea.value.length);
-              },
+              click: () =>
+                void controller.confirmRegister(true, (id, file) => controller.uploadResidentImage(id, file)),
             },
           },
-          [ICONS.pencil("icon"), h("span", { text: "수정" })],
-        ),
-        h(
+          [
+            ICONS.leaf("icon"),
+            h("span", { text: registering ? "등록하는 중…" : uploading ? "그림 저장 중…" : "재구축 확정" }),
+            ICONS.chevron("icon"),
+          ],
+        )
+      : null,
+    panel === "image"
+      ? h(
           "button",
           {
             className: "button secondary",
-            attrs: { type: "button" },
-            disabled: suggesting || !ready,
-            on: { click: () => void controller.suggestSetting() },
+            attrs: { type: "button", "data-wide": "" },
+            disabled: busy || !ready,
+            on: { click: () => void controller.confirmRegister(false, async () => undefined) },
           },
-          [ICONS.sparkle("icon"), h("span", { text: suggesting ? "제안 받는 중…" : "다시 제안" })],
-        ),
-      ]),
-      h("p", {
-        className: "hint",
-        text: "다시 제안은 엔진의 기본 언어 모델에 한 번 요청해요. 확정하기 전에는 저장되지 않아요.",
-      }),
-    ]),
-    card(
-      "주민 그림 직접 등록",
-      [
-        imagePicker(register, controller, state.content?.residents.maxImageBytes ?? 20 * 1024 * 1024),
-        h("p", { className: "hint center" }, [ICONS.info("icon"), "원본 프로필은 바뀌지 않아요."]),
-      ],
-      { id: "fw-register-image-title" },
-    ),
-    h(
-      "button",
-      {
-        className: "button big-action",
-        attrs: { type: "button", "data-wide": "" },
-        disabled: busy || !ready,
-        on: {
-          click: () => void controller.confirmRegister(true, (id, file) => controller.uploadResidentImage(id, file)),
-        },
-      },
-      [
-        ICONS.leaf("icon"),
-        h("span", { text: registering ? "등록하는 중…" : uploading ? "그림 저장 중…" : "재구축 확정" }),
-        ICONS.chevron("icon"),
-      ],
-    ),
-    h(
-      "button",
-      {
-        className: "button secondary",
-        attrs: { type: "button", "data-wide": "" },
-        disabled: busy || !ready,
-        on: { click: () => void controller.confirmRegister(false, async () => undefined) },
-      },
-      [ICONS.clock("icon"), h("span", { text: "나중에 그림 등록" })],
-    ),
+          [ICONS.clock("icon"), h("span", { text: "나중에 그림 등록" })],
+        )
+      : null,
+    panel === "image"
+      ? button("이전: 공방 설정", () => controller.setRegisterPanel("setting"), { variant: "secondary" })
+      : null,
   ];
 }
 
@@ -307,6 +350,8 @@ function stepTwo(register: RegisterState, state: AppState, controller: Controlle
 function stepThree(register: RegisterState, world: WorldView, state: AppState, controller: Controller) {
   const residents = Object.values(world.state.residents);
   const busy = Boolean(state.busy["choose-starter"]);
+  const count = Math.max(1, residents.length);
+  const page = Math.min(register.starterPage ?? 0, count - 1);
   return [
     card(
       "시작 주민",
@@ -318,7 +363,7 @@ function stepThree(register: RegisterState, world: WorldView, state: AppState, c
         h(
           "ul",
           { className: "starter-list", attrs: { role: "radiogroup", "aria-label": "시작 주민" } },
-          residents.map((resident) =>
+          residents.slice(page, page + 1).map((resident) =>
             h("li", {}, [
               h(
                 "button",
@@ -340,6 +385,19 @@ function stepThree(register: RegisterState, world: WorldView, state: AppState, c
             ]),
           ),
         ),
+        count > 1
+          ? h("div", { className: "resident-pages" }, [
+              button("이전", () => controller.setRegisterStarterPage(page - 1), {
+                variant: "secondary",
+                disabled: page === 0,
+              }),
+              h("span", { text: `${page + 1} / ${count}`, attrs: { "aria-live": "polite" } }),
+              button("다음", () => controller.setRegisterStarterPage(page + 1), {
+                variant: "secondary",
+                disabled: page + 1 >= count,
+              }),
+            ])
+          : null,
       ],
       { id: "fw-starter-title" },
     ),
@@ -351,7 +409,16 @@ function stepThree(register: RegisterState, world: WorldView, state: AppState, c
         disabled: busy || !register.starterChoice,
         on: { click: () => void controller.confirmStarter() },
       },
-      [ICONS.house("icon"), h("span", { text: busy ? "맞이하는 중…" : "이 주민과 시작하기" })],
+      [
+        ICONS.house("icon"),
+        h("span", {
+          text: busy
+            ? "맞이하는 중…"
+            : register.starterChoice
+              ? `${world.state.residents[register.starterChoice]?.displayName ?? "선택한 주민"}과(와) 시작하기`
+              : "주민을 골라 주세요",
+        }),
+      ],
     ),
     button("주민 더 등록하기", () => controller.registerAnother(), {
       variant: "secondary",

@@ -169,6 +169,8 @@ export const RESIDENT_STYLES = `
 .step-label { font-weight: 900; font-size: calc(var(--fs) * 0.92); white-space: nowrap; }
 .step-arrow { color: var(--fw-muted); font-weight: 800; }
 .source-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.45em; }
+.source-pages { display: grid; gap: 0.5em; }
+.source-row .menu-detail { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .source-row:disabled { opacity: 0.65; cursor: default; }
 .selected-source { padding: 0.5em; }
 .selected-source .menu-row { border: 0; background: none; }

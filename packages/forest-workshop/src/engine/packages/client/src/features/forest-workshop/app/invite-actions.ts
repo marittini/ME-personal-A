@@ -8,10 +8,10 @@ import type { DrawResult } from "./types";
 export type InviteTab = "invite" | "exchange";
 
 export type InviteSheet =
-  | { kind: "invite-result"; draws: DrawResult[] }
-  | { kind: "invite-chances" }
-  | { kind: "invite-log" }
-  | { kind: "invite-wish" }
+  | { kind: "invite-result"; draws: DrawResult[]; page?: number }
+  | { kind: "invite-chances"; page?: number }
+  | { kind: "invite-log"; page?: number }
+  | { kind: "invite-wish"; page?: number }
   | { kind: "deliveries" };
 
 export function createInviteActions(core: ControllerCore) {
@@ -30,7 +30,26 @@ export function createInviteActions(core: ControllerCore) {
 
   return {
     setInviteTab(tab: InviteTab) {
-      store.set({ inviteTab: tab });
+      store.set({ inviteTab: tab, invitePage: 0 });
+    },
+
+    setInvitePage(page: number) {
+      store.set({ invitePage: Math.max(0, page) });
+    },
+
+    setInviteSheetPage(page: number) {
+      store.set((state) => {
+        const sheet = state.sheet;
+        if (
+          !sheet ||
+          (sheet.kind !== "invite-result" &&
+            sheet.kind !== "invite-chances" &&
+            sheet.kind !== "invite-log" &&
+            sheet.kind !== "invite-wish")
+        )
+          return {};
+        return { sheet: { ...sheet, page: Math.max(0, page) } };
+      });
     },
 
     async draw(count: number) {

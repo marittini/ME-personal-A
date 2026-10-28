@@ -21,6 +21,9 @@ export interface RegisterState {
   pendingImage: { file: File; previewUrl: string } | null;
   /** ③: the resident about to become the starting resident. */
   starterChoice: string | null;
+  panel?: "source" | "setting" | "image";
+  sourcePage?: number;
+  starterPage?: number;
 }
 
 export function createRegisterActions(core: ControllerCore) {
@@ -75,9 +78,12 @@ export function createRegisterActions(core: ControllerCore) {
     },
 
     loadSources,
-    setRegisterKind: (kindTab: ResidentKind) => patch({ kindTab }),
-    setRegisterQuery: (query: string) => patch({ query }),
+    setRegisterKind: (kindTab: ResidentKind) => patch({ kindTab, sourcePage: 0 }),
+    setRegisterQuery: (query: string) => patch({ query, sourcePage: 0 }),
+    setRegisterSourcePage: (sourcePage: number) => patch({ sourcePage: Math.max(0, sourcePage) }),
+    setRegisterStarterPage: (starterPage: number) => patch({ starterPage: Math.max(0, starterPage) }),
     backToSources: () => patch({ step: 1 }),
+    setRegisterPanel: (panel: NonNullable<RegisterState["panel"]>) => patch({ panel }),
     /** Typing in 공방 세계 설정: kept without a re-render (see Store.remember). */
     setDraft: (draft: string) =>
       store.remember((state) => (state.register ? { register: { ...state.register, draft } } : {})),
@@ -86,7 +92,7 @@ export function createRegisterActions(core: ControllerCore) {
     async chooseSource(source: SourceEntry) {
       const world = core.currentWorld();
       if (!world) return;
-      patch({ step: 2, selected: source, preview: { state: "loading" }, draft: "" });
+      patch({ step: 2, panel: "source", selected: source, preview: { state: "loading" }, draft: "" });
       try {
         const preview = await gameApi.previewSource(world.worldId, source.kind, source.id);
         patch({ preview: { state: "ready", value: preview } });

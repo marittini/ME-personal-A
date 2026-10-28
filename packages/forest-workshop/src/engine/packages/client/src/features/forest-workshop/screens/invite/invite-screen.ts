@@ -210,6 +210,8 @@ function exchangeBody(state: AppState, world: WorldView, content: GameContent, c
   const residents = Object.values(world.state.residents).sort(
     (a, b) => Number(a.recruited) - Number(b.recruited) || a.displayName.localeCompare(b.displayName, "ko"),
   );
+  const count = Math.max(1, Math.ceil(residents.length / 2));
+  const page = Math.min(state.invitePage ?? 0, count - 1);
   return [
     card("종표 교환", [
       h("p", { className: "exchange-summary" }, [
@@ -225,8 +227,20 @@ function exchangeBody(state: AppState, world: WorldView, content: GameContent, c
         : h(
             "ul",
             { className: "exchange-list" },
-            residents.map((resident) => exchangeRow(state, resident, content, tokens, controller)),
+            residents
+              .slice(page * 2, page * 2 + 2)
+              .map((resident) => exchangeRow(state, resident, content, tokens, controller)),
           ),
+      count > 1
+        ? h("div", { className: "resident-pages" }, [
+            button("이전", () => controller.setInvitePage(page - 1), { variant: "secondary", disabled: page === 0 }),
+            h("span", { text: `${page + 1} / ${count}`, attrs: { "aria-live": "polite" } }),
+            button("다음", () => controller.setInvitePage(page + 1), {
+              variant: "secondary",
+              disabled: page + 1 >= count,
+            }),
+          ])
+        : null,
     ]),
   ];
 }

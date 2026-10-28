@@ -68,6 +68,9 @@ try {
       rememberSettingsNickname(worldId, value) {
         window.testState.settingsNicknameDraft = { worldId, value };
       },
+      openGroundEditor() {
+        window.groundOpened = true;
+      },
       rememberGround(worldId, value) {
         window.testState.settingsGroundDraft = { worldId, value: { ...value } };
       },
@@ -102,17 +105,8 @@ try {
   await page.getByRole("button", { name: "관리", exact: true }).click();
   assert.equal(await page.getByText("저장 · 백업").isVisible(), true);
   await page.getByRole("button", { name: "내 공방", exact: true }).click();
-  await page.getByRole("button", { name: "지면 저장", exact: true }).click();
-  assert.deepEqual(await page.evaluate(() => window.savedGround), { left: 12, right: 88, top: 58, bottom: 90 });
-  await page.getByLabel("지면 왼쪽").fill("20");
-  await page.getByRole("button", { name: "표시", exact: true }).click();
-  await page.getByRole("button", { name: "내 공방", exact: true }).click();
-  assert.equal(await page.getByLabel("지면 왼쪽").inputValue(), "20");
-  await page.getByRole("button", { name: "변경 취소", exact: true }).click();
-  assert.equal(await page.getByLabel("지면 왼쪽").inputValue(), "12");
-  await page.getByLabel("지면 오른쪽").fill("70");
-  await page.getByRole("button", { name: "기본 범위", exact: true }).click();
-  assert.equal(await page.getByLabel("지면 오른쪽").inputValue(), "88");
+  await page.getByRole("button", { name: "홈에서 영역 편집", exact: true }).click();
+  assert.equal(await page.evaluate(() => window.groundOpened), true);
   console.log("Settings sections and draft preservation: OK");
 } finally {
   await browser?.close();

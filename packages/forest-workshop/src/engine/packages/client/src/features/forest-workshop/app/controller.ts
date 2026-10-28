@@ -93,6 +93,7 @@ export interface AppState {
   worldDraft?: { worldName: string; nickname: string };
   settingsSection?: "workshop" | "display" | "manage";
   settingsNicknameDraft?: { worldId: string; value: string };
+  groundEditingWorld?: string;
   settingsGroundDraft?: { worldId: string; value: WorldView["state"]["settings"]["ground"] };
   /** 저장·백업 → 저장 공간 사용량, loaded when that screen opens. */
   storage: Loadable<StorageUsage> | null;
@@ -470,6 +471,28 @@ export function createController() {
       return result;
     },
 
+    openGroundEditor() {
+      const world = currentWorld();
+      if (!world) return;
+      navigate("home");
+      store.set({
+        groundEditingWorld: world.worldId,
+        settingsGroundDraft: { worldId: world.worldId, value: { ...world.state.settings.ground } },
+      });
+    },
+
+    resetGroundEditor() {
+      const world = currentWorld();
+      if (world)
+        store.set({
+          settingsGroundDraft: { worldId: world.worldId, value: { left: 12, right: 88, top: 58, bottom: 90 } },
+        });
+    },
+
+    cancelGroundEditor() {
+      store.set({ groundEditingWorld: undefined, settingsGroundDraft: undefined });
+    },
+
     rememberGround(worldId: string, value: WorldView["state"]["settings"]["ground"]) {
       store.remember({ settingsGroundDraft: { worldId, value: { ...value } } });
     },
@@ -481,7 +504,7 @@ export function createController() {
       if (result) {
         const draft = store.get().settingsGroundDraft;
         if (draft && draft.worldId === worldId && JSON.stringify(draft.value) === JSON.stringify(sent))
-          store.remember({ settingsGroundDraft: undefined });
+          store.remember({ settingsGroundDraft: undefined, groundEditingWorld: undefined });
         core.notify("지면 설정을 저장했어요.");
       }
       return result;

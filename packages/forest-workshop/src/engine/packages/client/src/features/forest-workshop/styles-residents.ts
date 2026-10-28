@@ -93,6 +93,21 @@ export const RESIDENT_STYLES = `
 .detail-action { display: flex; align-items: center; justify-content: center; gap: 0.35em; min-height: 3em; padding: 0.3em; border-radius: 0.8em; border: var(--line-in) solid var(--ink); background: var(--fw-surface-3); color: var(--fw-text); font: inherit; font-weight: 800; cursor: pointer; }
 .detail-action .icon { color: var(--fw-wood-dark); }
 
+.ground-launch { position: absolute; right: 0.6em; bottom: 0.5em; z-index: 4; min-height: 44px; }
+.ground-overlay { position: absolute; inset: 0; z-index: 5; }
+.ground-selection { position: absolute; border: 3px dashed #fff; outline: 2px solid #286c4b; background: #4f8f6e55; }
+.ground-caption { position: absolute; top: 0; left: 50%; transform: translate(-50%, -100%); padding: 0.2em 0.4em; white-space: nowrap; color: #fff; background: #286c4b; font-size: 12px; }
+.ground-handle { position: absolute; width: 44px; height: 44px; border: 2px solid #286c4b; border-radius: 50%; color: #243d2c; background: #fff8e8; font: inherit; font-weight: 900; touch-action: none; cursor: grab; padding: 0; }
+.ground-handle.left { left: 0; top: 50%; transform: translate(-50%, -50%); }
+.ground-handle.right { right: 0; top: 50%; transform: translate(50%, -50%); }
+.ground-handle.top { left: 50%; top: 0; transform: translate(-50%, -50%); }
+.ground-handle.bottom { left: 50%; bottom: 0; transform: translate(-50%, 50%); }
+.editing-ground .resident-spot { pointer-events: none; }
+.editing-ground .resident-spot:not(.filled) { visibility: hidden; }
+.editing-ground .resident-spot.filled, .editing-ground .resident-spot.filled .figure { animation-play-state: paused; }
+.ground-actions { grid-column: 1 / -1; display: grid; gap: 0.4em; font-size: calc(var(--fs) * 0.85); }
+.ground-action-row { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 0.3em; }
+.ground-action-row .button { min-width: 0; min-height: 44px; padding: 0.3em; }
 /* Foot positions follow the saved world's ground rectangle. */
 .ground-stage .resident-spot { position: absolute; transform: translate(-50%, -100%); top: 65%; }
 .ground-stage .resident-spot.left { left: 22%; }

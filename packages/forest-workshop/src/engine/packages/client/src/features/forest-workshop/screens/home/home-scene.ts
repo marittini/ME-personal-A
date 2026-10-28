@@ -12,6 +12,8 @@ import { currentSeason } from "../../app/controller";
 import { ICONS } from "../chrome/icons";
 import { residentFigure } from "../residents/resident-figure";
 
+import { editingGround, groundOverlay } from "./ground-editor";
+
 const SVG_NS = "http://www.w3.org/2000/svg";
 
 /** The drawn stand-in for the scene, used only if the season's picture cannot load. */
@@ -120,13 +122,27 @@ export function renderHomeScene(state: AppState, controller: Controller) {
     : null;
   if (cast)
     cast.style.cssText = `left:${ground.left}%;top:${ground.top}%;width:${ground.right - ground.left}%;height:${ground.bottom - ground.top}%;right:auto;bottom:auto;padding:0;`;
-  return h("section", { className: "scene", attrs: { "aria-label": "공방 장면" } }, [
-    // Layers (plan §8): the season's workshop picture → residents (their own picture) → DOM UI.
-    assetImage(BACKGROUND_ART[currentSeason(state)].scene, { className: "scene-art", fallback: drawnBackdrop }),
-    cast,
-    // With a resident standing here the empty place speaks for itself; the caption would sit under their name.
-    residents.length === 0
-      ? h("p", { className: "scene-caption" }, [ICONS.leaf("icon tiny"), "주민을 맞이하면 이곳에 모여요"])
-      : null,
-  ]);
+  return h(
+    "section",
+    { className: `scene${editingGround(state) ? " editing-ground" : ""}`, attrs: { "aria-label": "공방 장면" } },
+    [
+      // Layers (plan §8): the season's workshop picture → residents (their own picture) → DOM UI.
+      assetImage(BACKGROUND_ART[currentSeason(state)].scene, { className: "scene-art", fallback: drawnBackdrop }),
+      cast,
+      editingGround(state)
+        ? groundOverlay(state, controller, cast)
+        : world
+          ? h("button", {
+              className: "ground-launch outline-button",
+              text: "지면 편집",
+              attrs: { type: "button" },
+              on: { click: () => controller.openGroundEditor() },
+            })
+          : null,
+      // With a resident standing here the empty place speaks for itself; the caption would sit under their name.
+      residents.length === 0
+        ? h("p", { className: "scene-caption" }, [ICONS.leaf("icon tiny"), "주민을 맞이하면 이곳에 모여요"])
+        : null,
+    ],
+  );
 }

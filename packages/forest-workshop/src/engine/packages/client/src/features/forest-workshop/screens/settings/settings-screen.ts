@@ -53,99 +53,16 @@ function nicknameRow(view: WorldView, state: AppState, controller: Controller) {
   );
 }
 
-function groundEditor(view: WorldView, state: AppState, controller: Controller) {
-  const initial = view.state.settings.ground ?? { left: 12, right: 88, top: 58, bottom: 90 };
-  const ground = {
-    ...(state.settingsGroundDraft?.worldId === view.worldId ? state.settingsGroundDraft.value : initial),
-  };
-  const controls: Array<{ key: keyof typeof ground; input: HTMLInputElement; output: HTMLOutputElement }> = [];
-  const preview = h("div", { className: "ground-preview", attrs: { "aria-label": "지면 이동영역 미리보기" } });
-  const area = h("span", { className: "ground-area" });
-  preview.append(area);
-  const draw = () => {
-    area.style.cssText = `left:${ground.left}%;top:${ground.top}%;width:${ground.right - ground.left}%;height:${ground.bottom - ground.top}%;`;
-  };
-  const rows = (
-    [
-      ["left", "왼쪽", 0, 80],
-      ["right", "오른쪽", 20, 100],
-      ["top", "위쪽", 35, 85],
-      ["bottom", "아래쪽", 55, 100],
-    ] as const
-  ).map(([key, label, min, max]) => {
-    const value = h("output", { text: String(ground[key]) });
-    const input = h("input", {
-      attrs: {
-        type: "range",
-        min: String(min),
-        max: String(max),
-        value: String(ground[key]),
-        "aria-label": `지면 ${label}`,
-      },
-      on: {
-        input: () => {
-          ground[key] = Number(input.value);
-          controller.rememberGround(view.worldId, ground);
-          value.textContent = input.value;
-          draw();
-        },
-      },
-    });
-    controls.push({ key, input, output: value });
-    return h("label", { className: "ground-row" }, [label, input, value]);
-  });
-  const restore = (next: typeof ground) => {
-    Object.assign(ground, next);
-    controller.rememberGround(view.worldId, ground);
-    controls.forEach(({ key, input, output }) => {
-      input.value = String(ground[key]);
-      output.textContent = input.value;
-    });
-    draw();
-  };
-  draw();
-  return h(
-    "form",
-    {
-      className: "ground-editor",
-      on: {
-        submit: (event) => {
-          event.preventDefault();
-          if (ground.right - ground.left < 20 || ground.bottom - ground.top < 10) {
-            controller.notify("이동영역의 너비는 20, 높이는 10 이상으로 설정해 주세요.");
-            return;
-          }
-          void controller.saveGround(ground);
-        },
-      },
-    },
-    [
-      h("h3", { text: "지면 설정" }),
-      h("div", { className: "row-actions" }, [
-        h("button", {
-          className: "outline-button",
-          text: "기본 범위",
-          attrs: { type: "button" },
-          on: { click: () => restore({ left: 12, right: 88, top: 58, bottom: 90 }) },
-        }),
-        h("button", {
-          className: "outline-button",
-          text: "변경 취소",
-          attrs: { type: "button" },
-          on: { click: () => restore(initial) },
-        }),
-      ]),
-      preview,
-      ...rows,
-      h("p", { className: "muted", text: "주민 발이 움직일 범위를 정해요. 저장 전 변경은 적용되지 않아요." }),
-      h("button", {
-        className: "button",
-        text: "지면 저장",
-        attrs: { type: "submit" },
-        disabled: Boolean(state.busy["ground-save"]),
-      }),
-    ],
-  );
+function groundEditor(_view: WorldView, _state: AppState, controller: Controller) {
+  return h("div", { className: "setting-row" }, [
+    h("span", { className: "setting-label", text: "지면 설정" }),
+    h("button", {
+      className: "button small",
+      text: "홈에서 영역 편집",
+      attrs: { type: "button" },
+      on: { click: () => controller.openGroundEditor() },
+    }),
+  ]);
 }
 
 function weatherRow(controller: Controller) {

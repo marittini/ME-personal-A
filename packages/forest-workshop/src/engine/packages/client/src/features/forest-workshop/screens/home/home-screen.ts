@@ -6,6 +6,7 @@ import { button, errorLine, h, statusLine } from "../../app/dom";
 import { card, renderFrame } from "../chrome/frame";
 import { ICONS } from "../chrome/icons";
 import type { GameContent, WorldState } from "../../app/types";
+import { editingGround, groundActions } from "./ground-editor";
 import { renderHomeScene } from "./home-scene";
 import { renderStarterKitSheet } from "./starter-kit-sheet";
 import { absenceStrip, compactWorkReport, workReportSheet } from "./work-report";
@@ -70,11 +71,13 @@ export function renderHomeScreen(state: AppState, controller: Controller) {
     backdrop: "forest",
     hero: renderHomeScene(state, controller),
     homeLayout: true,
-    body: [
-      compactWorkReport(state, world.value, controller),
-      storyCard(world.value.state, state.content, controller),
-      absenceStrip(world.value, state.content, controller),
-    ],
+    body: editingGround(state)
+      ? [groundActions(state, controller)]
+      : [
+          compactWorkReport(state, world.value, controller),
+          storyCard(world.value.state, state.content, controller),
+          absenceStrip(world.value, state.content, controller),
+        ],
     nav: true,
     sheet:
       state.sheet?.kind === "work-report"

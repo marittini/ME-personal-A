@@ -11,6 +11,8 @@ export interface ResidentsView {
   query: string;
   filter: "all" | "recruited" | "waiting";
   selectedId: string | null;
+  page?: number;
+  detailOpen?: boolean;
 }
 
 export type ResidentSheet =
@@ -60,13 +62,15 @@ export function createResidentActions(core: ControllerCore) {
   }
 
   return {
-    setResidentsTab: (tab: ResidentsView["tab"]) => patchView({ tab }),
-    setResidentsQuery: (query: string) => patchView({ query }),
-    setResidentsFilter: (filter: ResidentsView["filter"]) => patchView({ filter }),
-    selectResident: (residentId: string) => patchView({ selectedId: residentId }),
+    setResidentsTab: (tab: ResidentsView["tab"]) => patchView({ tab, page: 0 }),
+    setResidentsQuery: (query: string) => patchView({ query, page: 0 }),
+    setResidentsFilter: (filter: ResidentsView["filter"]) => patchView({ filter, page: 0 }),
+    setResidentsPage: (page: number) => patchView({ page: Math.max(0, page) }),
+    showResidentsList: () => patchView({ detailOpen: false }),
+    selectResident: (residentId: string) => patchView({ selectedId: residentId, detailOpen: true }),
 
     openResidents(residentId?: string) {
-      if (residentId) patchView({ selectedId: residentId });
+      patchView(residentId ? { selectedId: residentId, detailOpen: true } : { detailOpen: false });
       core.navigate("residents");
     },
 

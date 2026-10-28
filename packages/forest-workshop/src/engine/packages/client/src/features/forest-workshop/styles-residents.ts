@@ -63,7 +63,14 @@ export const RESIDENT_STYLES = `
 .pill-tabs.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .pill-tab { min-height: 2.6em; border-radius: 0.7em; border: var(--line-in) solid var(--ink); background: var(--fw-surface-2); color: var(--fw-text); font: inherit; font-weight: 800; cursor: pointer; }
 .pill-tab.current { background: #4f8f6e; color: #fff; box-shadow: 0 0.15em 0 var(--ink); }
-.resident-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.6em; }
+.resident-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr; gap: 0.4em; }
+.resident-list-open { display: flex; align-items: center; gap: 0.65em; width: 100%; min-height: 4.2em; padding: 0.35em 0.55em; border: var(--line-in) solid var(--ink); border-radius: 0.8em; background: var(--fw-surface-3); color: var(--fw-text); font: inherit; text-align: left; cursor: pointer; }
+.resident-list-copy { display: grid; flex: 1; min-width: 0; line-height: 1.3; }
+.resident-list-copy strong { overflow-wrap: anywhere; }
+.resident-list-copy span { color: var(--fw-muted); font-size: calc(var(--fs) * 0.85); }
+.resident-pages { display: flex; align-items: center; justify-content: space-between; gap: 0.5em; }
+.resident-pages .outline-button { min-width: 4em; }
+.residents-back { justify-self: start; }
 .resident-card { display: grid; justify-items: center; gap: 0.4em; padding: 0.5em 0.5em 0.65em; border-radius: 0.9em; border: var(--line-in) solid var(--ink); background: var(--fw-surface-3); min-width: 0; }
 .resident-card.selected { background: #eef6e2; box-shadow: 0 0 0 var(--line-in) #4f8f6e, var(--drop); }
 .resident-card-main { display: grid; justify-items: center; gap: 0.35em; width: 100%; padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; }

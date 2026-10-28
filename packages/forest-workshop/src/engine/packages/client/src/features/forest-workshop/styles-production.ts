@@ -2,6 +2,9 @@
 // storybook rules as styles.ts: flat fills, the dark-brown --ink outline, flat drops. styles.ts holds the board
 // skeleton (cards, plan rows, tables); this sheet adds what production needs on top. client-entry.ts appends it.
 export const PRODUCTION_STYLES = `
+.work-sections { display: flex; gap: 0.4em; }
+.work-sections .pill-tab { flex: 1; min-width: 0; padding: 0.25em; }
+.work-sections .pill-tab[aria-pressed="true"] { background: #4f8f6e; color: #fff; }
 /* Item tiles: the item's icon in a framed square until the illustrated item art (P5). */
 .item-tile { flex: none; display: inline-grid; place-items: center; width: 1.9em; height: 1.9em; margin-right: 0.35em; vertical-align: middle; border-radius: 0.5em; border: 2px solid var(--ink); background: var(--fw-surface-3); color: var(--ink); }
 .item-tile .icon { width: 1.25em; height: 1.25em; }

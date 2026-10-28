@@ -41,6 +41,7 @@ export function renderBottomNav(state: AppState, controller: Controller) {
           on: {
             click: () => {
               if (locked && tab.feature) controller.notifyLocked(tab.feature);
+              else if (tab.routes[0] === "residents") controller.openResidents();
               else if (tab.routes[0]) controller.navigate(tab.routes[0]);
             },
           },

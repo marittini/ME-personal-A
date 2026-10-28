@@ -15,6 +15,7 @@ export interface WorkView {
   selected: Record<string, string>;
   /** 지정 횟수: the recipe chosen for the next queue entry, per facility. */
   queueRecipe: Record<string, string>;
+  section?: "status" | "recipe" | "priority";
 }
 
 export type ProductionSheet =
@@ -129,7 +130,11 @@ export function createProductionActions(core: ControllerCore) {
     },
 
     selectFacility(facilityId: string) {
-      patchWork({ facilityId });
+      patchWork({ facilityId, section: "status" });
+    },
+
+    setWorkSection(section: NonNullable<WorkView["section"]>) {
+      patchWork({ section });
     },
 
     selectRule(facilityId: string, policyId: string) {

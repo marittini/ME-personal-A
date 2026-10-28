@@ -1,3 +1,4 @@
+import { pagePicker } from "../chrome/page-picker";
 // 주민 (board 03-1): sign + ribbon, 이름으로 찾기 with the filter button, 전체 · 캐릭터 · 페르소나 tabs, the card grid
 // (picture, name, kind tag, field tag, 영입 완료), the selected resident's detail (picture, name, tags, 패시브 · 돌파,
 // 주민 그림 · 프로필 · 관계) and 주민 불러오기.
@@ -222,25 +223,19 @@ function body(world: WorldView, state: AppState, controller: Controller) {
     h("section", { className: "card resident-board", attrs: { "aria-label": "주민 목록" } }, [
       tabs(view, controller),
       grid,
-      pageCount > 1
-        ? h("div", { className: "resident-pages", attrs: { "aria-label": "주민 목록 페이지" } }, [
-            h("button", {
-              className: "outline-button",
-              text: "이전",
-              attrs: { type: "button" },
-              disabled: page === 0,
-              on: { click: () => controller.setResidentsPage(page - 1) },
-            }),
-            h("span", { text: `${page + 1} / ${pageCount}`, attrs: { "aria-live": "polite" } }),
-            h("button", {
-              className: "outline-button",
-              text: "다음",
-              attrs: { type: "button" },
-              disabled: page + 1 === pageCount,
-              on: { click: () => controller.setResidentsPage(page + 1) },
-            }),
-          ])
-        : null,
+      pagePicker(
+        "주민 목록 고르기",
+        page,
+        Array.from(
+          { length: pageCount },
+          (_, index) =>
+            `${index + 1} · ${shown
+              .slice(index * pageSize, (index + 1) * pageSize)
+              .map((resident) => resident.displayName)
+              .join(" · ")}`,
+        ),
+        (value) => controller.setResidentsPage(value),
+      ),
     ]),
     h(
       "button",

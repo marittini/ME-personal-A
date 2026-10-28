@@ -85,7 +85,7 @@ try {
   await page.getByRole("button", { name: "변경 이력", exact: true }).click();
   assert.equal(await page.getByText("첫 기록").isVisible(), true);
   assert.equal(await page.getByText("셋째 기록").count(), 0);
-  await page.getByRole("button", { name: "다음", exact: true }).click();
+  await page.getByLabel("변경 이력 고르기").selectOption("1");
   assert.equal(await page.getByText("셋째 기록").isVisible(), true);
   await page.evaluate(() => window.testRender());
   assert.equal(await page.getByText("셋째 기록").isVisible(), true);

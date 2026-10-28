@@ -54,7 +54,7 @@ export const STORY_STYLES = `
 .story-layout .reader-foot { flex: none; display: flex; align-items: center; margin-top: 0; }
 .story-layout .reader-foot .button { flex: 1; }
 .reader-tools { gap: 0.35em; }
-.reader-tools .chip-button { min-height: 2.2em; padding: 0.1em 0.7em; }
+.reader-tools .chip-button { min-height: 44px; padding: 0.1em 0.7em; }
 .chip-button.active { background: var(--fw-accent); color: var(--fw-on-accent); }
 .story-stage { position: relative; height: clamp(15em, 52vh, 26em); border-radius: 1.1em; border: var(--line) solid var(--ink); background: #e9c995; overflow: hidden; box-shadow: var(--drop); }
 .stage-shelf { position: absolute; left: 0; right: 0; top: 0; height: 58%; border-bottom: var(--line) solid var(--ink); background: #c58a52; }

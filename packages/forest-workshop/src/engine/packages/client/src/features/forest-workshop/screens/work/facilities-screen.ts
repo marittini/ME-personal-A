@@ -8,6 +8,7 @@ import { button, h, statusLine } from "../../app/dom";
 import type { GameContent, WorldView } from "../../app/types";
 import { card, renderFrame } from "../chrome/frame";
 import { ICONS } from "../chrome/icons";
+import { pagePicker } from "../chrome/page-picker";
 import { amountPicker } from "../chrome/sheet";
 import { renderAutoSellSheet } from "./auto-sell-sheet";
 import { crewBonus, facilityOf, facilityPicture, itemName, itemTile, percent, speedPercent } from "./production-view";
@@ -156,14 +157,12 @@ function autoSellRow(world: WorldView, controller: Controller) {
   );
 }
 
-function inventoryPages(page: number, total: number, controller: Controller) {
-  const count = Math.max(1, Math.ceil(total / 3));
-  if (count === 1) return null;
-  return h("div", { className: "resident-pages", attrs: { "aria-label": "재고 페이지" } }, [
-    button("이전", () => controller.setInventoryPage(page - 1), { disabled: page === 0, variant: "secondary" }),
-    h("span", { text: `${page + 1} / ${count}`, attrs: { "aria-live": "polite" } }),
-    button("다음", () => controller.setInventoryPage(page + 1), { disabled: page + 1 >= count, variant: "secondary" }),
-  ]);
+function inventoryPages(page: number, rows: Array<{ name: string }>, controller: Controller) {
+  const groups = Array.from({ length: Math.ceil(rows.length / 3) }, (_, index) => {
+    const group = rows.slice(index * 3, index * 3 + 3);
+    return `${index + 1} · ${group.map((row) => row.name).join(" · ")}`;
+  });
+  return pagePicker("재고 목록 고르기", page, groups, (value) => controller.setInventoryPage(value));
 }
 
 function protectionCard(state: AppState, world: WorldView, content: GameContent, controller: Controller) {
@@ -221,7 +220,7 @@ function protectionCard(state: AppState, world: WorldView, content: GameContent,
               }),
             ),
           ]),
-      inventoryPages(page, rows.length, controller),
+      inventoryPages(page, rows, controller),
       autoSellRow(world, controller),
     ],
     { id: "fw-protect" },
@@ -256,7 +255,7 @@ function storageCard(state: AppState, world: WorldView, content: GameContent, co
               ]),
             ),
           ),
-      inventoryPages(page, rows.length, controller),
+      inventoryPages(page, rows, controller),
     ],
     { id: "fw-storage" },
   );
@@ -288,9 +287,6 @@ function protectSheet(state: AppState, world: WorldView, content: GameContent, c
     ]);
   });
   let page = Math.max(0, Math.min(rows.length - 1, edit?.page ?? 0));
-  const label = h("span", { attrs: { "aria-live": "polite" } });
-  const previous = button("이전", () => showPage(page - 1), { variant: "secondary" });
-  const next = button("다음", () => showPage(page + 1), { variant: "secondary" });
   const picker = h(
     "select",
     {
@@ -304,9 +300,6 @@ function protectSheet(state: AppState, world: WorldView, content: GameContent, c
     page = Math.max(0, Math.min(rows.length - 1, index));
     rows.forEach((row, rowIndex) => (row.hidden = rowIndex !== page));
     picker.value = String(page);
-    label.textContent = rows.length ? `${page + 1} / ${rows.length}` : "0 / 0";
-    previous.disabled = page === 0;
-    next.disabled = page >= rows.length - 1;
     controller.rememberProtection({ page });
   }
   showPage(page);
@@ -322,7 +315,6 @@ function protectSheet(state: AppState, world: WorldView, content: GameContent, c
         h("p", { className: "muted", text: "보호한 수량은 자동 제작과 판매에 쓰지 않아요. 0이면 보호하지 않아요." }),
         picker,
         h("ul", { className: "protect-list" }, rows),
-        h("div", { className: "resident-pages" }, [previous, label, next]),
         button("닫기", () => controller.closeSheet(), { variant: "secondary", attrs: { "data-wide": "" } }),
       ],
     ),

@@ -8,6 +8,7 @@ import { button, errorLine, h, statusLine } from "../../app/dom";
 import type { EpisodeView, GameContent, PairStoryView, WorldView } from "../../app/types";
 import { card, renderFrame } from "../chrome/frame";
 import { ICONS } from "../chrome/icons";
+import { pagePicker } from "../chrome/page-picker";
 import { featureButton } from "../chrome/locked";
 import { residentAvatar } from "../residents/resident-figure";
 import { itemName, itemTile, jobProgress } from "../work/production-view";
@@ -274,19 +275,21 @@ function completedList(state: AppState, pair: PairStoryView, controller: Control
           ]),
         ),
     ),
-    count > 1
-      ? h("div", { className: "resident-pages" }, [
-          button("이전", () => controller.setExploreHistoryPage(page - 1), {
-            variant: "secondary",
-            disabled: page === 0,
-          }),
-          h("span", { text: `${page + 1} / ${count}`, attrs: { "aria-live": "polite" } }),
-          button("다음", () => controller.setExploreHistoryPage(page + 1), {
-            variant: "secondary",
-            disabled: page + 1 >= count,
-          }),
-        ])
-      : null,
+    pagePicker(
+      "읽은 이야기 목록 고르기",
+      page,
+      Array.from(
+        { length: count },
+        (_, index) =>
+          `${index + 1} · ${pair.completed
+            .slice()
+            .reverse()
+            .slice(index * 2, index * 2 + 2)
+            .map((arc) => arc.title)
+            .join(" · ")}`,
+      ),
+      (value) => controller.setExploreHistoryPage(value),
+    ),
   ]);
 }
 

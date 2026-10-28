@@ -124,7 +124,7 @@ try {
   });
   assert.equal(await page.getByText("주민 0", { exact: true }).isVisible(), true);
   assert.equal(await page.getByText("주민 2", { exact: true }).count(), 0);
-  await page.getByRole("button", { name: "다음", exact: true }).click();
+  await page.getByLabel("교환 주민 목록 고르기").selectOption("1");
   await page.getByRole("button", { name: "주민 2와(과) 종표 교환" }).click();
   assert.equal(await page.evaluate(() => window.exchanged), "2");
   await page.evaluate(() => {
@@ -133,7 +133,7 @@ try {
   });
   const dialog = page.getByRole("dialog", { name: "희망 주민 설정" });
   assert.equal(await dialog.getByText("주민 2", { exact: true }).count(), 0);
-  await dialog.getByRole("button", { name: "다음", exact: true }).click();
+  await dialog.getByLabel("초대 목록 고르기").selectOption("1");
   await dialog.getByRole("button", { name: /주민 2/ }).click();
   assert.equal(await page.evaluate(() => window.wished), "2");
   console.log("Invite exchange pagination and target: OK");

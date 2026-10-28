@@ -7,6 +7,7 @@ import { button, h, statusLine } from "../../app/dom";
 import type { GameContent, Resident, WorldView } from "../../app/types";
 import { card, renderFrame } from "../chrome/frame";
 import { ICONS } from "../chrome/icons";
+import { pagePicker } from "../chrome/page-picker";
 import { kindTag, residentAvatar } from "../residents/resident-figure";
 import { renderInviteSheet } from "./invite-sheets";
 
@@ -231,16 +232,19 @@ function exchangeBody(state: AppState, world: WorldView, content: GameContent, c
               .slice(page * 2, page * 2 + 2)
               .map((resident) => exchangeRow(state, resident, content, tokens, controller)),
           ),
-      count > 1
-        ? h("div", { className: "resident-pages" }, [
-            button("이전", () => controller.setInvitePage(page - 1), { variant: "secondary", disabled: page === 0 }),
-            h("span", { text: `${page + 1} / ${count}`, attrs: { "aria-live": "polite" } }),
-            button("다음", () => controller.setInvitePage(page + 1), {
-              variant: "secondary",
-              disabled: page + 1 >= count,
-            }),
-          ])
-        : null,
+      pagePicker(
+        "교환 주민 목록 고르기",
+        page,
+        Array.from(
+          { length: count },
+          (_, index) =>
+            `${index + 1} · ${residents
+              .slice(index * 2, index * 2 + 2)
+              .map((resident) => resident.displayName)
+              .join(" · ")}`,
+        ),
+        (value) => controller.setInvitePage(value),
+      ),
     ]),
   ];
 }

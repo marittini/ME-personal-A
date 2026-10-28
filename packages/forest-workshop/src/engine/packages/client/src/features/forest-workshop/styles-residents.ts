@@ -108,7 +108,7 @@ export const RESIDENT_STYLES = `
 /* ── 프로필 sheet ──────────────────────────────────────────────────────── */
 .sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5em; }
 .profile-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.35em; }
-.profile-tab { min-height: 3em; padding: 0.3em; border: 2px solid var(--ink); border-radius: 0.6em; background: var(--fw-surface-3); color: var(--fw-text); font: inherit; font-weight: 700; cursor: pointer; }
+.profile-tab { min-height: 44px; padding: 0.3em; border: 2px solid var(--ink); border-radius: 0.6em; background: var(--fw-surface-3); color: var(--fw-text); font: inherit; font-weight: 700; cursor: pointer; }
 .profile-tab[aria-pressed="true"] { background: var(--fw-accent); color: var(--fw-on-accent); }
 .profile-panel[hidden] { display: none; }
 .compare { display: grid; gap: 0.6em; }

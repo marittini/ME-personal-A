@@ -118,7 +118,9 @@ try {
   });
   assert.ok(size.content <= size.available + 1, `storage should fit: ${JSON.stringify(size)}`);
   assert.equal(await page.getByText("물건 3", { exact: true }).count(), 0);
-  await page.getByRole("button", { name: "다음", exact: true }).click();
+  await page.getByLabel("재고 목록 고르기").selectOption("2");
+  assert.equal(await page.getByText("물건 6", { exact: true }).count(), 1);
+  await page.getByLabel("재고 목록 고르기").selectOption("1");
   assert.equal(await page.getByText("물건 3", { exact: true }).count(), 1);
   await page.setViewportSize({ width: 320, height: 640 });
   await page.locator("#host").evaluate((host) => {
@@ -134,7 +136,7 @@ try {
   assert.deepEqual(await page.evaluate(() => window.openedSheet), { kind: "sell", itemId: "item-3" });
   await page.getByRole("tab", { name: "재고 보호" }).click();
   assert.equal(await page.getByText("물건 0", { exact: true }).count(), 1);
-  await page.getByRole("button", { name: "다음", exact: true }).click();
+  await page.getByLabel("재고 목록 고르기").selectOption("1");
   assert.equal(await page.getByText("물건 3", { exact: true }).count(), 1);
   await page.getByRole("button", { name: "편집하기" }).click();
   await page.getByRole("button", { name: "늘리기 1", exact: true }).click();

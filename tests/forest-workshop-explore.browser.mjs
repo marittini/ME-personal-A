@@ -133,7 +133,7 @@ try {
   assert.equal(await page.getByText("기록 2", { exact: true }).isVisible(), true);
   await page.getByRole("button", { name: "1편 다시 읽기", exact: true }).click();
   assert.deepEqual(await page.evaluate(() => window.openedStory), { pairId: "a", episode: 0, storyId: "current-0" });
-  await page.getByRole("button", { name: "다음", exact: true }).click();
+  await page.getByLabel("읽은 이야기 목록 고르기").selectOption("1");
   assert.equal(await page.getByText("기록 0", { exact: true }).isVisible(), true);
   await page.getByRole("button", { name: "기록 0 1편 다시 읽기" }).click();
   assert.deepEqual(await page.evaluate(() => window.openedStory), { pairId: "a", episode: 0, storyId: "s0" });

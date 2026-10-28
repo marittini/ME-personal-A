@@ -31,7 +31,7 @@ try {
     args: ["--no-sandbox"],
   });
   const page = await browser.newPage({ viewport: { width: 390, height: 740 }, isMobile: true, hasTouch: true });
-  await page.setContent('<div id="host"></div>');
+  await page.setContent('<meta name="viewport" content="width=device-width, initial-scale=1"><div id="host"></div>');
   await page.addScriptTag({ content: await readFile(bundle, "utf8") });
   await page.evaluate(() => {
     const root = document.querySelector("#host").attachShadow({ mode: "open" });

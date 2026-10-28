@@ -1,4 +1,5 @@
 ## 0.6.6 — 2026-10-28
+- When no new report is waiting, Home shows one active production task and its remaining time; tapping it opens the work report. This is an estimated countdown.
 - Home resident name labels are hidden and existing resident pictures turn when moving. Dialogue and narration have a stable panel height; longer text is shown in consecutive parts. Emotion position uses the same setting in the picture preview and story. Actual Android layout, long text at enlarged sizes and the wider production journey remain unverified.
 
 ## 0.6.5 — 2026-10-28

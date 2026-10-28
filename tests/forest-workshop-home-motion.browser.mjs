@@ -13,7 +13,7 @@ try {
     bundle = join(temp, "bundle.js");
   await writeFile(
     entry,
-    `import { renderHomeScene } from ${JSON.stringify(join(client, "screens/home/home-scene.ts"))};\nimport { STYLES } from ${JSON.stringify(join(client, "styles.ts"))};\nimport { RESIDENT_STYLES } from ${JSON.stringify(join(client, "styles-residents.ts"))};\nwindow.renderHomeScene=renderHomeScene;window.fwStyles=STYLES+RESIDENT_STYLES;`,
+    `import { renderHomeScene } from ${JSON.stringify(join(client, "screens/home/home-scene.ts"))};\nimport { compactWorkReport } from ${JSON.stringify(join(client, "screens/home/work-report.ts"))};\nimport { STYLES } from ${JSON.stringify(join(client, "styles.ts"))};\nimport { RESIDENT_STYLES } from ${JSON.stringify(join(client, "styles-residents.ts"))};\nwindow.renderHomeScene=renderHomeScene;window.compactWorkReport=compactWorkReport;window.fwStyles=STYLES+RESIDENT_STYLES;`,
   );
   await build({
     entryPoints: [entry],
@@ -49,9 +49,28 @@ try {
       image: { current: null, placement: { scale: 100, offsetX: 0, markerHeight: 0 } },
     };
     const state = {
-      world: { state: "ready", value: { state: { progress: { starterResidentId: "r" }, residents: { r: resident } } } },
+      world: {
+        state: "ready",
+        value: {
+          state: {
+            progress: { starterResidentId: "r" },
+            residents: { r: resident },
+            production: {
+              simMs: 0,
+              reports: [],
+              reportsReadThrough: 0,
+              facilities: {
+                gather: { job: { recipeId: "berry", outputs: { berry: 1 }, startedSim: 0, endsSim: 60000 } },
+              },
+            },
+          },
+        },
+      },
+      worldReceivedAt: Date.now(),
+      content: { recipes: [{ id: "berry", name: "산딸기" }] },
       seasonChoice: "spring",
     };
+    window.homeTestState = state;
     const controller = {
       openResidents(id) {
         window.selected = id;
@@ -59,13 +78,26 @@ try {
       openSheet(sheet) {
         window.sheet = sheet;
       },
-      navigate() {},
+      selectFacility(id) {
+        window.facility = id;
+      },
+      navigate(route) {
+        window.route = route;
+      },
       openRegister() {},
     };
+    window.homeTestController = controller;
     const style = document.createElement("style");
-    style.textContent = window.fwStyles;
-    root.append(style, window.renderHomeScene(state, controller));
+    style.textContent = window.fwStyles + ".home-layout .scene { height: 300px; flex: none; }";
+    const container = document.createElement("div");
+    container.className = "home-layout";
+    container.append(
+      window.renderHomeScene(state, controller),
+      window.compactWorkReport(state, state.world.value, controller),
+    );
+    root.append(style, container);
   });
+  if (process.env.FW_HOME_SCREENSHOT) await page.screenshot({ path: process.env.FW_HOME_SCREENSHOT });
   assert.equal(await page.locator(".spot-name").count(), 0);
   const resident = page.getByRole("button", { name: "숲 주민 프로필 보기" });
   await resident.click();
@@ -75,6 +107,17 @@ try {
     await resident.locator(".figure").evaluate((node) => getComputedStyle(node).animationName),
     "fw-facing-left",
   );
+  await page.getByRole("button", { name: "산딸기 진행 중 · 작업 보고 열기" }).click();
+  assert.deepEqual(await page.evaluate(() => window.sheet), { kind: "work-report" });
+  await page.evaluate(() => {
+    const state = window.homeTestState;
+    state.world.value.state.production.reports.push({ reportId: 1 });
+    const root = document.querySelector("#host").shadowRoot;
+    root
+      .querySelector(".work-summary")
+      .replaceWith(window.compactWorkReport(state, state.world.value, window.homeTestController));
+  });
+  assert.equal(await page.getByRole("button", { name: /새 보고 1개/ }).count(), 1);
   await page.emulateMedia({ reducedMotion: "reduce" });
   assert.equal(await resident.locator(".figure").evaluate((node) => getComputedStyle(node).animationName), "none");
   assert.equal(await resident.evaluate((node) => getComputedStyle(node).animationName), "none");

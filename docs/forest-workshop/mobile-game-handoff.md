@@ -49,3 +49,9 @@
 Apple의 [게임 디자인 지침](https://developer.apple.com/design/human-interface-guidelines/designing-for-games/)과 [휴대용 게임 인터페이스 발표](https://developer.apple.com/videos/play/meet-with-apple/243/)는 읽기 쉬운 글자, 충분한 터치 영역과 다양한 화면 크기 대응을 강조한다. [놀러와 마이홈 공식 도움말](https://sites.google.com/skywalkgames.com/welcomemyhomekr/faq/%EA%B2%8C%EC%9E%84-%EA%B8%B0%ED%83%80)은 제작 도구를 누른 뒤 하단 제작 목록에서 물품을 선택하는 맥락을 설명한다. 이전 게임 플레이 캡처 분석은 game-ui-reference-2026-10-28.md에 있다. 이 자료만으로 제작 화면 전체 조작을 직접 확인했다고 주장하지 않는다.
 
 아트 CSS의 시설 버튼 자동 왼쪽 여백을 작업 화면에서 없애고 시설·재고 버튼을 중앙 정렬했다. 시설 설명 전문은 시설 상세에서 유지하고 작업 화면은 속도와 주민 상태에 집중한다. 320×640 엔진 [확인 화면](mobile-review/work-align-320-before-final.png)에서 하단 항목이 여전히 화면 밖이었고 배치 변경 글자가 두 줄로 나뉘어 글자 크기를 추가 조정했다. 이 이미지는 마지막 글자 크기 조정 이전이며 그 변경의 실엔진 검증은 아직 하지 않았다. 작업 화면 픽스처와 카탈로그 검증은 최종 변경 후 통과했다. 실제 Android 기기와 확대 글자 검증은 미완료다.
+
+### 0.6.7 호환·회귀 재검증
+
+기준 PR 브랜치 `998e72159`, 엔진 2.5.1 `b8bf28382b740cac77f310df442f98c493166f43` (번들의 기준 엔진 `7f341f9186db8e08f21d63cc47ec458deff250d5`). manifest 범위는 2.5.1 이상 4.0.0 미만이며 실제 실행 검증은 이 엔진에 한정한다. ZIP SHA-256 `08f704f247a420c3a71ef71cd6786d6c5cd1e901ccedec1c682fc9ff999c4b12`가 로컬 카탈로그와 일치하고 fixture 주입 후 엔진 health에서 활성·준비 완료를 확인했다. 정상 카탈로그 설치와 실제 기기 시험이 아니다.
+
+엄격 타입 검사, 서버 회귀 9개, 브라우저 회귀 11개, format/lint, 카탈로그 lane·locale·해시·릴리스 노트 검증이 통과했다. 최종 번들의 [320×640](mobile-review/work-verified-320.png)과 [390×740](mobile-review/work-verified-390.png)을 격리 엔진에서 확인했다. 320×640은 여전히 주요 작업과 재고 버튼이 화면 밖으로 밀려 스크롤이 필요하며, 스크롤 후 재고 보호 탭 이동을 확인했다. 390×740에서는 작업과 두 재고 버튼이 보인다. Android 설치형 웹앱, 일반 카탈로그 설치 및 기존 사용자 데이터 업데이트는 미검증이다.

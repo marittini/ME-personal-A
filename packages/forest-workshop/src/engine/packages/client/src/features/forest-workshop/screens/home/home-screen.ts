@@ -71,7 +71,7 @@ export function renderHomeScreen(state: AppState, controller: Controller) {
     hero: renderHomeScene(state, controller),
     homeLayout: true,
     body: [
-      compactWorkReport(world.value, controller),
+      compactWorkReport(state, world.value, controller),
       storyCard(world.value.state, state.content, controller),
       absenceStrip(world.value, state.content, controller),
     ],

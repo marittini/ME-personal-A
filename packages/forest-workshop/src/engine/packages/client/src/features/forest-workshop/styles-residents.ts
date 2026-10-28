@@ -97,10 +97,15 @@ export const RESIDENT_STYLES = `
 .resident-spot.filled { width: 8.5em; height: 11em; border: 0; border-radius: 0; background: none; }
 .resident-spot.filled.left { animation: fw-stroll-left 12s ease-in-out infinite; }
 .resident-spot.filled.right { animation: fw-stroll-right 15s ease-in-out infinite; }
-@keyframes fw-stroll-left { 0%, 100% { transform: translate(0, 0); } 25% { transform: translate(0.65em, -0.15em); } 50% { transform: translate(2.5em, 0); } 75% { transform: translate(0.65em, -0.15em); } }
-@keyframes fw-stroll-right { 0%, 100% { transform: translate(0, 0); } 25% { transform: translate(-0.6em, -0.15em); } 50% { transform: translate(-2.5em, 0); } 75% { transform: translate(-0.6em, -0.15em); } }
-@media (prefers-reduced-motion: reduce) { .resident-spot.filled { animation: none; } }
+@keyframes fw-stroll-left { 0%, 20%, 95%, 100% { transform: translate(0, 0); } 45%, 70% { transform: translate(2.5em, 0); } }
+@keyframes fw-stroll-right { 0%, 20%, 95%, 100% { transform: translate(0, 0); } 45%, 70% { transform: translate(-2.5em, 0); } }
+@media (prefers-reduced-motion: reduce) { .resident-spot.filled.left, .resident-spot.filled.right { animation: none; } }
+@keyframes fw-facing-left { 0%, 69% { transform: scaleX(1); } 70%, 94% { transform: scaleX(-1); } 95%, 100% { transform: scaleX(1); } }
+@keyframes fw-facing-right { 0%, 69% { transform: scaleX(-1); } 70%, 94% { transform: scaleX(1); } 95%, 100% { transform: scaleX(-1); } }
 .resident-spot.filled .figure { position: absolute; inset: 0; }
+.resident-spot.filled.left .figure { animation: fw-facing-left 12s step-end infinite; }
+.resident-spot.filled.right .figure { animation: fw-facing-right 15s step-end infinite; }
+@media (prefers-reduced-motion: reduce) { .resident-spot.filled.left .figure, .resident-spot.filled.right .figure { animation: none; } }
 .spot-name { position: absolute; left: 50%; bottom: -0.4em; transform: translateX(-50%); padding: 0.05em 0.6em; border-radius: 999px; border: var(--line-in) solid var(--ink); background: var(--fw-surface-3); font-size: calc(var(--fs) * 0.78); font-weight: 800; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
 .resident-spot.invite { border-style: solid; background: var(--fw-surface-3); color: var(--fw-accent); box-shadow: var(--drop); }
 .resident-spot.invite .spot-text { margin: 0 0.4em 0.6em; text-align: center; }

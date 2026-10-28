@@ -7,7 +7,7 @@ import { button, h } from "../../app/dom";
 import type { GameContent, ProductionReport, WorldView } from "../../app/types";
 import { card } from "../chrome/frame";
 import { ICONS } from "../chrome/icons";
-import { formatHours, itemName, itemTile } from "../work/production-view";
+import { formatHours, itemName, itemTile, jobProgress, recipeOf } from "../work/production-view";
 
 function unread(world: WorldView): ProductionReport[] {
   const through = world.state.production.reportsReadThrough;
@@ -30,22 +30,30 @@ function headline(world: WorldView): string {
 }
 
 /** A compact entry to the existing full report, sized for the home viewport. */
-export function compactWorkReport(world: WorldView, controller: Controller) {
+export function compactWorkReport(state: AppState, world: WorldView, controller: Controller) {
   const count = unread(world).length;
+  const active = Object.entries(world.state.production.facilities).find(([, facility]) => facility.job);
+  const job = active?.[1].job;
+  const recipe = job ? recipeOf(state.content, job.recipeId) : null;
+  const showWork = Boolean(job && active && !count);
   return h(
     "button",
     {
       className: "home-summary work-summary",
       attrs: {
         type: "button",
-        "aria-label": `${headline(world)} · ${count ? `새 보고 ${count}개` : "새 보고 없음"} · 작업 보고 열기`,
+        "aria-label": showWork
+          ? `${recipe?.name ?? "작업"} 진행 중 · 작업 보고 열기`
+          : `${headline(world)} · ${count ? `새 보고 ${count}개` : "새 보고 없음"} · 작업 보고 열기`,
       },
       on: { click: () => controller.openSheet({ kind: "work-report" }) },
     },
     [
       h("span", { className: "home-summary-copy" }, [
-        h("strong", { text: headline(world) }),
-        h("span", { text: count ? `새 작업 보고 ${count}개` : "작업 보고 보기" }),
+        h("strong", { text: showWork ? `${recipe?.name ?? "작업"} 진행 중` : headline(world) }),
+        showWork && job
+          ? h("span", {}, ["남은 시간 ", jobProgress(state, world, job).countdown])
+          : h("span", { text: count ? `새 작업 보고 ${count}개` : "작업 보고 보기" }),
       ]),
       ICONS.chevron("icon"),
     ],

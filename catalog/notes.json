@@ -4,6 +4,12 @@
     "forest-workshop": {
       "versions": [
         {
+          "version": "0.6.6",
+          "date": "2026-10-28",
+          "notes": "- Exploration episodes can be selected directly to inspect their status and requirements; today’s delivery board shows three selectable requests and the chosen request’s usable and protected stock.\n- When no new report is waiting, Home shows one active production task and its remaining time; tapping it opens the work report. This is an estimated countdown.\n- Home resident name labels are hidden and existing resident pictures turn when moving. Dialogue and narration have a stable panel height; longer text is shown in consecutive parts. Emotion position uses the same setting in the picture preview and story. Actual Android layout, long text at enlarged sizes and the wider production journey remain unverified.",
+          "highlight": false
+        },
+        {
           "version": "0.6.5",
           "date": "2026-10-28",
           "notes": "- Resident, storage, invite and story-history lists allow direct group selection; profile history uses the same control. Small ordering buttons have larger touch targets and keyboard focus is visible.\n- Work screens offer direct product selection, draft application, recommendations and facility upgrades; queue and priority selection no longer require paging. Home residents move slightly within their spots.\n- Read episodes appear in history immediately. The reader has a compact dialogue panel, placement-aware emotion marks and direct answers for shorter questions.\n- Completed stories no longer silently discard older arcs at 50. The 1,000-arc per-pair limit and 1,000-scene backup limit remain; older discarded progress is not recovered. Older package versions cannot load worlds with more than 50 completed arcs.\n- Android installation and device layout remain unverified; at 320×640 the work screen can require vertical scrolling. Home movement is not a walking animation.",

@@ -78,7 +78,7 @@ function spot(side: "left" | "right", resident: Resident | null, world: WorldSta
           },
         },
       },
-      [residentFigure(resident), h("span", { className: "spot-name", text: resident.displayName })],
+      [residentFigure(resident)],
     );
   }
   if (world.progress.starterResidentId === null && side === "left") {

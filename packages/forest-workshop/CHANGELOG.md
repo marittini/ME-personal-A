@@ -1,3 +1,8 @@
+## 0.6.6 — 2026-10-28
+- Exploration episodes can be selected directly to inspect their status and requirements; today’s delivery board shows three selectable requests and the chosen request’s usable and protected stock.
+- When no new report is waiting, Home shows one active production task and its remaining time; tapping it opens the work report. This is an estimated countdown.
+- Home resident name labels are hidden and existing resident pictures turn when moving. Dialogue and narration have a stable panel height; longer text is shown in consecutive parts. Emotion position uses the same setting in the picture preview and story. Actual Android layout, long text at enlarged sizes and the wider production journey remain unverified.
+
 ## 0.6.5 — 2026-10-28
 - Resident, storage, invite and story-history lists allow direct group selection; profile history uses the same control. Small ordering buttons have larger touch targets and keyboard focus is visible.
 - Work screens offer direct product selection, draft application, recommendations and facility upgrades; queue and priority selection no longer require paging. Home residents move slightly within their spots.

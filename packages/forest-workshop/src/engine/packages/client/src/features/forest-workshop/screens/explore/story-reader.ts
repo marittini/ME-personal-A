@@ -7,13 +7,14 @@
 import { currentSeason, type AppState, type Controller } from "../../app/controller";
 import { BACKGROUND_ART, EMOTION_ART, assetImage, type Season } from "../../app/assets";
 import { button, h } from "../../app/dom";
+import { storyTextPages } from "../../app/story-pages";
 
 import type { Emotion, Segment, StoryDocument, WorldView } from "../../app/types";
 import type { ReaderState } from "../../app/story-actions";
 import { renderFrame } from "../chrome/frame";
 import { ICONS } from "../chrome/icons";
 import { sheetDialog } from "../chrome/sheet";
-import { residentFigure } from "../residents/resident-figure";
+import { emotionPosition, residentFigure } from "../residents/resident-figure";
 
 /** Scenes written before prompt v2 carry the earlier emotion names; they show as the nearest of the six arts. */
 const LEGACY: Record<string, Emotion> = {
@@ -66,12 +67,9 @@ function stage(season: Season, world: WorldView, story: StoryDocument | null, cu
           mark,
           residentFigure(resident),
         ]);
-        const placement = resident.image.placement;
-        spot.style.setProperty(
-          "--mark-bottom",
-          `${Math.max(15, Math.min(82, 4 + placement.scale * 0.9 - 12 + placement.markerHeight * 0.4))}%`,
-        );
-        spot.style.setProperty("--mark-left", `${Math.max(10, Math.min(90, 50 + placement.offsetX * 0.5))}%`);
+        const position = emotionPosition(resident.image.placement);
+        spot.style.setProperty("--mark-bottom", `${position.bottom}%`);
+        spot.style.setProperty("--mark-left", `${position.left}%`);
         return spot;
       }),
     ),
@@ -149,7 +147,10 @@ function dialogue(state: AppState, world: WorldView, reader: ReaderState, contro
     segment.kind === "line"
       ? h("span", { className: "speaker-tag" }, [ICONS.leaf("icon tiny"), nameOf(world, segment.speakerId)])
       : null,
-    h("p", { className: segment.kind === "line" ? "line" : "narration", text: segment.text }),
+    h("p", {
+      className: segment.kind === "line" ? "line" : "narration",
+      text: storyTextPages(segment)[reader.textPage ?? 0] ?? segment.text,
+    }),
   ]);
 }
 
@@ -209,6 +210,8 @@ export function renderStoryReader(state: AppState, controller: Controller) {
   const story = reader.story.state === "ready" ? reader.story.value : null;
   const total = story?.segments.length ?? 0;
   const current = story?.segments[reader.index];
+  const textPages = storyTextPages(current);
+  const lastTextPage = (reader.textPage ?? 0) >= textPages.length - 1;
   const waitingAnswer =
     current?.kind === "choice" && !findProgress(world, reader)?.choice && findProgress(world, reader)?.state !== "read";
   const counters = h("div", { className: "resources reader-tools" }, [
@@ -250,9 +253,9 @@ export function renderStoryReader(state: AppState, controller: Controller) {
         ? h("div", { className: "reader-foot" }, [
             h("span", { className: "count-pill", text: `${reader.index + 1} / ${total}` }),
             button(
-              reader.index === total - 1 ? "다 읽고 보관" : "계속",
+              reader.index === total - 1 && lastTextPage ? "다 읽고 보관" : "계속",
               () => {
-                if (reader.index === total - 1) void controller.finishStory();
+                if (reader.index === total - 1 && lastTextPage) void controller.finishStory();
                 else controller.advanceStory();
               },
               {

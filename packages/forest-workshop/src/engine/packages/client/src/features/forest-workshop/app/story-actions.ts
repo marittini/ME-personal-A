@@ -2,6 +2,7 @@
 // cancel, opening a scene (written on first open: a language-model call), stepping through it, the player's one
 // answer, and 다 읽음. The server decides every condition, time and change; the client shows what it was told.
 import { gameApi } from "./api";
+import { storyTextPages } from "./story-pages";
 import type { ControllerCore, Route } from "./controller";
 import type { Loadable } from "./dom";
 import { errorCode, errorMessage } from "./host-api";
@@ -15,6 +16,7 @@ export interface ExploreView {
   overview: Loadable<StoryOverview> | null;
   section?: "journey" | "episode" | "history";
   historyPage?: number;
+  selectedEpisode?: number;
 }
 
 export interface ReaderState {
@@ -24,6 +26,7 @@ export interface ReaderState {
   story: Loadable<StoryDocument>;
   /** Segments shown so far (index of the current one). */
   index: number;
+  textPage?: number;
   auto: boolean;
   backlog: boolean;
   choiceView?: "question" | "answers";
@@ -108,9 +111,14 @@ export function createStoryActions(core: ControllerCore) {
     if (!reader) return;
     const list = segments();
     const current = list[reader.index];
+    const pages = storyTextPages(current);
+    if ((reader.textPage ?? 0) + 1 < pages.length) {
+      patchReader({ textPage: (reader.textPage ?? 0) + 1 });
+      return;
+    }
     // A question waits for the answer (once); after it, or when re-reading, it steps on.
     if (current?.kind === "choice" && !answered()) return;
-    if (reader.index < list.length) patchReader({ index: reader.index + 1, choiceView: "question" });
+    if (reader.index < list.length) patchReader({ index: reader.index + 1, textPage: 0, choiceView: "question" });
     if (reader.index + 1 >= list.length) stopAuto();
   }
 
@@ -160,7 +168,11 @@ export function createStoryActions(core: ControllerCore) {
     },
 
     selectStoryPair(pairId: string) {
-      patchExplore({ pairId, historyPage: 0 });
+      patchExplore({ pairId, historyPage: 0, selectedEpisode: undefined });
+    },
+
+    selectStoryEpisode(selectedEpisode: number) {
+      patchExplore({ selectedEpisode });
     },
 
     async depart(pairId: string, episode: number) {

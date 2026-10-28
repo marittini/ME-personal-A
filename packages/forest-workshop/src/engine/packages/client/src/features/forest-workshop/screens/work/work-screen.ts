@@ -141,6 +141,7 @@ function unlockCard(
 }
 
 function facilityCard(
+  state: AppState,
   content: GameContent,
   world: WorldView,
   facilityId: string,
@@ -149,6 +150,8 @@ function facilityCard(
 ) {
   const definition = facilityOf(content, facilityId);
   const bonus = crewBonus(content, world.state, facilityId);
+  const cost =
+    facility.level < content.production.maxLevel ? content.production.upgradeCosts[facility.level - 1] : undefined;
   return h("div", { className: "facility-entry" }, [
     h(
       "button",
@@ -172,6 +175,15 @@ function facilityCard(
         ]),
       ],
     ),
+    cost !== undefined
+      ? h("button", {
+          className: "outline-button",
+          text: `${cost.toLocaleString("ko-KR")} G · 강화`,
+          attrs: { type: "button", "aria-label": `${definition?.name ?? "시설"} 강화 ${cost} 골드` },
+          disabled: world.state.wallet.gold < cost || Boolean(state.busy[`upgrade:${facilityId}:${facility.level}`]),
+          on: { click: () => void controller.upgradeFacility(facilityId, facility.level) },
+        })
+      : null,
     h(
       "button",
       {
@@ -299,7 +311,6 @@ function materialsBlock(content: GameContent, world: WorldView, rule: Rule | und
 }
 
 function priorityList(
-  state: AppState,
   content: GameContent,
   facilityId: string,
   rules: Rule[],
@@ -308,8 +319,22 @@ function priorityList(
 ) {
   const used = new Set(rules.map((rule) => rule.recipeId));
   const addable = content.recipes.filter((recipe) => recipe.facilityId === facilityId && !used.has(recipe.id));
-  const count = Math.max(1, Math.ceil(rules.length / 2));
-  const page = Math.min(state.work.priorityPage ?? 0, count - 1);
+  const selectedRule = rules.find((rule) => rule.policyId === selectedId) ?? rules[0];
+  const prioritySelect = h(
+    "select",
+    {
+      className: "input",
+      attrs: { "aria-label": "순서와 켜짐을 바꿀 생산 물품" },
+      on: { change: () => controller.selectRule(facilityId, prioritySelect.value) },
+    },
+    rules.map((rule, index) =>
+      h("option", {
+        text: `${index + 1}. ${recipeOf(content, rule.recipeId)?.name ?? rule.recipeId}${rule.enabled ? "" : " (꺼짐)"}`,
+        attrs: { value: rule.policyId },
+      }),
+    ),
+  );
+  prioritySelect.value = selectedRule?.policyId ?? "";
   const addSelect = h(
     "select",
     { className: "input", attrs: { "aria-label": "추가할 제작법" } },
@@ -320,87 +345,71 @@ function priorityList(
       "제작 우선순위 ",
       h("small", { text: "(위의 아이템부터 순서대로 제작해요)" }),
     ]),
-    ...rules.slice(page * 2, page * 2 + 2).map((rule, offset) => {
-      const index = page * 2 + offset;
-      const recipe = recipeOf(content, rule.recipeId);
-      const output = recipe ? Object.keys(recipe.outputs)[0]! : "";
-      return h(
-        "div",
-        { className: `priority-row${rule.policyId === selectedId ? " selected" : ""}${rule.enabled ? "" : " off"}` },
-        [
-          h("span", { className: "rank", text: String(index + 1) }),
-          h(
-            "button",
-            {
-              className: "priority-main",
-              attrs: { type: "button", "aria-pressed": rule.policyId === selectedId ? "true" : "false" },
-              on: {
-                click: () => {
-                  controller.selectRule(facilityId, rule.policyId);
-                  controller.setWorkSection("recipe");
+    rules.length ? prioritySelect : null,
+    ...rules
+      .filter((rule) => rule === selectedRule)
+      .map((rule) => {
+        const index = rules.indexOf(rule);
+        const recipe = recipeOf(content, rule.recipeId);
+        const output = recipe ? Object.keys(recipe.outputs)[0]! : "";
+        return h(
+          "div",
+          { className: `priority-row${rule.policyId === selectedId ? " selected" : ""}${rule.enabled ? "" : " off"}` },
+          [
+            h("span", { className: "rank", text: String(index + 1) }),
+            h(
+              "button",
+              {
+                className: "priority-main",
+                attrs: { type: "button", "aria-pressed": rule.policyId === selectedId ? "true" : "false" },
+                on: {
+                  click: () => {
+                    controller.selectRule(facilityId, rule.policyId);
+                    controller.setWorkSection("recipe");
+                  },
                 },
               },
-            },
-            [
-              itemTile(output),
-              h("span", { className: "priority-name", text: recipe?.name ?? rule.recipeId }),
-              h("small", { className: "muted", text: `목표 ${rule.targetStock}` }),
-            ],
-          ),
-          h("button", {
-            className: `chip-toggle${rule.enabled ? " on" : ""}`,
-            text: rule.enabled ? "켜짐" : "꺼짐",
-            attrs: {
-              type: "button",
-              "aria-pressed": rule.enabled ? "true" : "false",
-              "aria-label": `${recipe?.name ?? ""} ${rule.enabled ? "끄기" : "켜기"}`,
-            },
-            on: { click: () => controller.toggleRule(facilityId, rule.policyId) },
-          }),
-          h("span", { className: "order-buttons" }, [
-            h(
-              "button",
-              {
-                className: "mini",
-                attrs: { type: "button", "aria-label": "위로" },
-                disabled: index === 0,
-                on: { click: () => controller.moveRule(facilityId, rule.policyId, -1) },
-              },
-              [ICONS.up("icon")],
+              [
+                itemTile(output),
+                h("span", { className: "priority-name", text: recipe?.name ?? rule.recipeId }),
+                h("small", { className: "muted", text: `목표 ${rule.targetStock}` }),
+              ],
             ),
-            h(
-              "button",
-              {
-                className: "mini",
-                attrs: { type: "button", "aria-label": "아래로" },
-                disabled: index === rules.length - 1,
-                on: { click: () => controller.moveRule(facilityId, rule.policyId, 1) },
+            h("button", {
+              className: `chip-toggle${rule.enabled ? " on" : ""}`,
+              text: rule.enabled ? "켜짐" : "꺼짐",
+              attrs: {
+                type: "button",
+                "aria-pressed": rule.enabled ? "true" : "false",
+                "aria-label": `${recipe?.name ?? ""} ${rule.enabled ? "끄기" : "켜기"}`,
               },
-              [ICONS.down("icon")],
-            ),
-          ]),
-        ],
-      );
-    }),
-    count > 1
-      ? h("div", { className: "resident-pages" }, [
-          h("button", {
-            className: "outline-button",
-            text: "이전",
-            attrs: { type: "button" },
-            disabled: page === 0,
-            on: { click: () => controller.setPriorityPage(page - 1) },
-          }),
-          h("span", { text: `${page + 1} / ${count}`, attrs: { "aria-live": "polite" } }),
-          h("button", {
-            className: "outline-button",
-            text: "다음",
-            attrs: { type: "button" },
-            disabled: page + 1 >= count,
-            on: { click: () => controller.setPriorityPage(page + 1) },
-          }),
-        ])
-      : null,
+              on: { click: () => controller.toggleRule(facilityId, rule.policyId) },
+            }),
+            h("span", { className: "order-buttons" }, [
+              h(
+                "button",
+                {
+                  className: "mini",
+                  attrs: { type: "button", "aria-label": "위로" },
+                  disabled: index === 0,
+                  on: { click: () => controller.moveRule(facilityId, rule.policyId, -1) },
+                },
+                [ICONS.up("icon")],
+              ),
+              h(
+                "button",
+                {
+                  className: "mini",
+                  attrs: { type: "button", "aria-label": "아래로" },
+                  disabled: index === rules.length - 1,
+                  on: { click: () => controller.moveRule(facilityId, rule.policyId, 1) },
+                },
+                [ICONS.down("icon")],
+              ),
+            ]),
+          ],
+        );
+      }),
     addable.length
       ? h("div", { className: "add-rules" }, [
           addSelect,
@@ -456,6 +465,21 @@ function body(state: AppState, content: GameContent, world: WorldView, controlle
   const auto = facility.mode === "auto";
   const crew = crewBonus(content, world.state, facilityId);
   const section = !auto && state.work.section === "priority" ? "recipe" : (state.work.section ?? "status");
+  const ruleSelect = h(
+    "select",
+    {
+      className: "input work-recipe-select",
+      attrs: { "aria-label": "생산 물품 고르기" },
+      on: { change: () => controller.selectRule(facilityId, ruleSelect.value) },
+    },
+    rules.map((rule) =>
+      h("option", {
+        text: `${recipeOf(content, rule.recipeId)?.name ?? rule.recipeId}${rule.enabled ? "" : " (꺼짐)"}`,
+        attrs: { value: rule.policyId },
+      }),
+    ),
+  );
+  ruleSelect.value = selected?.policyId ?? "";
   const sections = auto
     ? ([
         ["status", "현재 작업"],
@@ -486,7 +510,7 @@ function body(state: AppState, content: GameContent, world: WorldView, controlle
         ...(section === "status"
           ? [
               modeToggle(state, facilityId, facility, controller),
-              facilityCard(content, world, facilityId, facility, controller),
+              facilityCard(state, content, world, facilityId, facility, controller),
               currentWork(state, content, world, facility),
               h("p", { className: "hint center" }, [
                 ICONS.info("icon"),
@@ -496,6 +520,7 @@ function body(state: AppState, content: GameContent, world: WorldView, controlle
           : []),
         ...(section === "recipe" && auto
           ? [
+              rules.length ? ruleSelect : null,
               recipeCard(content, selected, facility.level, crew),
               selected ? targetRow(content, world, facilityId, selected, controller) : null,
               materialsBlock(content, world, selected),
@@ -504,7 +529,7 @@ function body(state: AppState, content: GameContent, world: WorldView, controlle
             ? [queuePanel(state, content, world, facilityId, controller)]
             : []),
         section === "priority" && auto
-          ? priorityList(state, content, facilityId, rules, selected?.policyId, controller)
+          ? priorityList(content, facilityId, rules, selected?.policyId, controller)
           : null,
         section === "status" && auto && facility.queue.length
           ? h("p", {
@@ -514,9 +539,16 @@ function body(state: AppState, content: GameContent, world: WorldView, controlle
           : null,
         auto && dirty
           ? h("p", { className: "draft-note" }, [
-              section === "priority"
-                ? "바꾼 규칙은 아직 적용 전이에요. "
-                : "바꾼 규칙은 아직 적용 전이에요. ‘순서·적용’에서 적용해 주세요. ",
+              "적용 전",
+              section !== "priority"
+                ? h("button", {
+                    className: "link-button",
+                    text: applying ? "적용 중…" : "적용하기",
+                    disabled: applying,
+                    attrs: { type: "button" },
+                    on: { click: () => void controller.applyRules(facilityId) },
+                  })
+                : null,
               h("button", {
                 className: "link-button",
                 text: "되돌리기",
@@ -528,27 +560,31 @@ function body(state: AppState, content: GameContent, world: WorldView, controlle
       ],
       { className: "work-card" },
     ),
-    auto && section === "priority"
+    auto && (section === "priority" || (section === "status" && !dirty))
       ? h("div", { className: "rule-actions" }, [
-          h(
-            "button",
-            {
-              className: "button wide-main",
-              attrs: { type: "button" },
-              disabled: !dirty || applying,
-              on: { click: () => void controller.applyRules(facilityId) },
-            },
-            [h("span", { text: applying ? "적용하는 중…" : dirty ? "운영 규칙 적용" : "적용됨" })],
-          ),
-          h(
-            "button",
-            {
-              className: "button secondary",
-              attrs: { type: "button" },
-              on: { click: () => controller.recommendRules(facilityId) },
-            },
-            [ICONS.gear("icon"), h("span", { text: "추천 설정" })],
-          ),
+          section === "priority"
+            ? h(
+                "button",
+                {
+                  className: "button wide-main",
+                  attrs: { type: "button" },
+                  disabled: !dirty || applying,
+                  on: { click: () => void controller.applyRules(facilityId) },
+                },
+                [h("span", { text: applying ? "적용하는 중…" : dirty ? "운영 규칙 적용" : "적용됨" })],
+              )
+            : null,
+          section === "priority" || (section === "status" && !dirty)
+            ? h(
+                "button",
+                {
+                  className: "button secondary",
+                  attrs: { type: "button" },
+                  on: { click: () => controller.recommendRules(facilityId) },
+                },
+                [ICONS.gear("icon"), h("span", { text: "추천 설정" })],
+              )
+            : null,
         ])
       : null,
   ];

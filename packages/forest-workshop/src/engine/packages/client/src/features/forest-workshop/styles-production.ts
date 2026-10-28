@@ -16,6 +16,10 @@ export const PRODUCTION_STYLES = `
 .item-berry-jam { background: #f9c6cf; color: #a3262a; }
 
 /* 공방 작업 */
+.facility-entry { display: grid; grid-template-columns: 1fr 1fr; }
+.facility-entry .facility-open { grid-column: 1 / -1; min-width: 0; }
+.facility-entry .outline-button { min-width: 0; }
+
 .field-tab.current { background: var(--fw-accent); color: var(--fw-on-accent); }
 .field-tab.current .field-glyph { color: var(--fw-on-accent); }
 .segmented > .segment { border: 0; background: none; color: var(--fw-text); font: inherit; font-weight: 900; cursor: pointer; }

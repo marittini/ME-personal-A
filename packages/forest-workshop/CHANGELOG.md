@@ -1,4 +1,5 @@
 ## 0.6.7 — 2026-10-28
+- Home opens the active facility directly when showing an active job; unread reports still open the report.
 - Removed the duplicate exchange shortcut from the invite tab and the in-game fullscreen button. Delivery list responses are ignored after changing worlds or starting a newer request. Mobile game layout and actual Android installation remain under development.
 
 ## 0.6.6 — 2026-10-28

@@ -43,10 +43,17 @@ export function compactWorkReport(state: AppState, world: WorldView, controller:
       attrs: {
         type: "button",
         "aria-label": showWork
-          ? `${recipe?.name ?? "작업"} 진행 중 · 작업 보고 열기`
+          ? `${recipe?.name ?? "작업"} 진행 중 · 작업 관리 열기`
           : `${headline(world)} · ${count ? `새 보고 ${count}개` : "새 보고 없음"} · 작업 보고 열기`,
       },
-      on: { click: () => controller.openSheet({ kind: "work-report" }) },
+      on: {
+        click: () => {
+          if (showWork && active) {
+            controller.selectFacility(active[0]);
+            controller.navigate("work");
+          } else controller.openSheet({ kind: "work-report" });
+        },
+      },
     },
     [
       h("span", { className: "home-summary-copy" }, [

@@ -168,7 +168,15 @@ export function renderProfileSheet(world: WorldView, state: AppState, controller
               className: "outline-button",
               text: "관계 보기",
               attrs: { type: "button" },
-              on: { click: () => controller.openRelations(residentId) },
+              on: {
+                click: () => {
+                  if (textarea.value !== resident.worldSetting) {
+                    controller.notify("수정한 공방 설정을 저장한 뒤 관계를 볼 수 있어요.");
+                    return;
+                  }
+                  controller.openRelations(residentId);
+                },
+              },
             }),
           ]),
         ]),

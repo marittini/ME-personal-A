@@ -58,6 +58,9 @@ try {
       rememberProfile(patch) {
         Object.assign(window.testState.sheet, patch);
       },
+      notify(message) {
+        window.profileNotice = message;
+      },
       openRelations(id) {
         window.related = id;
       },
@@ -83,6 +86,8 @@ try {
   await page.getByRole("button", { name: "관계 보기" }).click();
   assert.equal(await page.evaluate(() => window.related), "r");
   await page.locator("#host").locator("textarea").fill("새 설정");
+  await page.getByRole("button", { name: "관계 보기" }).click();
+  assert.match(await page.evaluate(() => window.profileNotice), /저장/);
   await page.getByRole("button", { name: "원래 설정", exact: true }).click();
   assert.equal(await page.getByText("원본 설명").isVisible(), true);
   await page.evaluate(() => window.testRender());

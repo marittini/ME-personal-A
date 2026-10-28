@@ -1,3 +1,6 @@
+## 0.6.3 — 2026-10-28
+- Home includes the latest layout and visual improvements. Other screens and the actual mobile layout have not yet been verified.
+
 ## 0.6.2 — 2026-10-27
 - The workshop now has its own art: a picture for every item and facility, the season's backdrop and workshop scene, emotion marks in stories, the wooden title sign, and paper, wood and button panels. A picture that cannot load falls back to the drawn look.
 - 설정 → 표시 → 계절: follow today's date or pick spring, summer, autumn or winter. Only the current season's pictures are loaded; the season changes the look only.

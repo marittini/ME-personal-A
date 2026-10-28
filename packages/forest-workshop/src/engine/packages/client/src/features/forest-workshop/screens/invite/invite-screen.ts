@@ -82,8 +82,6 @@ function inviteBody(state: AppState, world: WorldView, content: GameContent, con
   const wish = world.state.invite.wishResidentId ? world.state.residents[world.state.invite.wishResidentId] : null;
   const waiting = residents.filter((resident) => !resident.recruited).length;
   const guaranteeIn = content.invite.guaranteeAfter - world.state.invite.sinceNew + 1;
-  const tokens = world.state.wallet.tokens;
-  const need = content.invite.tokensPerExchange;
   return [
     card(null, [
       h(
@@ -149,28 +147,6 @@ function inviteBody(state: AppState, world: WorldView, content: GameContent, con
           [ICONS.document("icon"), h("span", { text: "초대 기록" })],
         ),
       ]),
-    ]),
-    card(null, [
-      h(
-        "button",
-        {
-          className: "exchange-card",
-          attrs: { type: "button", "aria-label": `종표 교환 ${tokens} / ${need} — 원하는 주민 선택` },
-          on: { click: () => controller.setInviteTab("exchange") },
-        },
-        [
-          h("span", { className: "token-coin big" }, [ICONS.leaf("icon big")]),
-          h("span", { className: "exchange-count" }, [
-            h("strong", { text: "종표 교환" }),
-            h("span", { className: "count-pill", text: `${tokens} / ${need}` }),
-          ]),
-          h("span", { className: "exchange-text" }, [
-            h("strong", {}, [ICONS.people("icon"), " 원하는 주민 선택"]),
-            h("span", { className: "muted", text: "최대 돌파 이후 중복은 종표로." }),
-          ]),
-          h("span", { className: "menu-chevron" }, [ICONS.chevron()]),
-        ],
-      ),
     ]),
   ];
 }

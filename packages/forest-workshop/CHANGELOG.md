@@ -1,3 +1,6 @@
+## 0.6.7 — 2026-10-28
+- Removed the duplicate exchange shortcut from the invite tab and the in-game fullscreen button. Delivery list responses are ignored after changing worlds or starting a newer request. Mobile game layout and actual Android installation remain under development.
+
 ## 0.6.6 — 2026-10-28
 - Exploration episodes can be selected directly to inspect their status and requirements; today’s delivery board shows three selectable requests and the chosen request’s usable and protected stock.
 - When no new report is waiting, Home shows one active production task and its remaining time; tapping it opens the work report. This is an estimated countdown.

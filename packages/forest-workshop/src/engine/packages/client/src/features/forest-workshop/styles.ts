@@ -413,7 +413,6 @@ button.counter { cursor: pointer; }
 .home-layout .story-art { display: none; }
 .home-layout .round-arrow { width: 1.5em; height: 1.5em; border: 0; background: none; color: var(--ink); }
 .home-layout .strip.offline { grid-column: 1 / -1; min-height: 2.75em; font-size: calc(var(--fs) * 0.8); }
-.fullscreen-toggle { min-height: 2.75em; padding: 0.35em 0.65em; border: var(--line-in) solid var(--ink); border-radius: 0.7em; background: var(--fw-surface); color: var(--fw-text); font: inherit; font-size: calc(var(--fs) * 0.8); font-weight: 800; cursor: pointer; }
 @media (max-height: 480px) { .home-layout .scroll { overflow-y: auto; } .home-layout .column { height: auto; min-height: 100%; } .home-layout .scene { flex: none; min-height: 12em; } }
 
 .page-picker { min-height: 44px; width: 100%; }

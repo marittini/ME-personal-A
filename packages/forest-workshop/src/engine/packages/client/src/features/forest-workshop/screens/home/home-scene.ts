@@ -70,8 +70,13 @@ function spot(side: "left" | "right", resident: Resident | null, world: WorldSta
       "button",
       {
         className: `resident-spot filled ${side}`,
-        attrs: { type: "button", "aria-label": `${resident.displayName} 보기` },
-        on: { click: () => controller.openResidents(resident.residentId) },
+        attrs: { type: "button", "aria-label": `${resident.displayName} 프로필 보기` },
+        on: {
+          click: () => {
+            controller.openResidents(resident.residentId);
+            controller.openSheet({ kind: "profile", residentId: resident.residentId });
+          },
+        },
       },
       [residentFigure(resident), h("span", { className: "spot-name", text: resident.displayName })],
     );

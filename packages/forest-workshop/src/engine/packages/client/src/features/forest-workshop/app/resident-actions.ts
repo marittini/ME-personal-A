@@ -14,7 +14,7 @@ export interface ResidentsView {
 }
 
 export type ResidentSheet =
-  | { kind: "profile"; residentId: string }
+  | { kind: "profile"; residentId: string; panel?: number; draft?: string }
   | { kind: "pair-add"; residentId: string }
   | { kind: "image-history"; residentId: string }
   | { kind: "history-cleanup" }
@@ -89,6 +89,10 @@ export function createResidentActions(core: ControllerCore) {
       store.set({ sheet: null });
     },
 
+    rememberProfile(patch: { panel?: number; draft?: string }) {
+      store.remember((state) => (state.sheet?.kind === "profile" ? { sheet: { ...state.sheet, ...patch } } : {}));
+    },
+
     toggleRelationsEditing() {
       store.set((state) => ({ relationsEditing: !state.relationsEditing }));
     },
@@ -98,7 +102,12 @@ export function createResidentActions(core: ControllerCore) {
         residentId,
         worldSetting,
       });
-      if (response) core.notify("공방 세계 설정을 고쳤어요. 변경 이력에 남았어요.");
+      if (response) {
+        store.remember((state) =>
+          state.sheet?.kind === "profile" ? { sheet: { ...state.sheet, draft: undefined } } : {},
+        );
+        core.notify("공방 세계 설정을 고쳤어요. 변경 이력에 남았어요.");
+      }
       return response;
     },
 

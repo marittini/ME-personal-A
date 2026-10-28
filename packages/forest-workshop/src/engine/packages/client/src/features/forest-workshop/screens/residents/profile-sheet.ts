@@ -42,17 +42,24 @@ export function renderProfileSheet(world: WorldView, state: AppState, controller
   if (!resident) return null;
   const max = state.content?.residents.worldSettingMax ?? 200;
   const busy = Boolean(state.busy[`resident-setting:${residentId}`]);
-  const counter = h("span", { className: "counter-text", text: `${resident.worldSetting.length} / ${max}` });
+  const profile = state.sheet?.kind === "profile" && state.sheet.residentId === residentId ? state.sheet : null;
+  const draft = profile?.draft ?? resident.worldSetting;
+  const counter = h("span", { className: "counter-text", text: `${draft.length} / ${max}` });
   const textarea = h("textarea", {
     className: "textarea",
     attrs: { id: "fw-profile-setting", maxlength: String(max), rows: "4", "aria-describedby": "fw-profile-count" },
-    on: { input: () => (counter.textContent = `${textarea.value.length} / ${max}`) },
+    on: {
+      input: () => {
+        counter.textContent = `${textarea.value.length} / ${max}`;
+        controller.rememberProfile({ draft: textarea.value });
+      },
+    },
   });
-  textarea.value = resident.worldSetting;
+  textarea.value = draft;
   counter.id = "fw-profile-count";
   const { source } = resident;
-  const original = h("details", { className: "compare-box source source-details" }, [
-    h("summary", { className: "compare-title" }, [ICONS.document("icon"), "원래 설정 보기"]),
+  const original = h("div", { className: "compare-box source" }, [
+    h("h3", { className: "compare-title" }, [ICONS.document("icon"), "원래 설정"]),
     h("p", {
       className: "muted",
       text: `${source.name} · ${formatTime(source.takenAt)}에 읽음 · 원본은 바뀌지 않아요`,
@@ -64,6 +71,62 @@ export function renderProfileSheet(world: WorldView, state: AppState, controller
       ? h("p", { className: "muted", text: "원본에 적힌 설명이 없어요." })
       : null,
   ]);
+  const worldPanel = h("div", { className: "profile-panel" }, [
+    h(
+      "form",
+      {
+        className: "compare-box world",
+        on: {
+          submit: (event) => {
+            event.preventDefault();
+            if (textarea.value.trim() && textarea.value !== resident.worldSetting) {
+              void controller.updateWorldSetting(residentId, textarea.value);
+            }
+          },
+        },
+      },
+      [
+        h("label", { className: "compare-title", attrs: { for: "fw-profile-setting" } }, [
+          ICONS.leaf("icon"),
+          "공방 세계 설정",
+        ]),
+        textarea,
+        counter,
+        h("button", {
+          className: "button small",
+          text: busy ? "저장 중…" : "수정 저장",
+          attrs: { type: "submit" },
+          disabled: busy,
+        }),
+      ],
+    ),
+  ]);
+  const sourcePanel = h("div", { className: "profile-panel" }, [original]);
+  const historyPanel = h("div", { className: "profile-panel" }, [
+    h("h3", { className: "subhead", text: "변경 이력" }),
+    resident.changes.length
+      ? h("ol", { className: "change-list" }, resident.changes.map(changeRow))
+      : h("p", { className: "muted", text: "아직 변경 이력이 없어요." }),
+  ]);
+  const panels = [worldPanel, sourcePanel, historyPanel];
+  const tabs = ["공방 설정", "원래 설정", "변경 이력"].map((label, index) =>
+    h("button", {
+      className: "profile-tab",
+      text: label,
+      attrs: { type: "button", "aria-pressed": index === 0 ? "true" : "false" },
+      on: {
+        click: () => {
+          controller.rememberProfile({ panel: index });
+          selectPanel(index);
+        },
+      },
+    }),
+  );
+  function selectPanel(selected: number) {
+    panels.forEach((panel, index) => (panel.hidden = index !== selected));
+    tabs.forEach((tab, index) => tab.setAttribute("aria-pressed", index === selected ? "true" : "false"));
+  }
+  selectPanel(profile?.panel ?? 0);
   return h("div", { className: "sheet-backdrop" }, [
     h(
       "section",
@@ -74,40 +137,8 @@ export function renderProfileSheet(world: WorldView, state: AppState, controller
           kindTag(resident),
           button("닫기", () => controller.closeSheet(), { variant: "secondary" }),
         ]),
-        h("div", { className: "compare" }, [
-          h(
-            "form",
-            {
-              className: "compare-box world",
-              on: {
-                submit: (event) => {
-                  event.preventDefault();
-                  if (textarea.value.trim() && textarea.value !== resident.worldSetting) {
-                    void controller.updateWorldSetting(residentId, textarea.value);
-                  }
-                },
-              },
-            },
-            [
-              h("label", { className: "compare-title", attrs: { for: "fw-profile-setting" } }, [
-                ICONS.leaf("icon"),
-                "공방 세계 설정",
-              ]),
-              textarea,
-              counter,
-              h("button", {
-                className: "button small",
-                text: busy ? "저장 중…" : "수정 저장",
-                attrs: { type: "submit" },
-                disabled: busy,
-              }),
-            ],
-          ),
-          original,
-        ]),
-        h("h3", { className: "subhead", text: "변경 이력" }),
-        h("ol", { className: "change-list" }, resident.changes.map(changeRow)),
-        button("닫기", () => controller.closeSheet(), { variant: "secondary", attrs: { "data-wide": "" } }),
+        h("div", { className: "profile-tabs", attrs: { "aria-label": "프로필 내용 선택" } }, tabs),
+        ...panels,
       ],
     ),
   ]);

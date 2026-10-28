@@ -48,6 +48,7 @@ export const STYLES = `
   word-break: keep-all;
   overflow-wrap: anywhere;
 }
+:host(:fullscreen) { width: 100%; height: 100%; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); background: var(--fw-page); }
 * { box-sizing: border-box; }
 p { margin: 0; }
 .icon { width: 1.35em; height: 1.35em; flex: none; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }

@@ -4,6 +4,12 @@
     "forest-workshop": {
       "versions": [
         {
+          "version": "0.6.4",
+          "date": "2026-10-28",
+          "notes": "- World selection keeps the new-world form closed when a world already exists. Tap a resident on Home to open their profile; profiles separate workshop settings, original settings and history, and retain an unfinished edit across refreshes. Full mobile layout and installation verification remain incomplete.",
+          "highlight": false
+        },
+        {
           "version": "0.6.3",
           "date": "2026-10-28",
           "notes": "- Home includes the latest layout and visual improvements. Other screens and the actual mobile layout have not yet been verified.",

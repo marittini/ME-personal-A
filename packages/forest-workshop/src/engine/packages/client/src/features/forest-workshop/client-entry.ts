@@ -45,6 +45,10 @@ class ForestWorkshopElement extends HTMLElement {
   /** Countdown ends already asked about, so a finished run triggers one refresh, not one per second. */
   private refreshedEnds = new Set<string>();
   private readonly onPresence = () => void this.controller?.heartbeat();
+  private readonly onFullscreenChange = () => {
+    const control = this.root.querySelector<HTMLButtonElement>(".fullscreen-toggle");
+    if (control) control.textContent = document.fullscreenElement ? "전체 화면 종료" : "전체 화면";
+  };
   /** The world the last opening heartbeat was for: opening a world is presence at once, not a minute later. */
   private presentWorld: string | null = null;
 
@@ -68,6 +72,7 @@ class ForestWorkshopElement extends HTMLElement {
     // becomes so again.
     this.controller.startHeartbeat();
     document.addEventListener("visibilitychange", this.onPresence);
+    document.addEventListener("fullscreenchange", this.onFullscreenChange);
     window.addEventListener("focus", this.onPresence);
     clearInterval(this.ticker);
     this.ticker = setInterval(() => this.tick(), 1000);
@@ -78,6 +83,7 @@ class ForestWorkshopElement extends HTMLElement {
     this.unsubscribe = null;
     this.controller?.stopHeartbeat();
     document.removeEventListener("visibilitychange", this.onPresence);
+    document.removeEventListener("fullscreenchange", this.onFullscreenChange);
     window.removeEventListener("focus", this.onPresence);
     clearInterval(this.ticker);
   }

@@ -62,10 +62,17 @@ function stage(season: Season, world: WorldView, story: StoryDocument | null, cu
         if (!resident) return null;
         const mark =
           speaking !== id ? null : current?.kind === "line" ? emotionArt(current.emotion) : emotionArt("curiosity");
-        return h("span", { className: `stage-spot${speaking === id ? " speaking" : ""}` }, [
+        const spot = h("span", { className: `stage-spot${speaking === id ? " speaking" : ""}` }, [
           mark,
           residentFigure(resident),
         ]);
+        const placement = resident.image.placement;
+        spot.style.setProperty(
+          "--mark-bottom",
+          `${Math.max(15, Math.min(82, 4 + placement.scale * 0.9 - 12 + placement.markerHeight * 0.4))}%`,
+        );
+        spot.style.setProperty("--mark-left", `${Math.max(10, Math.min(90, 50 + placement.offsetX * 0.5))}%`);
+        return spot;
       }),
     ),
   ]);
@@ -249,7 +256,7 @@ export function renderStoryReader(state: AppState, controller: Controller) {
                 else controller.advanceStory();
               },
               {
-                disabled: waitingAnswer,
+                disabled: waitingAnswer || Boolean(state.busy[`read:${reader.storyId}`]),
                 attrs: { "data-wide": "" },
               },
             ),

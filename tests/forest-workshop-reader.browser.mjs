@@ -163,10 +163,44 @@ try {
   assert.equal(await backlog.getByText("가나다라마바사아자차카타파하".repeat(8), { exact: true }).isVisible(), true);
   await page.getByRole("button", { name: "닫기", exact: true }).click();
   await page.evaluate(() => {
+    const reader = window.testState.reader;
+    reader.index = 1;
+    reader.choiceView = "question";
+    reader.story.value.segments[1].question = "어떤 일을 하면 좋을까요?";
+    window.testRender();
+  });
+  assert.equal(await page.getByRole("button", { name: "답변 고르기" }).count(), 0);
+  const compactChoice = await fit();
+  assert.ok(
+    compactChoice.content <= compactChoice.available + 1,
+    `short choice should fit: ${JSON.stringify(compactChoice)}`,
+  );
+
+  await page.evaluate(() => {
     window.testState.reader.story.value.segments = [{ kind: "line", speakerId: "r", text: "끝", emotion: "none" }];
     window.testState.reader.index = 0;
     window.testRender();
   });
+  await page.evaluate(() => {
+    const state = window.testState;
+    state.world.value.state.residents.r.image = {
+      current: null,
+      placement: { scale: 60, offsetX: 20, markerHeight: 0 },
+    };
+    state.reader.story.value.participants = ["r"];
+    state.reader.story.value.segments[0].emotion = "joy";
+    window.testRender();
+  });
+  const mark = await page.locator("#host").evaluate((host) => {
+    const marker = host.shadowRoot.querySelector(".emotion-bubble");
+    return {
+      bottom: getComputedStyle(marker).bottom,
+      left: getComputedStyle(marker).left,
+      spot: marker.parentElement.style.cssText,
+    };
+  });
+  assert.match(mark.spot, /--mark-bottom: 46%;/);
+  assert.match(mark.spot, /--mark-left: 60%;/);
   await page.getByRole("button", { name: "다 읽고 보관" }).click();
   assert.equal(await page.evaluate(() => window.finished), true);
   console.log("Story viewport, choice and final action: OK");

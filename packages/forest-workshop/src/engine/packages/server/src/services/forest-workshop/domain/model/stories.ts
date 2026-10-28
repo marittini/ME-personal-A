@@ -38,11 +38,13 @@ export const arcProgressSchema = z
   .strict();
 export type ArcProgress = z.infer<typeof arcProgressSchema>;
 
+export const MAX_COMPLETED_ARCS = 1000;
+
 export const pairStoriesSchema = z
   .object({
     current: arcProgressSchema.nullable(),
     /** Arcs read to the end, in order (도감: they can be read again). */
-    completed: z.array(arcProgressSchema).max(50),
+    completed: z.array(arcProgressSchema).max(MAX_COMPLETED_ARCS),
   })
   .strict();
 export type PairStories = z.infer<typeof pairStoriesSchema>;

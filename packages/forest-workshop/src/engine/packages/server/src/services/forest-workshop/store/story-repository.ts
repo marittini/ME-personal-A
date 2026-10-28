@@ -21,7 +21,8 @@ export async function listStories(documents: HostDocumentStore, worldId: string)
     .filter((record) => record.id.startsWith(`fw-story-${worldId}-`))
     .flatMap((record) => {
       const parsed = storyDocumentSchema.safeParse(record.data);
-      return parsed.success ? [parsed.data] : [];
+      if (!parsed.success) throw new Error(`Story ${record.id} is malformed`);
+      return [parsed.data];
     });
 }
 

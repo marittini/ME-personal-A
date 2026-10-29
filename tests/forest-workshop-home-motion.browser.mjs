@@ -110,14 +110,14 @@ try {
   assert.equal(await page.locator(".spot-name").count(), 0);
   const resident = page.getByRole("button", { name: "숲 주민에게 인사하기" });
   const before = await resident.evaluate((node) => node.getBoundingClientRect().x);
-  await page.waitForTimeout(5000);
+  await page.waitForTimeout(1000);
   assert.notEqual(await resident.evaluate((node) => node.getBoundingClientRect().x), before, "moves without touch");
   const bodies = await resident.locator(".figure-body").evaluate((node) => {
     const animation = node.getAnimations()[0];
     animation.pause();
-    animation.currentTime = 3960;
+    animation.currentTime = 100;
     const moving = getComputedStyle(node).transform;
-    animation.currentTime = 4320;
+    animation.currentTime = 460;
     const compressed = getComputedStyle(node).transform;
     animation.cancel();
     return moving !== compressed;

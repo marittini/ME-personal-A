@@ -275,13 +275,15 @@ export const RESIDENT_STYLES = `
 export const HOME_REACTION_STYLES = `
 .resident-touch { position:absolute; inset:0; width:100%; height:100%; border:0; padding:0; background:none; cursor:pointer; color:inherit; }
 .resident-touch:focus-visible { outline:3px solid var(--fw-accent); border-radius:1em; }
+.ground-stage .resident-spot.filled.left, .ground-stage .resident-spot.filled.right, .ground-stage .resident-spot.filled .figure, .ground-stage .resident-spot.filled .figure-body { animation-delay:-4s; }
 .resident-spot .figure-body { transform-origin:50% 100%; animation:fw-footsteps 18s linear infinite; }
 .resident-spot.reacting, .resident-spot.reacting .figure { animation-play-state:paused; }
 .resident-spot.reacting .figure-body { animation:fw-greeting 400ms ease-out both; }
+.ground-stage .resident-spot.filled.reacting .figure-body { animation-delay:0s; }
 .resident-reaction { position:absolute; z-index:5; bottom:55%; left:65%; display:grid; justify-items:center; gap:.25em; padding:.4em; border:2px solid var(--ink); border-radius:1em; background:var(--fw-surface); }
 .resident-spot.right .resident-reaction { left:auto; right:65%; }
 .resident-reaction[hidden] { display:none; }
-.resident-greeting { font-size:1.4em; color:var(--fw-accent); }
+.resident-greeting { width:2.1em; height:2.1em; object-fit:contain; font-size:1.4em; color:var(--fw-accent); }
 .resident-reaction button { min-width:64px; min-height:48px; white-space:nowrap; }
 @keyframes fw-greeting { 0%,100% { transform:translateX(-50%) scale(1); } 35% { transform:translateX(-50%) scale(1.06,.94); } 65% { transform:translateX(-50%) translateY(-4%) scale(.97,1.03); } }
 @keyframes fw-footsteps { 0%,20%,45%,70%,95%,100% { transform:translateX(-50%) scale(1); }

@@ -1,5 +1,5 @@
 ## 0.6.16 — 2026-10-29
-- Home residents respond to touch before opening a profile, with body motion during travel and aligned direction timing. Home refreshes preserve the scene and animation clocks. Supported browsers request game fullscreen from a user gesture. Actual Android fullscreen, motion and final mockup fidelity remain unverified.
+- Home residents begin moving immediately and show a joy mark when touched before opening a profile, with body motion during travel and aligned direction timing. Home refreshes preserve the scene and animation clocks. Supported browsers request game fullscreen from a user gesture. Actual Android fullscreen, motion and final mockup fidelity remain unverified.
 
 ## 0.6.15 — 2026-10-29
 - Add illustrated Home, Work, Explore, Residents and Invite navigation icons, with the original accessible labels and fallback icons.

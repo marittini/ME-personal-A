@@ -7,7 +7,7 @@
 import type { AppState, Controller } from "../../app/controller";
 import { h } from "../../app/dom";
 import type { Resident, WorldState } from "../../app/types";
-import { BACKGROUND_ART, assetImage } from "../../app/assets";
+import { BACKGROUND_ART, EMOTION_ART, assetImage } from "../../app/assets";
 import { currentSeason } from "../../app/controller";
 import { ICONS } from "../chrome/icons";
 import { residentFigure } from "../residents/resident-figure";
@@ -84,7 +84,11 @@ function spot(side: "left" | "right", resident: Resident | null, world: WorldSta
       [residentFigure(resident)],
     );
     reaction.append(
-      h("span", { className: "resident-greeting", text: "♪", attrs: { role: "status" } }),
+      assetImage(EMOTION_ART.joy, {
+        className: "resident-greeting",
+        alt: "반가움",
+        fallback: () => h("span", { className: "resident-greeting", text: "♪", attrs: { "aria-label": "반가움" } }),
+      }),
       h("button", {
         className: "outline-button",
         text: "프로필",

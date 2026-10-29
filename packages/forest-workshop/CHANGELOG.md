@@ -1,3 +1,6 @@
+## 0.6.14 — 2026-10-29
+- Fit story text to the dialogue area, clarify resident registration and production waiting states, show item pictures in reports and the starter kit, open activity letters directly, and use game-style page selectors.
+
 ## 0.6.13 — 2026-10-29
 - Survey and patrol around the workshop with one recruited resident. Activities use workshop time, detach facility assignments, can be cancelled, and save one fixed result letter on completion. No resource rewards or model calls. Schema 11 worlds cannot be opened by older packages.
 

@@ -28,6 +28,7 @@ export interface ReaderState {
   /** Segments shown so far (index of the current one). */
   index: number;
   textPage?: number;
+  textPages?: string[];
   auto: boolean;
   backlog: boolean;
   choiceView?: "question" | "answers";
@@ -140,14 +141,15 @@ export function createStoryActions(core: ControllerCore) {
     if (!reader) return;
     const list = segments();
     const current = list[reader.index];
-    const pages = storyTextPages(current);
+    const pages = reader.textPages ?? storyTextPages(current);
     if ((reader.textPage ?? 0) + 1 < pages.length) {
       patchReader({ textPage: (reader.textPage ?? 0) + 1 });
       return;
     }
     // A question waits for the answer (once); after it, or when re-reading, it steps on.
     if (current?.kind === "choice" && !answered()) return;
-    if (reader.index < list.length) patchReader({ index: reader.index + 1, textPage: 0, choiceView: "question" });
+    if (reader.index < list.length)
+      patchReader({ index: reader.index + 1, textPage: 0, textPages: undefined, choiceView: "question" });
     if (reader.index + 1 >= list.length || list[reader.index + 1]?.kind === "choice") pauseAutoReading();
   }
 
@@ -255,6 +257,19 @@ export function createStoryActions(core: ControllerCore) {
     },
 
     advanceStory: advance,
+    setStoryTextPages(storyId: string, index: number, pages: string[]) {
+      const reader = store.get().reader;
+      if (!reader || reader.storyId !== storyId || reader.index !== index || reader.story.state !== "ready") return;
+      const segment = reader.story.value.segments[index];
+      if (!segment || segment.kind === "choice" || pages.join("") !== segment.text) return;
+      const previous = reader.textPages ?? storyTextPages(segment);
+      if (JSON.stringify(previous) === JSON.stringify(pages)) return;
+      const offset = previous.slice(0, reader.textPage ?? 0).reduce((n, page) => n + Array.from(page).length, 0);
+      let pageIndex = 0;
+      let end = Array.from(pages[0] ?? "").length;
+      while (pageIndex < pages.length - 1 && end <= offset) end += Array.from(pages[++pageIndex]!).length;
+      patchReader({ textPages: pages, textPage: pageIndex });
+    },
 
     setChoiceView(choiceView: NonNullable<ReaderState["choiceView"]>) {
       patchReader({ choiceView });

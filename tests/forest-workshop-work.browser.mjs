@@ -282,7 +282,60 @@ try {
   await page.getByLabel("추가할 제작법").selectOption("r3");
   await page.getByRole("button", { name: "제작법 추가" }).click();
   assert.deepEqual(await page.evaluate(() => window.addedRule), { facilityId: "gather-yard", recipeId: "r3" });
-  console.log("Work sections and draft visibility: OK");
+  await page.evaluate(() => {
+    const state = window.testState;
+    state.work.section = "status";
+    state.world.value.state.production.facilities["gather-yard"].waiting = { reason: "no_rules" };
+    window.testRender();
+  });
+  await page.getByRole("button", { name: "생산 순서 설정하기" }).click();
+  assert.equal(await page.evaluate(() => window.testState.work.section), "priority");
+  await page.evaluate(() => {
+    const state = window.testState;
+    state.work.section = "status";
+    state.world.value.state.production.facilities["gather-yard"].mode = "count";
+    state.world.value.state.production.facilities["gather-yard"].waiting = { reason: "queue_empty" };
+    window.testRender();
+  });
+  await page.getByRole("button", { name: "작업 추가하기" }).click();
+  assert.deepEqual(await page.evaluate(() => [window.testState.work.section, window.testState.work.queueView]), [
+    "recipe",
+    "add",
+  ]);
+  await page.evaluate(() => {
+    const state = window.testState;
+    state.work.section = "status";
+    state.world.value.state.production.facilities["gather-yard"].waiting = {
+      reason: "materials",
+      itemId: "wood",
+      needed: 2,
+      usable: 0,
+    };
+    state.world.value.state.production.facilities["other-yard"] = { unlocked: false };
+    state.content.items.push({ id: "wood", name: "나무" });
+    state.content.facilities.push({ id: "other-yard", name: "다른 작업대", field: "grow" });
+    state.content.recipes.push({
+      id: "wood-recipe",
+      name: "나무",
+      facilityId: "other-yard",
+      outputs: { wood: 1 },
+      inputs: {},
+    });
+    window.testController.selectFacility = (id) => {
+      window.chosenFacility = id;
+    };
+    window.testRender();
+  });
+  await page.getByRole("button", { name: "나무 얻는 곳 · 다른 작업대 (열기 필요)" }).click();
+  assert.equal(await page.evaluate(() => window.chosenFacility), "other-yard");
+  await page.evaluate(() => {
+    const state = window.testState;
+    state.content.facilities.push({ id: "survey-desk", name: "조사대", field: "survey" });
+    state.world.value.state.production.facilities["survey-desk"] = { unlocked: false };
+    window.testRender();
+  });
+  assert.equal(await page.getByRole("tab", { name: "조사대 (해금 전)" }).count(), 1);
+  console.log("Work sections, draft visibility and waiting guidance: OK");
 } finally {
   await browser?.close();
   await rm(temp, { recursive: true, force: true });

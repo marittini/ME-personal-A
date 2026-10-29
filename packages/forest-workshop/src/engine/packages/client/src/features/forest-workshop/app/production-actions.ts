@@ -324,7 +324,12 @@ export function createProductionActions(core: ControllerCore) {
         facilityId,
         residentId,
       });
-      if (response) store.set({ sheet: null });
+      if (response) {
+        store.set({ sheet: null });
+        core.notify(
+          residentId ? "주민을 배치했어요. 분야가 맞으면 다음 작업부터 효과가 적용돼요." : "주민 배치를 해제했어요.",
+        );
+      }
     },
 
     async setAutoSell(itemId: string, setting: AutoSell) {

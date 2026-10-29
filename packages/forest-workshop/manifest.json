@@ -10,7 +10,7 @@
   },
   "id": "forest-workshop",
   "name": "Forest Workshop",
-  "version": "0.6.13",
+  "version": "0.6.14",
   "description": "A portrait cozy workshop game in development. This 0.6 build adds story expeditions: each pair of residents travels through three-episode arcs on the explore screen, and each scene is written by your language model when you first read it, from the plan and only the memories its residents share, with one answer you can give a resident. What residents learn is recorded per resident. On top of the complete workshop: five facilities with 34 materials and goods, rules or counted queues, residents whose field and talent come from their own character text, auto-selling, invitations with tickets from daily deliveries, and backups that carry pictures and scenes; letters, memory management and AI guidelines follow. Install it, restart Marinara Engine when prompted, then open Home → 숲결 공방.",
   "engine": {
     "min": "2.5.1",
@@ -127,13 +127,13 @@
     },
     {
       "path": "server.mjs",
-      "sha256": "836ff6ed9c3b7deec520290abfa127e7ec907a11ec8d4a4130c071160a67bef0",
+      "sha256": "1532c9ffa14074b7c9c2888934261b2174f80b0a111a834b0c71f6379ec8ecc3",
       "bytes": 147681
     },
     {
       "path": "client.js",
-      "sha256": "1a5ce843a71ace3179dda1496a162856ad59c1ccf5bf3d936b2b3cad55d9c50f",
-      "bytes": 317382
+      "sha256": "370a628cbefa89607b1644441511236beaff0166ea57042747555565e0b903bf",
+      "bytes": 324512
     },
     {
       "path": "assets/asset-manifest.json",

@@ -111,6 +111,18 @@ try {
     actions.toggleAuto();
     core.navigate("home");
     const left = tick === null && !store.get().reader.auto;
+    store.set({
+      route: "story",
+      reader: { ...store.get().reader, index: 0, textPage: 0, textPages: undefined, auto: false },
+    });
+    store.get().reader.story.value.segments[0].text = "가나다라마바사아자차";
+    actions.setStoryTextPages("s", 0, ["가나다라", "마바사아", "자차"]);
+    actions.advanceStory();
+    const nextPage = store.get().reader.index === 0 && store.get().reader.textPage === 1;
+    actions.setStoryTextPages("s", 0, ["가나", "다라마바", "사아자차"]);
+    const resizeKeepsPosition = store.get().reader.textPage === 1;
+    actions.setStoryTextPages("s", 0, ["내용 누락"]);
+    const rejectsLostText = store.get().reader.textPages.join("") === "가나다라마바사아자차";
     window.preferences.writeAutoReading({ enabled: true, seconds: 7 });
     const persisted = window.preferences.readAutoReading();
     localStorage.setItem("forest-workshop:auto-reading", "broken");
@@ -127,6 +139,9 @@ try {
     const clamp = window.preferences.normalizeAutoReading({ enabled: true, seconds: 999 });
     return {
       started,
+      nextPage,
+      resizeKeepsPosition,
+      rejectsLostText,
       atQuestion,
       noAnswer,
       atEnd,
@@ -142,6 +157,9 @@ try {
   });
   assert.deepEqual(result, {
     started: true,
+    nextPage: true,
+    resizeKeepsPosition: true,
+    rejectsLostText: true,
     atQuestion: true,
     noAnswer: true,
     atEnd: true,

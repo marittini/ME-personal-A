@@ -114,6 +114,9 @@ try {
       openMailbox() {
         window.mailboxOpened = true;
       },
+      openActivityLetter(id) {
+        window.openedActivityLetter = id;
+      },
       setExploreSection(section) {
         update({ section });
       },
@@ -156,7 +159,8 @@ try {
   assert.equal(await page.getByText("기록 2", { exact: true }).isVisible(), true);
   await page.getByRole("button", { name: "1편 다시 읽기", exact: true }).click();
   assert.deepEqual(await page.evaluate(() => window.openedStory), { pairId: "a", episode: 0, storyId: "current-0" });
-  await page.getByLabel("읽은 이야기 목록 고르기").selectOption("1");
+  await page.getByLabel("읽은 이야기 목록 고르기", { exact: true }).click();
+  await page.getByLabel("읽은 이야기 목록 고르기", { exact: true }).locator("..").locator("button").nth(1).click();
   assert.equal(await page.getByText("기록 0", { exact: true }).isVisible(), true);
   await page.getByRole("button", { name: "기록 0 1편 다시 읽기" }).click();
   assert.deepEqual(await page.evaluate(() => window.openedStory), { pairId: "a", episode: 0, storyId: "s0" });
@@ -179,7 +183,15 @@ try {
   });
   await page.getByRole("button", { name: "활동 취소", exact: true }).click();
   assert.equal(await page.evaluate(() => window.activityCancelled), "activity-1");
-  await page.getByRole("button", { name: "결과 편지 보기", exact: true }).click();
+  await page.evaluate(() => {
+    window.testState.world.value.state.activities.completed = [
+      { kind: "survey", residentId: "r", summary: "기록", mailId: "activity-123" },
+    ];
+    window.testRender();
+  });
+  await page.getByRole("button", { name: "조사 결과 편지 읽기" }).click();
+  assert.equal(await page.evaluate(() => window.openedActivityLetter), "activity-123");
+  await page.getByRole("button", { name: "우편함 열기", exact: true }).click();
   assert.equal(await page.evaluate(() => window.mailboxOpened), true);
   console.log("Explore sections, history and actions: OK");
 } finally {

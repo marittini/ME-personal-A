@@ -25,7 +25,7 @@ function steps(current: RegisterState["step"]) {
   return h("ol", { className: "steps card", attrs: { "aria-label": "주민 등록 단계" } }, [
     step(1, "자료 선택"),
     h("li", { className: "step-arrow", attrs: { "aria-hidden": "true" }, text: "→" }),
-    step(2, "재구축"),
+    step(2, "공방 설정"),
     h("li", { className: "step-arrow", attrs: { "aria-hidden": "true" }, text: "→" }),
     step(3, "시작 주민"),
   ]);
@@ -220,7 +220,7 @@ function stepTwo(register: RegisterState, state: AppState, controller: Controlle
       maxlength: String(max),
       rows: "4",
       placeholder: "이 세계에서 어떤 주민인지 적어 주세요.",
-      "aria-describedby": "fw-draft-count",
+      "aria-describedby": "fw-world-setting-help fw-draft-count",
     },
     on: {
       input: () => {
@@ -262,6 +262,11 @@ function stepTwo(register: RegisterState, state: AppState, controller: Controlle
     panel === "setting"
       ? h("section", { className: "card rebuild" }, [
           h("label", { className: "section-title", text: "공방 세계 설정", attrs: { for: "fw-world-setting" } }),
+          h("p", {
+            className: "muted",
+            text: "이 주민이 공방에서 어떤 모습인지 한두 문장으로 적어 주세요. 내용을 적으면 다음으로 갈 수 있어요.",
+            attrs: { id: "fw-world-setting-help" },
+          }),
           h("div", { className: "textarea-wrap" }, [textarea, counter]),
           h("div", { className: "rule-actions even" }, [
             h(
@@ -323,7 +328,7 @@ function stepTwo(register: RegisterState, state: AppState, controller: Controlle
           },
           [
             ICONS.leaf("icon"),
-            h("span", { text: registering ? "등록하는 중…" : uploading ? "그림 저장 중…" : "재구축 확정" }),
+            h("span", { text: registering ? "등록하는 중…" : uploading ? "그림 저장 중…" : "주민 등록하기" }),
             ICONS.chevron("icon"),
           ],
         )
@@ -337,7 +342,7 @@ function stepTwo(register: RegisterState, state: AppState, controller: Controlle
             disabled: busy || !ready,
             on: { click: () => void controller.confirmRegister(false, async () => undefined) },
           },
-          [ICONS.clock("icon"), h("span", { text: "나중에 그림 등록" })],
+          [ICONS.clock("icon"), h("span", { text: "그림 없이 주민 등록" })],
         )
       : null,
     panel === "image"

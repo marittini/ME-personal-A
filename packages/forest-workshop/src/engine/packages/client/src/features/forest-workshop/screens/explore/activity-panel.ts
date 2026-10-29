@@ -78,9 +78,14 @@ export function activityPanel(state: AppState, world: WorldView, controller: Con
             text: `${r.kind === "survey" ? "조사" : "순찰"} · ${world.state.residents[r.residentId]?.displayName ?? "주민"}`,
           }),
           h("p", { text: r.summary }),
+          button("결과 편지 읽기", () => void controller.openActivityLetter(r.mailId), {
+            variant: "secondary",
+            disabled: Boolean(state.busy[`mail:${r.mailId}`]),
+            attrs: { "aria-label": `${r.kind === "survey" ? "조사" : "순찰"} 결과 편지 읽기` },
+          }),
         ]),
       ),
-      button("결과 편지 보기", () => controller.openMailbox(), { variant: "secondary" }),
+      button("우편함 열기", () => controller.openMailbox(), { variant: "secondary" }),
     ],
     { className: "activity-card" },
   );

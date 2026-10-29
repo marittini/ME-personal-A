@@ -99,6 +99,17 @@ export function createResidentActions(core: ControllerCore) {
     openMailbox() {
       store.set({ sheet: { kind: "mailbox" } });
     },
+    async openActivityLetter(id: string) {
+      const letter = core.currentWorld()?.state.mailbox.letters.find((item) => item.id === id);
+      if (!letter) {
+        store.set({ sheet: { kind: "mailbox" } });
+        core.notify("결과 편지를 찾을 수 없어요. 우편함을 확인해 주세요.");
+        return;
+      }
+      store.set({ sheet: { kind: "mailbox", archived: letter.archived } });
+      const response = letter.readAt ? true : await core.runCommand(`mail:${id}`, "mail.read", { id });
+      if (response) store.set((state) => (state.sheet?.kind === "mailbox" ? { sheet: { ...state.sheet, id } } : {}));
+    },
     setMailboxView(patch: { archived?: boolean; page?: number; id?: string }) {
       store.set((state) => (state.sheet?.kind === "mailbox" ? { sheet: { ...state.sheet, ...patch } } : {}));
     },

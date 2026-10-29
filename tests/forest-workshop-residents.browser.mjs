@@ -130,7 +130,8 @@ try {
     return { content: scroller.scrollHeight, available: scroller.clientHeight };
   });
   assert.ok(listFits.content <= listFits.available + 1, `resident list should fit: ${JSON.stringify(listFits)}`);
-  await page.getByLabel("주민 목록 고르기").selectOption("1");
+  await page.getByLabel("주민 목록 고르기", { exact: true }).click();
+  await page.getByLabel("주민 목록 고르기", { exact: true }).locator("..").locator("button").nth(1).click();
   assert.equal(await page.getByRole("button", { name: "주민 2 자세히 보기" }).count(), 1);
   await page.getByRole("button", { name: "주민 2 자세히 보기" }).click();
   assert.equal(await page.getByRole("button", { name: "프로필", exact: true }).isVisible(), true);

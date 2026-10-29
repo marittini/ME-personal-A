@@ -154,9 +154,18 @@ function formatTime(value: string) {
 
 function itemsLine(content: GameContent | null, items: Record<string, number>, sign: string) {
   const entries = Object.entries(items);
-  return entries.length
-    ? entries.map(([item, amount]) => `${itemName(content, item)} ${sign}${amount}`).join(" · ")
-    : "없음";
+  return h(
+    "span",
+    { className: "report-items" },
+    entries.length
+      ? entries.map(([item, amount]) =>
+          h("span", { className: "report-item" }, [
+            itemTile(item),
+            h("span", { text: `${itemName(content, item)} ${sign}${amount}` }),
+          ]),
+        )
+      : [h("span", { text: "없음" })],
+  );
 }
 
 export function workReportSheet(state: AppState, world: WorldView, controller: Controller) {
@@ -181,7 +190,8 @@ export function workReportSheet(state: AppState, world: WorldView, controller: C
               news.some((report) => report.gold > 0)
                 ? h("p", {}, [
                     h("strong", { text: "자동 판매 " }),
-                    `${itemsLine(content, sum(news, "sold"), "−")} → +${news.reduce((total, report) => total + report.gold, 0)} G`,
+                    itemsLine(content, sum(news, "sold"), "−"),
+                    h("span", { text: ` → +${news.reduce((total, report) => total + report.gold, 0)} G` }),
                   ])
                 : null,
             ])
@@ -201,16 +211,20 @@ export function workReportSheet(state: AppState, world: WorldView, controller: C
                       className: "report-time",
                       text: `${formatTime(report.at)}${report.offlineMs ? ` · 비운 동안 ${formatHours(report.offlineMs)}시간` : ""}`,
                     }),
-                    h("span", {
-                      text: [
-                        report.runs ? `${report.runs}회 완료` : "",
-                        Object.keys(report.produced).length ? `들어옴 ${itemsLine(content, report.produced, "+")}` : "",
-                        Object.keys(report.consumed).length ? `재료 ${itemsLine(content, report.consumed, "−")}` : "",
-                        report.gold ? `자동 판매 ${itemsLine(content, report.sold, "−")} +${report.gold} G` : "",
-                      ]
-                        .filter(Boolean)
-                        .join(" · "),
-                    }),
+                    report.runs ? h("span", { text: `${report.runs}회 완료` }) : null,
+                    Object.keys(report.produced).length
+                      ? h("div", {}, [h("strong", { text: "들어옴 " }), itemsLine(content, report.produced, "+")])
+                      : null,
+                    Object.keys(report.consumed).length
+                      ? h("div", {}, [h("strong", { text: "재료 " }), itemsLine(content, report.consumed, "−")])
+                      : null,
+                    report.gold
+                      ? h("div", {}, [
+                          h("strong", { text: "자동 판매 " }),
+                          itemsLine(content, report.sold, "−"),
+                          h("span", { text: ` +${report.gold} G` }),
+                        ])
+                      : null,
                   ],
                 ),
               ),

@@ -74,12 +74,19 @@ export const PRODUCTION_STYLES = `
 .protect-row > .stepper { grid-area: picker; }
 .protect-row > .button { grid-area: save; }
 
+.waiting-guide { display: grid; gap: 0.4em; justify-items: start; }
+.waiting-guide .hint { margin: 0; }
+.waiting-guide .outline-button { text-align: left; white-space: normal; }
+
 /* 공방 소식 · 작업 보고 */
 .report-slot.empty { opacity: 0.6; }
 .report-slot .item-tile { margin-bottom: 0.1em; }
 .count-badge { display: inline-grid; place-items: center; min-width: 1.5em; height: 1.5em; padding: 0 0.3em; border-radius: 999px; border: 2px solid var(--ink); background: #d9534f; color: #fff; font-size: calc(var(--fs) * 0.75); font-weight: 900; }
 .strip.offline strong { margin: 0 0.15em; }
 .report-total { display: grid; gap: 0.3em; padding: 0.7em 0.8em; border-radius: 0.9em; border: var(--line-in) solid var(--ink); background: var(--fw-leaf-soft); }
+.report-items { display: inline-flex; flex-wrap: wrap; gap: 0.3em 0.6em; vertical-align: middle; }
+.report-item { display: inline-flex; align-items: center; gap: 0.2em; }
+.report-item .item-tile { width: 1.8em; height: 1.8em; }
 .report-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.4em; max-height: 16em; overflow-y: auto; }
 .report-entry { display: grid; gap: 0.1em; padding: 0.5em 0.7em; border-radius: 0.75em; border: var(--line-in) solid var(--ink); background: var(--fw-surface-3); font-size: calc(var(--fs) * 0.9); }
 .report-entry.new { background: #fff3c8; }

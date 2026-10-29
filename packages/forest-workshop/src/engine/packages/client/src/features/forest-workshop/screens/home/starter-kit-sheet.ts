@@ -3,6 +3,8 @@
 import type { AppState, Controller } from "../../app/controller";
 import { button, h } from "../../app/dom";
 import type { GameContent } from "../../app/types";
+import { UI_ART, assetImage } from "../../app/assets";
+import { itemTile } from "../work/production-view";
 import { ICONS } from "../chrome/icons";
 
 function itemName(content: GameContent, itemId: string) {
@@ -20,7 +22,10 @@ export function renderStarterKitSheet(state: AppState, controller: Controller) {
       "section",
       { className: "sheet card", attrs: { role: "dialog", "aria-modal": "true", "aria-labelledby": "fw-starter" } },
       [
-        h("h2", { className: "section-title", text: "공방 시작 꾸러미", attrs: { id: "fw-starter" } }),
+        h("div", { className: "kit-heading" }, [
+          assetImage(UI_ART.gift, { className: "kit-gift", fallback: () => ICONS.box("icon kit-gift") }),
+          h("h2", { className: "section-title", text: "공방 시작 꾸러미", attrs: { id: "fw-starter" } }),
+        ]),
         h("p", { className: "muted", text: "첫 채집과 가공을 시작할 재료예요. 한 번만 받을 수 있어요." }),
         h("ul", { className: "kit" }, [
           h("li", { className: "kit-item" }, [
@@ -37,7 +42,7 @@ export function renderStarterKitSheet(state: AppState, controller: Controller) {
             : null,
           ...Object.entries(kit.items).map(([itemId, amount]) =>
             h("li", { className: "kit-item" }, [
-              ICONS.leaf("icon"),
+              itemTile(itemId),
               h("span", { text: itemName(content, itemId) }),
               h("strong", { text: amount.toLocaleString("ko-KR") }),
             ]),

@@ -39,7 +39,14 @@ export function renderAssignSheet(
       ` · 주민 효과 +${percent(bonus.total)}`,
     ]),
     recruited.length === 0
-      ? h("p", { className: "empty", text: "공방에 온 주민이 없어요. 초대로 주민을 맞이해 주세요." })
+      ? h("div", { className: "assign-empty" }, [
+          h("p", { className: "empty", text: "아직 공방에 온 주민이 없어요. 주민이 없어도 시설은 계속 일해요." }),
+          world.state.progress.starterResidentId === null
+            ? button(Object.keys(world.state.residents).length ? "시작 주민 고르기" : "첫 주민 맞이하기", () =>
+                controller.openRegister(Object.keys(world.state.residents).length ? 3 : 1),
+              )
+            : button("주민 초대하기", () => controller.navigate("invite")),
+        ])
       : h(
           "ul",
           { className: "pick-list" },

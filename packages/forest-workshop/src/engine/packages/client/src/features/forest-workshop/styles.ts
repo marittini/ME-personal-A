@@ -421,7 +421,14 @@ button.counter { cursor: pointer; }
 .home-layout .strip.offline { grid-column: 1 / -1; min-height: 2.75em; font-size: calc(var(--fs) * 0.8); }
 @media (max-height: 480px) { .home-layout .scroll { overflow-y: auto; } .home-layout .column { height: auto; min-height: 100%; } .home-layout .scene { flex: none; min-height: 12em; } }
 
-.page-picker { min-height: 44px; width: 100%; }
+.page-picker { width: 100%; }
+.page-picker-summary { display: flex; align-items: center; justify-content: space-between; gap: 0.6em; min-height: 44px; padding: 0.3em 0.8em; border: var(--line-in) solid var(--ink); border-radius: 0.7em; background: var(--fw-surface-3); font-weight: 800; cursor: pointer; list-style: none; }
+.page-picker-summary::-webkit-details-marker { display: none; }
+.page-picker-summary > span:first-child { overflow-wrap: anywhere; }
+.page-picker-options { display: grid; gap: 0.3em; max-height: 14em; overflow-y: auto; margin-top: 0.3em; padding: 0.4em; border: var(--line-in) solid var(--ink); border-radius: 0.7em; background: var(--fw-surface-3); }
+.page-picker-option { min-height: 44px; padding: 0.5em 0.7em; border: 2px solid transparent; border-radius: 0.5em; background: transparent; color: var(--fw-text); font: inherit; text-align: left; cursor: pointer; }
+.page-picker-option[aria-pressed="true"] { border-color: var(--fw-accent); background: var(--fw-leaf-soft); font-weight: 800; }
+.page-picker-arrow { flex: none; }
 button:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px solid #315eac; outline-offset: 2px; }
 /* ── 홈 (01-1) ─────────────────────────────────────────────────────────── */
 .top-home { padding-bottom: 0; }
@@ -758,6 +765,9 @@ label.menu-row:focus-within { outline: 3px solid var(--fw-accent); outline-offse
 /* ── Sheets (시작 꾸러미 and the resident sheets) ─────────────────────── */
 .sheet-backdrop { position: absolute; inset: 0; z-index: 10; display: flex; align-items: flex-end; justify-content: center; padding: 0.75em; background: rgba(48, 29, 16, 0.5); }
 .sheet { width: min(100%, 480px); max-height: 100%; overflow-y: auto; gap: 0.75em; padding: 1.25em; }
+.kit-heading { display: flex; align-items: center; gap: 0.55em; }
+.kit-heading .section-title { margin: 0; }
+.kit-gift { width: 2.5em; height: 2.5em; flex: none; object-fit: contain; }
 .kit { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.45em; }
 .kit-item { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 0.6em; padding: 0.55em 0.8em; border-radius: 0.8em; border: var(--line-in) solid var(--ink); background: var(--fw-surface-2); font-weight: 800; }
 .kit-item .icon { color: var(--fw-leaf); }

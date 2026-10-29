@@ -149,7 +149,7 @@ function dialogue(state: AppState, world: WorldView, reader: ReaderState, contro
       : null,
     h("p", {
       className: segment.kind === "line" ? "line" : "narration",
-      text: storyTextPages(segment)[reader.textPage ?? 0] ?? segment.text,
+      text: (reader.textPages ?? storyTextPages(segment))[reader.textPage ?? 0] ?? segment.text,
     }),
   ]);
 }
@@ -210,7 +210,7 @@ export function renderStoryReader(state: AppState, controller: Controller) {
   const story = reader.story.state === "ready" ? reader.story.value : null;
   const total = story?.segments.length ?? 0;
   const current = story?.segments[reader.index];
-  const textPages = storyTextPages(current);
+  const textPages = reader.textPages ?? storyTextPages(current);
   const lastTextPage = (reader.textPage ?? 0) >= textPages.length - 1;
   const waitingAnswer =
     current?.kind === "choice" && !findProgress(world, reader)?.choice && findProgress(world, reader)?.state !== "read";

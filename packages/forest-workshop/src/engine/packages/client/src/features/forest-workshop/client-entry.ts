@@ -10,6 +10,7 @@
 //                     text size
 import { createController, type AppState, type Controller } from "./app/controller";
 import { screenPageKey } from "./app/screen-page";
+import { measureStoryPages } from "./app/story-pages";
 import { renderFrame } from "./screens/chrome/frame";
 import { DiagnosticsPanel } from "./screens/diagnostics-panel";
 import { renderHomeScreen } from "./screens/home/home-screen";
@@ -44,6 +45,7 @@ class ForestWorkshopElement extends HTMLElement {
   private renderedRoute: AppState["route"] | null = null;
   private renderedPage: string | null = null;
   private ticker: ReturnType<typeof setInterval> | undefined;
+  private readonly resizeObserver = new ResizeObserver(() => this.measureStory());
   /** Countdown ends already asked about, so a finished run triggers one refresh, not one per second. */
   private refreshedEnds = new Set<string>();
   private readonly onPresence = () => {
@@ -72,6 +74,7 @@ class ForestWorkshopElement extends HTMLElement {
     this.render(this.controller.store.get());
     // Presence (plan §7.6): a heartbeat every minute while this screen is visible and focused, and at once when it
     // becomes so again.
+    this.resizeObserver.observe(this);
     this.controller.startHeartbeat();
     document.addEventListener("visibilitychange", this.onPresence);
     window.addEventListener("focus", this.onPresence);
@@ -81,6 +84,7 @@ class ForestWorkshopElement extends HTMLElement {
   }
 
   disconnectedCallback() {
+    this.resizeObserver.disconnect();
     this.unsubscribe?.();
     this.unsubscribe = null;
     this.controller?.stopHeartbeat();
@@ -149,6 +153,19 @@ class ForestWorkshopElement extends HTMLElement {
     }
   }
 
+  /** Measure the actual rendered dialogue area, including its current font, width and speaker label. */
+  private measureStory() {
+    const reader = this.controller?.store.get().reader;
+    if (!reader || reader.story.state !== "ready" || this.controller?.store.get().route !== "story") return;
+    const segment = reader.story.value.segments[reader.index];
+    if (!segment || segment.kind === "choice") return;
+    const box = this.root.querySelector<HTMLElement>(".story-layout .dialogue-box:not(.choice)");
+    if (!box) return;
+    const pages = measureStoryPages(box, segment.text);
+    if (!pages) return;
+    this.controller?.setStoryTextPages(reader.storyId, reader.index, pages);
+  }
+
   private render(state: AppState) {
     const openWorld = state.world?.state === "ready" ? state.world.value.worldId : null;
     if (openWorld && openWorld !== this.presentWorld) {
@@ -175,6 +192,7 @@ class ForestWorkshopElement extends HTMLElement {
     this.renderedPage = page;
     const scroller = this.root.querySelector(".scroll");
     if (scroller) scroller.scrollTop = scrollTop;
+    this.measureStory();
     if (focusedId) {
       const next = this.root.getElementById(focusedId) as HTMLInputElement | HTMLTextAreaElement | null;
       next?.focus({ preventScroll: true });

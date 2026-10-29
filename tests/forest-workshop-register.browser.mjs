@@ -99,12 +99,18 @@ try {
   assert.equal(await page.getByText("원본 이야기").isVisible(), true);
   await page.getByRole("button", { name: "다음: 공방 설정" }).click();
   assert.equal(await page.getByRole("button", { name: "다음: 주민 그림" }).isDisabled(), true);
+  assert.equal(
+    await page
+      .getByText("이 주민이 공방에서 어떤 모습인지 한두 문장으로 적어 주세요. 내용을 적으면 다음으로 갈 수 있어요.")
+      .isVisible(),
+    true,
+  );
   await page.getByLabel("공방 세계 설정").fill("공방 주민 설정");
   await page.getByRole("button", { name: "다음: 주민 그림" }).click();
   await page.getByRole("button", { name: "이전: 공방 설정" }).click();
   assert.equal(await page.getByLabel("공방 세계 설정").inputValue(), "공방 주민 설정");
   await page.getByRole("button", { name: "다음: 주민 그림" }).click();
-  await page.getByRole("button", { name: "나중에 그림 등록" }).click();
+  await page.getByRole("button", { name: "그림 없이 주민 등록" }).click();
   assert.equal(await page.evaluate(() => window.confirmed), false);
   await page.evaluate(() => {
     const residents = Object.fromEntries(

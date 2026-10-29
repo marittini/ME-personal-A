@@ -4,6 +4,12 @@
     "forest-workshop": {
       "versions": [
         {
+          "version": "0.6.14",
+          "date": "2026-10-29",
+          "notes": "- Fit story text to the dialogue area, clarify resident registration and production waiting states, show item pictures in reports and the starter kit, open activity letters directly, and use game-style page selectors.",
+          "highlight": false
+        },
+        {
           "version": "0.6.13",
           "date": "2026-10-29",
           "notes": "- Survey and patrol around the workshop with one recruited resident. Activities use workshop time, detach facility assignments, can be cancelled, and save one fixed result letter on completion. No resource rewards or model calls. Schema 11 worlds cannot be opened by older packages.",
@@ -116,12 +122,6 @@
           "date": "2026-10-26",
           "notes": "- Worlds: create several, switch between them, rename the world and your nickname. The player has a nickname only.\n- Every change is a command the server decides; a resent command never applies twice, and a failed save changes nothing.\n- One-time welcome package and the storeroom with gold and materials.\n- JSON backup without secrets; restoring always makes a new world and leaves the original untouched.\n- The connection checks moved to Settings → 연결 점검.",
           "highlight": true
-        },
-        {
-          "version": "0.1.0",
-          "date": "2026-10-26",
-          "notes": "- P0 connection check build. Not the game yet: a Home tab that proves the Engine connections the game will use.\n- Reads characters and personas without writing them, resolves a model connection and fits a context without generating.\n- Proves package document revisions, stale-write rejection and transaction rollback with temporary documents.\n- Stores an uploaded PNG or static WebP resident picture as a quality 95 WebP in the Global Gallery and keeps only its reference. The PNG original is not kept.",
-          "highlight": false
         }
       ]
     }

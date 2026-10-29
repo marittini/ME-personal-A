@@ -31,7 +31,7 @@ import {
 const FIELDS: ReadonlyArray<{ field: string; label: string; icon: IconFactory }> = [
   { field: "gather", label: "채집", icon: ICONS.leaf },
   { field: "grow", label: "재배", icon: ICONS.sprout },
-  { field: "survey", label: "조사", icon: ICONS.search },
+  { field: "survey", label: "조사대", icon: ICONS.search },
   { field: "process", label: "가공", icon: ICONS.jar },
   { field: "craft", label: "제작", icon: ICONS.hammer },
 ];
@@ -451,6 +451,61 @@ function currentWork(state: AppState, content: GameContent, world: WorldView, fa
   ]);
 }
 
+/** Offer a useful next step for the actual server-reported waiting reason. */
+function waitingGuide(content: GameContent, world: WorldView, facilityId: string, controller: Controller) {
+  const waiting = world.state.production.facilities[facilityId]?.waiting;
+  if (!waiting) return null;
+  const actions: HTMLElement[] = [];
+  if (waiting.reason === "no_rules") {
+    actions.push(
+      h("button", {
+        className: "outline-button",
+        text: "생산 순서 설정하기",
+        attrs: { type: "button" },
+        on: { click: () => controller.setWorkSection("priority") },
+      }),
+    );
+  } else if (waiting.reason === "queue_empty") {
+    actions.push(
+      h("button", {
+        className: "outline-button",
+        text: "작업 추가하기",
+        attrs: { type: "button" },
+        on: {
+          click: () => {
+            controller.setQueueView("add");
+            controller.setWorkSection("recipe");
+          },
+        },
+      }),
+    );
+  } else if (waiting.reason === "materials" && waiting.itemId) {
+    const itemId = waiting.itemId;
+    const sources = [
+      ...new Set(
+        content.recipes.filter((recipe) => (recipe.outputs[itemId] ?? 0) > 0).map((recipe) => recipe.facilityId),
+      ),
+    ].filter((id) => id !== facilityId && world.state.production.facilities[id]);
+    for (const id of sources) {
+      const facility = content.facilities.find((entry) => entry.id === id);
+      if (!facility) continue;
+      const unlocked = world.state.production.facilities[id]?.unlocked;
+      actions.push(
+        h("button", {
+          className: "outline-button",
+          text: `${itemName(content, itemId)} 얻는 곳 · ${facility.name}${unlocked ? "" : " (열기 필요)"}`,
+          attrs: { type: "button" },
+          on: { click: () => controller.selectFacility(id) },
+        }),
+      );
+    }
+  }
+  return h("div", { className: "waiting-guide" }, [
+    h("p", { className: "hint", text: waitingText(content, waiting) }),
+    ...actions,
+  ]);
+}
+
 function body(state: AppState, content: GameContent, world: WorldView, controller: Controller) {
   const facilityId = state.work.facilityId;
   const facility = world.state.production.facilities[facilityId];
@@ -515,9 +570,7 @@ function body(state: AppState, content: GameContent, world: WorldView, controlle
           ? [
               currentWork(state, content, world, facility),
               facilityCard(state, content, world, facilityId, facility, controller),
-              facility.waiting
-                ? h("p", { className: "hint center", text: waitingText(content, facility.waiting) })
-                : null,
+              waitingGuide(content, world, facilityId, controller),
               h("div", { className: "work-stock-actions", attrs: { role: "group", "aria-label": "재고 관리" } }, [
                 h("button", {
                   className: "outline-button",

@@ -32,7 +32,11 @@ import { updateSettings } from "./settings";
 
 import { updateGuidelines } from "./guidelines";
 
+import { readMail, archiveMail } from "./mailbox";
+
 const DEFINITIONS = [
+  readMail,
+  archiveMail,
   updateGuidelines,
   updateSettings,
   claimStarterKit,

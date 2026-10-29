@@ -4,6 +4,7 @@
 // position across re-renders of the same route.
 import { artClasses, currentSeason, type AppState, type Controller } from "../../app/controller";
 import { h, type Child } from "../../app/dom";
+import { renderMailboxSheet } from "../home/mailbox-sheet";
 import { renderGuidelinesSheet } from "../residents/guidelines-sheet";
 import { renderDeliveriesSheet } from "../invite/deliveries-sheet";
 import { renderBottomNav } from "./bottom-nav";
@@ -59,11 +60,13 @@ export function renderFrame(state: AppState, controller: Controller, frame: Fram
       frame.nav ? renderBottomNav(state, controller) : null,
       // 초대권 받기 opens from the ticket counter on any screen.
       frame.sheet ??
-        (state.sheet?.kind === "guidelines"
-          ? renderGuidelinesSheet(state, controller)
-          : state.sheet?.kind === "deliveries"
-            ? renderDeliveriesSheet(state, controller)
-            : null),
+        (state.sheet?.kind === "mailbox"
+          ? renderMailboxSheet(state, controller)
+          : state.sheet?.kind === "guidelines"
+            ? renderGuidelinesSheet(state, controller)
+            : state.sheet?.kind === "deliveries"
+              ? renderDeliveriesSheet(state, controller)
+              : null),
     ],
   );
 }

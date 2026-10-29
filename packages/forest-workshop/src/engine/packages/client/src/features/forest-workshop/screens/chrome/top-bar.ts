@@ -76,11 +76,28 @@ export function renderTopBar(state: AppState, controller: Controller, bar: TopBa
           label: "현실 날씨",
           children: [ICONS.weather(), h("span", { text: "날씨" })],
         }),
-        featureButton(controller, "mail", {
-          className: "icon-button mail",
-          label: "우편함",
-          children: [ICONS.mail()],
-        }),
+        h(
+          "button",
+          {
+            className: "icon-button mail",
+            attrs: {
+              type: "button",
+              "aria-label": `우편함 · 안 읽은 편지 ${state.world?.state === "ready" ? (state.world.value.state.mailbox?.letters.filter((l) => !l.readAt).length ?? 0) : 0}개`,
+            },
+            on: { click: () => controller.openMailbox() },
+          },
+          [
+            ICONS.mail(),
+            h("span", {
+              className: "mail-unread",
+              text: String(
+                state.world?.state === "ready"
+                  ? (state.world.value.state.mailbox?.letters.filter((l) => !l.readAt).length ?? 0)
+                  : 0,
+              ),
+            }),
+          ],
+        ),
       ]),
     ]);
   }

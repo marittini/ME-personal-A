@@ -2,6 +2,13 @@
 // resident figure used everywhere (home scene included). Same tokens and sizing rules as styles.ts, which appends
 // this sheet.
 export const RESIDENT_STYLES = `
+.mail-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4em; }
+.mail-tabs [aria-pressed="true"] { outline: 2px solid var(--fw-accent); }
+.mail-list,.letter-detail { display: grid; gap: 0.6em; }
+.mail-list .button { text-align: left; min-height: 44px; white-space: normal; }
+.letter-body { white-space: pre-wrap; line-height: 1.7; }
+.mail-unread { font-size: 12px; }
+
 .guidelines-form { display: grid; gap: 0.5em; }
 .guidelines-toggle { display: flex; align-items: center; gap: 0.5em; min-height: 44px; }
 .guidelines-toggle input { width: 24px; height: 24px; }

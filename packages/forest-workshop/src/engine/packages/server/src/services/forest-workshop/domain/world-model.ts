@@ -18,7 +18,9 @@ import { MAX_RESIDENTS, residentSchema } from "./model/residents";
 
 import { guidelinesSchema, initialGuidelines } from "./model/guidelines";
 
-export const CURRENT_SCHEMA_VERSION = 9;
+import { mailboxSchema, initialMailbox } from "./model/mailbox";
+
+export const CURRENT_SCHEMA_VERSION = 10;
 
 const nonNegativeInt = z.number().int().min(0).max(Number.MAX_SAFE_INTEGER);
 const displayText = (max: number) =>
@@ -77,6 +79,7 @@ const worldShape = z
     deliveries: deliveryStateSchema,
     stories: storiesStateSchema,
     memory: memorySchema,
+    mailbox: mailboxSchema,
     guidelines: guidelinesSchema.default(initialGuidelines),
   })
   .strict();
@@ -185,6 +188,7 @@ export function createWorldState(input: NewWorldInput): WorldState {
     worldId: input.worldId,
     createdAt: input.now,
     settings: { worldName: input.worldName, playerNickname: input.playerNickname },
+    mailbox: initialMailbox(input.now),
     wallet: { gold: 0, tickets: 0, tokens: 0 },
     inventory: {},
     progress: { starterKitClaimed: false, starterResidentId: null },

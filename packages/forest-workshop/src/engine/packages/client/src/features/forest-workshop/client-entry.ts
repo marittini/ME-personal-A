@@ -46,7 +46,11 @@ class ForestWorkshopElement extends HTMLElement {
   private ticker: ReturnType<typeof setInterval> | undefined;
   /** Countdown ends already asked about, so a finished run triggers one refresh, not one per second. */
   private refreshedEnds = new Set<string>();
-  private readonly onPresence = () => void this.controller?.heartbeat();
+  private readonly onPresence = () => {
+    if (document.hidden) this.controller?.pauseAutoReading();
+    void this.controller?.heartbeat();
+  };
+  private readonly onBlur = () => this.controller?.pauseAutoReading();
   /** The world the last opening heartbeat was for: opening a world is presence at once, not a minute later. */
   private presentWorld: string | null = null;
 
@@ -71,6 +75,7 @@ class ForestWorkshopElement extends HTMLElement {
     this.controller.startHeartbeat();
     document.addEventListener("visibilitychange", this.onPresence);
     window.addEventListener("focus", this.onPresence);
+    window.addEventListener("blur", this.onBlur);
     clearInterval(this.ticker);
     this.ticker = setInterval(() => this.tick(), 1000);
   }
@@ -79,8 +84,10 @@ class ForestWorkshopElement extends HTMLElement {
     this.unsubscribe?.();
     this.unsubscribe = null;
     this.controller?.stopHeartbeat();
+    this.controller?.pauseAutoReading();
     document.removeEventListener("visibilitychange", this.onPresence);
     window.removeEventListener("focus", this.onPresence);
+    window.removeEventListener("blur", this.onBlur);
     clearInterval(this.ticker);
   }
 

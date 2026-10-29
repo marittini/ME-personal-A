@@ -16,6 +16,15 @@ export interface ResidentsView {
 }
 
 export type ResidentSheet =
+  | {
+      kind: "memory";
+      pairId?: string;
+      page?: number;
+      factId?: number;
+      draft?: string;
+      residentId?: string;
+      status?: "all" | "active" | "corrected" | "invalidated";
+    }
   | { kind: "profile"; residentId: string; panel?: number; draft?: string; historyPage?: number }
   | { kind: "pair-add"; residentId: string }
   | { kind: "image-history"; residentId: string }
@@ -62,6 +71,35 @@ export function createResidentActions(core: ControllerCore) {
   }
 
   return {
+    openMemory(pairId?: string) {
+      store.set({ sheet: { kind: "memory", pairId, page: 0 } });
+    },
+    updateMemoryView(update: {
+      page?: number;
+      factId?: number;
+      draft?: string;
+      residentId?: string;
+      status?: "all" | "active" | "corrected" | "invalidated";
+    }) {
+      store.set((state) => (state.sheet?.kind === "memory" ? { sheet: { ...state.sheet, ...update } } : {}));
+    },
+    rememberMemoryDraft(draft: string) {
+      store.remember((state) => (state.sheet?.kind === "memory" ? { sheet: { ...state.sheet, draft } } : {}));
+    },
+    async correctMemory(factId: number, text: string) {
+      const response = await core.runCommand(`memory:${factId}`, "memory.correct", { factId, text });
+      if (response) {
+        store.set((state) =>
+          state.sheet?.kind === "memory"
+            ? { sheet: { ...state.sheet, factId: Number(response.result.factId), draft: undefined } }
+            : {},
+        );
+        core.notify("기억을 정정했어요. 원문은 이력에 남아요.");
+      }
+    },
+    async setMemoryStatus(factId: number, active: boolean) {
+      await core.runCommand(`memory:${factId}`, "memory.setStatus", { factId, active });
+    },
     setResidentsTab: (tab: ResidentsView["tab"]) => patchView({ tab, page: 0 }),
     setResidentsQuery: (query: string) => patchView({ query, page: 0 }),
     setResidentsFilter: (filter: ResidentsView["filter"]) => patchView({ filter, page: 0 }),

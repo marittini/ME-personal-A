@@ -89,11 +89,7 @@ function pairRow(
             }),
           ])
         : h("div", { className: "pair-actions" }, [
-            featureButton(controller, "pair-memory", {
-              className: "outline-button",
-              label: "기억 보기",
-              children: [ICONS.book("icon"), h("span", { text: "기억 보기" })],
-            }),
+            button("기억 보기", () => controller.openMemory(pair.pairId), { variant: "secondary" }),
             featureButton(controller, "pair-guidelines", {
               className: "outline-button",
               label: "지침 관리",

@@ -36,8 +36,6 @@ export interface ReaderState {
   from: Route;
 }
 
-const AUTO_MS = 2800;
-
 export function createStoryActions(core: ControllerCore) {
   const { store } = core;
   let autoTimer: ReturnType<typeof setInterval> | undefined;
@@ -74,6 +72,7 @@ export function createStoryActions(core: ControllerCore) {
     // Entering 탐사 (any way: the bottom bar, a link) loads the overview.
     if (state.route !== seenRoute) {
       seenRoute = state.route;
+      if (state.route !== "story") pauseAutoReading();
       if (state.route === "explore") void loadOverview(state.explore.overview?.state === "ready");
     }
     const revision = state.world?.state === "ready" ? state.world.value.revision : -1;
@@ -87,6 +86,35 @@ export function createStoryActions(core: ControllerCore) {
   function stopAuto() {
     clearInterval(autoTimer);
     autoTimer = undefined;
+  }
+
+  function pauseAutoReading() {
+    stopAuto();
+    if (store.get().reader?.auto) patchReader({ auto: false });
+  }
+
+  function startAutoReading() {
+    const reader = store.get().reader;
+    if (!reader || reader.story.state !== "ready" || reader.backlog || store.get().route !== "story") return;
+    const current = reader.story.value.segments[reader.index];
+    if (!current || (current.kind === "choice" && !answered())) {
+      pauseAutoReading();
+      return;
+    }
+    stopAuto();
+    patchReader({ auto: true });
+    autoTimer = setInterval(
+      () => {
+        const state = store.get();
+        const active = state.reader;
+        if (!active?.auto || state.route !== "story" || active.backlog || document.hidden || !document.hasFocus()) {
+          pauseAutoReading();
+          return;
+        }
+        advance();
+      },
+      (store.get().autoReading?.seconds ?? 4) * 1000,
+    );
   }
 
   function segments() {
@@ -120,7 +148,7 @@ export function createStoryActions(core: ControllerCore) {
     // A question waits for the answer (once); after it, or when re-reading, it steps on.
     if (current?.kind === "choice" && !answered()) return;
     if (reader.index < list.length) patchReader({ index: reader.index + 1, textPage: 0, choiceView: "question" });
-    if (reader.index + 1 >= list.length) stopAuto();
+    if (reader.index + 1 >= list.length || list[reader.index + 1]?.kind === "choice") pauseAutoReading();
   }
 
   async function loadStory() {
@@ -138,6 +166,7 @@ export function createStoryActions(core: ControllerCore) {
       }
       if (store.get().reader?.storyId !== reader.storyId) return;
       patchReader({ story: { state: "ready", value: story }, index: 0 });
+      if (store.get().autoReading?.enabled) startAutoReading();
     } catch (error) {
       if (store.get().reader?.storyId !== reader.storyId) return;
       patchReader({
@@ -231,25 +260,19 @@ export function createStoryActions(core: ControllerCore) {
       patchReader({ choiceView });
     },
 
+    pauseAutoReading,
+
     toggleAuto() {
-      const reader = store.get().reader;
-      if (!reader) return;
-      if (reader.auto) {
-        stopAuto();
-        patchReader({ auto: false });
-        return;
-      }
-      patchReader({ auto: true });
-      autoTimer = setInterval(() => {
-        const current = store.get().reader;
-        if (!current?.auto || store.get().route !== "story") return stopAuto();
-        advance();
-      }, AUTO_MS);
+      if (store.get().reader?.auto) pauseAutoReading();
+      else startAutoReading();
     },
 
     toggleBacklog() {
       const reader = store.get().reader;
-      if (reader) patchReader({ backlog: !reader.backlog, backlogPage: undefined });
+      if (reader) {
+        pauseAutoReading();
+        patchReader({ backlog: !reader.backlog, backlogPage: undefined });
+      }
     },
 
     setBacklogPage(backlogPage: number) {

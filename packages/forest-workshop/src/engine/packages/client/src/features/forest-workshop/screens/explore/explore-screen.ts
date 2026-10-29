@@ -9,7 +9,7 @@ import type { EpisodeView, GameContent, PairStoryView, WorldView } from "../../a
 import { card, renderFrame } from "../chrome/frame";
 import { ICONS } from "../chrome/icons";
 import { pagePicker } from "../chrome/page-picker";
-import { featureButton } from "../chrome/locked";
+import { activityPanel } from "./activity-panel";
 import { residentAvatar } from "../residents/resident-figure";
 import { itemName, itemTile, jobProgress } from "../work/production-view";
 
@@ -23,23 +23,27 @@ const STATUS_TEXT: Record<EpisodeView["status"], string> = {
   read: "읽음",
 };
 
-function tabs(controller: Controller) {
-  return h("div", { className: "field-tabs explore-tabs", attrs: { role: "tablist", "aria-label": "탐사" } }, [
-    featureButton(controller, "survey-patrol", {
-      className: "field-tab",
-      label: "조사",
-      children: [ICONS.search("icon field-glyph"), h("span", { text: "조사" })],
-    }),
-    featureButton(controller, "survey-patrol", {
-      className: "field-tab",
-      label: "순찰",
-      children: [ICONS.compass("icon field-glyph"), h("span", { text: "순찰" })],
-    }),
-    h("button", { className: "field-tab current", attrs: { type: "button", role: "tab", "aria-selected": "true" } }, [
-      ICONS.leaf("icon field-glyph"),
-      h("span", { text: "이야기 탐험" }),
-    ]),
-  ]);
+function tabs(state: AppState, controller: Controller) {
+  const choices = [
+    ["survey", "조사", ICONS.search],
+    ["patrol", "순찰", ICONS.compass],
+    ["story", "이야기 탐험", ICONS.leaf],
+  ] as const;
+  return h(
+    "div",
+    { className: "field-tabs explore-tabs work-fields", attrs: { role: "tablist", "aria-label": "탐사" } },
+    choices.map(([id, label, icon]) =>
+      h(
+        "button",
+        {
+          className: `field-tab${state.explore.tab === id ? " current" : ""}`,
+          attrs: { type: "button", role: "tab", "aria-selected": String(state.explore.tab === id) },
+          on: { click: () => controller.setExploreTab(id) },
+        },
+        [icon("icon field-glyph"), h("span", { text: label })],
+      ),
+    ),
+  );
 }
 
 /** The trail: three stops, filled as episodes are read; the current stop carries the leaf marker. */
@@ -332,11 +336,12 @@ function statusStrip(state: AppState, world: WorldView, overview: PairStoryView[
 }
 
 function body(state: AppState, world: WorldView, content: GameContent, controller: Controller) {
+  if (state.explore.tab !== "story") return [tabs(state, controller), activityPanel(state, world, controller)];
   const overview = state.explore.overview;
-  if (!overview || overview.state === "loading") return [tabs(controller), statusLine("이야기를 불러오는 중…")];
+  if (!overview || overview.state === "loading") return [tabs(state, controller), statusLine("이야기를 불러오는 중…")];
   if (overview.state === "error") {
     return [
-      tabs(controller),
+      tabs(state, controller),
       card(null, [errorLine(overview.message), button("다시 불러오기", () => void controller.loadStoryOverview())]),
     ];
   }
@@ -345,7 +350,7 @@ function body(state: AppState, world: WorldView, content: GameContent, controlle
   );
   if (pairs.length === 0) {
     return [
-      tabs(controller),
+      tabs(state, controller),
       card(null, [
         h("p", { text: "페어를 만들면 두 주민의 이야기 탐험이 열려요." }),
         h("p", { className: "muted", text: "1편은 한 주민만 공방에 와 있어도 떠날 수 있어요." }),
@@ -364,7 +369,7 @@ function body(state: AppState, world: WorldView, content: GameContent, controlle
     ["history", "읽은 이야기"],
   ] as const;
   return [
-    tabs(controller),
+    tabs(state, controller),
     pairChooser(state, world, pairs, controller),
     h(
       "div",

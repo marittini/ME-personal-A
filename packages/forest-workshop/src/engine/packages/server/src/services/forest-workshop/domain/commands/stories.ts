@@ -71,6 +71,8 @@ export const departExpedition = defineCommand({
     if (episode.status !== "available") {
       throw new FwError("story_locked", { details: { reasons: episode.reasons, status: episode.status } });
     }
+    if (state.activities.running && episode.participants.includes(state.activities.running.residentId))
+      throw new FwError("resident_busy");
     const current = view.stored ?? planArc(state, payload.pairId, view.leadId!, context.now);
     // Preparations from usable stock only.
     const inventory = { ...state.inventory };

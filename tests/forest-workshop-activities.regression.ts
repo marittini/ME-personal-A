@@ -1,0 +1,94 @@
+import assert from "node:assert/strict";
+import { FakeHost } from "./support/forest-workshop-fake-host";
+import { createWorldService } from "../packages/forest-workshop/src/engine/packages/server/src/services/forest-workshop/services/world-service";
+import { createCommandService } from "../packages/forest-workshop/src/engine/packages/server/src/services/forest-workshop/services/command-service";
+import { createSettlementService } from "../packages/forest-workshop/src/engine/packages/server/src/services/forest-workshop/services/settlement-service";
+import { createBackupService } from "../packages/forest-workshop/src/engine/packages/server/src/services/forest-workshop/services/backup-service";
+async function main() {
+  const host = new FakeHost(),
+    start = Date.parse("2026-10-29T00:00:00Z");
+  let now = start,
+    seq = 0;
+  const clock = () => new Date(now),
+    worldId = "11111111-1111-4111-8111-111111111111",
+    residentId = "22222222-2222-4222-8222-222222222222",
+    other = "33333333-3333-4333-8333-333333333333",
+    pairId = "44444444-4444-4444-8444-444444444444",
+    id = "55555555-5555-4555-8555-555555555555";
+  const worlds = createWorldService(host.persistence, clock),
+    settlement = createSettlementService(host.persistence, clock);
+  const commands = createCommandService(host.persistence, clock, {
+    readSource: async (_kind, sourceId, at) => ({
+      name: sourceId,
+      description: "숲 주민",
+      personality: "차분함",
+      scenario: "",
+      sourceHash: "1".repeat(64),
+      takenAt: at,
+    }),
+  });
+  const run = async (type: string, payload: unknown) =>
+    commands.execute({
+      worldId,
+      commandId: `activity-test-${seq++}`,
+      expectedRevision: (await worlds.get(worldId)).revision,
+      type,
+      payload,
+    });
+  await worlds.create({ worldId, worldName: "공방", playerNickname: "테스터" });
+  await run("onboarding.claimStarterKit", {});
+  for (const [index, r] of [residentId, other].entries())
+    await run("residents.register", {
+      residentId: r,
+      source: { kind: "character", id: `source${index}` },
+      worldSetting: "숲의 이웃",
+    });
+  await run("residents.chooseStarter", { residentId });
+  await run("pairs.add", { pairId, residentIds: [residentId, other] });
+  await run("production.assignResident", { facilityId: "gather-yard", residentId });
+  const before = (await worlds.get(worldId)).state;
+  await run("activities.start", { id, kind: "survey", placeId: "workshop-edge", residentId });
+  const started = (await worlds.get(worldId)).state;
+  assert.equal(started.production.facilities["gather-yard"].residentId, null);
+  assert.deepEqual(started.production.facilities["gather-yard"].job, before.production.facilities["gather-yard"].job);
+  await assert.rejects(run("production.assignResident", { facilityId: "gather-yard", residentId }), {
+    code: "resident_busy",
+  });
+  await assert.rejects(run("stories.depart", { pairId, episode: 0 }), { code: "resident_busy" });
+  await assert.rejects(run("activities.start", { id: other, kind: "patrol", placeId: "workshop-edge", residentId }), {
+    code: "resident_busy",
+  });
+  now = start + 29 * 60000;
+  assert.ok((await settlement.settle(worldId, { active: false })).state.activities.running);
+  now = start + 30 * 60000;
+  const completed = (await settlement.settle(worldId, { active: false })).state;
+  assert.equal(completed.activities.running, null);
+  assert.equal(completed.activities.completed.length, 1);
+  assert.equal(completed.mailbox.letters.filter((l) => l.eventId === `activity-${id}`).length, 1);
+  const again = (await settlement.settle(worldId, { active: false })).state;
+  assert.equal(again.activities.completed.length, 1);
+  assert.deepEqual(completed.wallet, before.wallet);
+  await run("activities.start", { id: other, kind: "patrol", placeId: "workshop-edge", residentId });
+  await run("activities.cancel", { id: other });
+  now += 60 * 60000;
+  assert.equal((await settlement.settle(worldId, { active: false })).state.activities.completed.length, 1);
+  const backups = createBackupService(host.persistence, "test", clock);
+  const { backup } = await backups.exportWorld(worldId, async () => {
+    throw new Error("no assets");
+  });
+  const restored = await backups.restore(
+    { newWorldId: "66666666-6666-4666-8666-666666666666", backup },
+    {
+      store: async () => {
+        throw new Error("no assets");
+      },
+      remove: async () => {},
+    },
+  );
+  assert.deepEqual(restored.state.activities.completed, again.activities.completed);
+  console.log("Activity timing, resident conflicts, cancellation, single result/mail and backup: OK");
+}
+void main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

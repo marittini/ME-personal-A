@@ -2,11 +2,10 @@
 // (owner decision 2026-10-26, docs/forest-workshop/ui-spec.md). Tapping one says which phase opens it.
 // When a phase lands, delete its entries here: every screen asks `isLocked()` and turns the element on by itself.
 
-export type LockedFeature = "weather" | "survey-patrol" | "weather-effects";
+export type LockedFeature = "weather" | "weather-effects";
 
 const LOCKED: Readonly<Record<LockedFeature, { label: string; phase: "P4b" | "P5" }>> = {
   weather: { label: "현실 날씨", phase: "P5" },
-  "survey-patrol": { label: "조사 · 순찰", phase: "P4b" },
   "weather-effects": { label: "날씨 효과", phase: "P5" },
 };
 

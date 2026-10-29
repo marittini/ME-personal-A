@@ -1,6 +1,9 @@
 // Styles for 탐사 (board 02-1) and 공방 이야기 (02-2). Same storybook rules as styles.ts: flat fills, one dark-brown
 // ink line (--line / --line-in), flat drops, no thin strokes, no blended gradients.
 export const STORY_STYLES = `
+.activity-running,.activity-prepare,.activity-record { display: grid; gap: 0.5em; }
+.activity-record { padding: 0.6em; border-radius: 0.7em; background: var(--fw-surface-3); }
+
 /* 탐사 */
 .explore-tabs { grid-template-columns: 1fr 1fr 1.4fr; }
 .explore-tabs .field-tab span { white-space: nowrap; }

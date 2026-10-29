@@ -20,7 +20,9 @@ import { guidelinesSchema, initialGuidelines } from "./model/guidelines";
 
 import { mailboxSchema, initialMailbox } from "./model/mailbox";
 
-export const CURRENT_SCHEMA_VERSION = 10;
+import { activitiesSchema, initialActivities } from "./model/activities";
+
+export const CURRENT_SCHEMA_VERSION = 11;
 
 const nonNegativeInt = z.number().int().min(0).max(Number.MAX_SAFE_INTEGER);
 const displayText = (max: number) =>
@@ -80,6 +82,7 @@ const worldShape = z
     stories: storiesStateSchema,
     memory: memorySchema,
     mailbox: mailboxSchema,
+    activities: activitiesSchema.default(initialActivities),
     guidelines: guidelinesSchema.default(initialGuidelines),
   })
   .strict();
@@ -153,6 +156,16 @@ export const worldStateSchema = worldShape.superRefine((world, context) => {
   if (!Object.keys(world.production.autoSell).every(isKnownItem)) issue(["production"], "auto-sell item");
   for (const [pairId] of Object.entries(world.stories.pairs)) {
     if (!world.pairs[pairId]) issue(["stories", pairId], "unknown pair");
+  }
+  const activity = world.activities.running;
+  if (activity) {
+    if (
+      !world.residents[activity.residentId]?.recruited ||
+      world.stories.expedition?.participants.includes(activity.residentId)
+    )
+      issue(["activities"], "resident unavailable");
+    if (Object.values(world.production.facilities).some((f) => f.residentId === activity.residentId))
+      issue(["activities"], "resident assigned");
   }
   const expedition = world.stories.expedition;
   if (expedition) {

@@ -20,6 +20,25 @@ export interface WritingGuideline {
 export interface WorldState {
   guidelines: { world: WritingGuideline; pairs: Record<string, WritingGuideline> };
   mailbox: { letters: Letter[] };
+  activities: {
+    running: {
+      id: string;
+      kind: "survey" | "patrol";
+      placeId: "workshop-edge";
+      residentId: string;
+      startedSim: number;
+      endsSim: number;
+      startedAt: string;
+    } | null;
+    completed: Array<{
+      id: string;
+      kind: "survey" | "patrol";
+      residentId: string;
+      completedAt: string;
+      summary: string;
+      mailId: string;
+    }>;
+  };
   schemaVersion: number;
   worldId: string;
   createdAt: string;

@@ -16,6 +16,7 @@ type RawWorld = Record<string, unknown>;
 
 /** `MIGRATIONS[n]` turns a version-n document into version n+1. Add one entry per schema bump; never edit old ones. */
 const MIGRATIONS: Readonly<Record<number, (world: RawWorld) => RawWorld>> = {
+  10: (world) => ({ ...world, schemaVersion: 11 }),
   9: (world) => ({ ...world, schemaVersion: 10, mailbox: initialMailbox(String(world.createdAt)) }),
   8: (world) => ({ ...world, schemaVersion: 9 }),
   7: (world) => ({ ...world, schemaVersion: 8 }),

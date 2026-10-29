@@ -299,4 +299,39 @@ img.emotion-bubble.emotion-art { min-width: 0; width: 2.6em; height: 2.6em; padd
   .story-layout .reader-tools .chip-button { width: 44px; min-height: 44px; padding: 0; justify-content: center; }
   .story-layout .reader-tools .chip-button > span { display: none; }
 }
+
+/* Detail panels retain the paper artwork while reserving width for large text. */
+.art-paper .sheet { padding: 16px; }
+.sheet { scroll-padding-block: 76px 16px; }
+.sheet > .sheet-head { position: sticky; top: -16px; z-index: 3; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; padding-block: 8px; background: var(--fw-surface); border-bottom: 1px solid var(--fw-wood-dark); }
+.sheet-head .section-title { min-width: 0; margin: 0; font-size: calc(var(--fs) * 1.1); overflow-wrap: anywhere; }
+.sheet-head > .button { min-height: 44px; white-space: nowrap; padding: 8px 12px; }
+.sheet .stepper.wide:not(.compact) { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 4px; padding: 4px; border: 0; background: transparent; overflow: visible; }
+.sheet .stepper.wide:not(.compact) > :nth-child(-n+3) { grid-column: span 2; }
+.sheet .stepper.wide:not(.compact) > :nth-child(n+4) { grid-column: span 3; }
+.sheet .stepper.wide .step { min-width: 0; min-height: 44px; border: 2px solid var(--ink); border-radius: 8px; white-space: nowrap; }
+.sheet .step-value { min-width: 0; display: grid; place-items: center; }
+.sheet .protect-row { grid-template-columns: 48px minmax(0, 1fr); grid-template-areas: "tile name" "picker picker" "save save"; padding: 8px; gap: 8px; }
+.sheet .protect-row > .button { width: 100%; min-height: 44px; white-space: nowrap; }
+.sheet .protect-name { min-width: 0; overflow-wrap: anywhere; }
+.sheet .profile-identity { gap: 12px; padding: 8px; }
+.sheet .profile-identity .avatar.large { width: 64px; height: 64px; }
+.sheet .profile-identity-text { flex: 1; gap: 6px; }
+.sheet .profile-identity-text .outline-button { white-space: nowrap; padding-inline: 8px; }
+.sheet .profile-tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.sheet .compare-box { padding: 8px; }
+.sheet .compare-box .button { justify-self: stretch; min-height: 44px; }
+.detail-help summary { min-height: 44px; display: list-item; padding-block: 10px; cursor: pointer; }
+.detail-help p { margin-block: 8px; }
+.memory-text { font-weight: 700; line-height: 1.65; white-space: pre-wrap; }
+.memory-filters { display: grid; gap: 8px; }
+.sheet select.input { min-height: 44px; width: 100%; min-width: 0; padding: 8px; border: 2px solid var(--ink); border-radius: 8px; background: var(--fw-surface); color: var(--fw-text); font: inherit; }
+.art-paper .image-card { padding: 16px; gap: 12px; }
+.image-card .target-ribbon { display: flex; flex-wrap: nowrap; width: 100%; gap: 8px; padding: 8px; margin: 0; }
+.image-card .target-ribbon strong { min-width: 0; overflow-wrap: anywhere; font-size: var(--fs); }
+.image-card .image-stage { max-height: 220px; }
+.image-card .file-facts { overflow-wrap: anywhere; }
+.image-card .slider-row { grid-template-columns: auto minmax(0, 1fr) auto; gap: 8px; }
+.image-card .slider-row .slider { grid-column: 1 / -1; grid-row: 2; width: 100%; min-height: 44px; }
+.image-card .rule-actions.even { grid-template-columns: 1fr; }
 `;

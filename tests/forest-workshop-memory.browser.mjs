@@ -88,12 +88,17 @@ try {
     window.memoryRender = render;
     render();
   });
+  async function choose(label, index) {
+    const summary = page.getByLabel(label, { exact: true });
+    await summary.click();
+    await summary.locator("..").locator("button").nth(index).click();
+  }
   assert.equal(await page.getByText("A만의 비밀", { exact: true }).count(), 0);
-  await page.getByLabel("기억 상태 필터").selectOption("invalidated");
+  await choose("기억 상태 필터", 3);
   assert.equal(await page.getByText("아직 기록된 기억이 없어요.").isVisible(), true);
-  await page.getByLabel("기억 상태 필터").selectOption("all");
-  await page.getByLabel("기억 인지 주민 필터").selectOption("b");
-  await page.getByRole("button", { name: /#1 · 사용 중/ }).click();
+  await choose("기억 상태 필터", 0);
+  await choose("기억 인지 주민 필터", 2);
+  await page.getByRole("button", { name: "둘의 기억 · 사용 중", exact: true }).click();
   await page.getByLabel("기억 정정문").fill("정정한 기억");
   await page.evaluate(() => window.memoryRender());
   assert.equal(await page.getByLabel("기억 정정문").inputValue(), "정정한 기억");

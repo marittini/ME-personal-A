@@ -27,7 +27,7 @@ export type ResidentSheet =
       residentId?: string;
       status?: "all" | "active" | "corrected" | "invalidated";
     }
-  | { kind: "profile"; residentId: string; panel?: number; draft?: string; historyPage?: number }
+  | { kind: "profile"; residentId: string; panel?: number; draft?: string }
   | { kind: "pair-add"; residentId: string }
   | { kind: "image-history"; residentId: string }
   | { kind: "history-cleanup" }
@@ -219,7 +219,7 @@ export function createResidentActions(core: ControllerCore) {
       store.set({ sheet: null });
     },
 
-    rememberProfile(patch: { panel?: number; draft?: string; historyPage?: number }) {
+    rememberProfile(patch: { panel?: number; draft?: string }) {
       store.remember((state) => (state.sheet?.kind === "profile" ? { sheet: { ...state.sheet, ...patch } } : {}));
     },
 
@@ -236,7 +236,7 @@ export function createResidentActions(core: ControllerCore) {
         store.remember((state) =>
           state.sheet?.kind === "profile" ? { sheet: { ...state.sheet, draft: undefined } } : {},
         );
-        core.notify("공방 세계 설정을 고쳤어요. 변경 이력에 남았어요.");
+        core.notify("공방 세계 설정을 저장했어요.");
       }
       return response;
     },

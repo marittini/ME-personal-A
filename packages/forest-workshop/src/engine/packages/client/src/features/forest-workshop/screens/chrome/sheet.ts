@@ -4,6 +4,7 @@
 import { h, type Child } from "../../app/dom";
 
 export function sheetDialog(id: string, title: string, children: Child[], className = "") {
+  const close = children.find((child) => child instanceof HTMLButtonElement && child.textContent === "닫기");
   return h("div", { className: "sheet-backdrop" }, [
     h(
       "section",
@@ -11,7 +12,13 @@ export function sheetDialog(id: string, title: string, children: Child[], classN
         className: `sheet card ${className}`.trim(),
         attrs: { role: "dialog", "aria-modal": "true", "aria-labelledby": id },
       },
-      [h("h2", { className: "section-title", text: title, attrs: { id } }), ...children],
+      [
+        h("div", { className: "sheet-head" }, [
+          h("h2", { className: "section-title", text: title, attrs: { id } }),
+          close,
+        ]),
+        ...children.filter((child) => child !== close),
+      ],
     ),
   ]);
 }
@@ -46,7 +53,7 @@ export function amountPicker(
         },
       },
     });
-  const steps = options.small ? [step(-1), output, step(1)] : [step(-10), step(-1), output, step(1), step(10)];
+  const steps = options.small ? [step(-1), output, step(1)] : [step(-1), output, step(1), step(-10), step(10)];
   return {
     node: h("div", { className: `stepper wide${options.small ? " compact" : ""}` }, steps),
     read: () => value,

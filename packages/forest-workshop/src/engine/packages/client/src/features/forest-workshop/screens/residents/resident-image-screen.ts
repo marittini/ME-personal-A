@@ -106,25 +106,17 @@ function body(resident: Resident, state: AppState, controller: Controller) {
   const signed = (value: number) => (value > 0 ? `+${value}` : String(value));
   return [
     h("section", { className: "card image-card" }, [
-      h("p", { className: "target-ribbon" }, [
-        h("span", { className: "muted", text: "대상" }),
-        ICONS.leaf("icon"),
-        h("strong", { text: resident.displayName }),
-      ]),
+      h("p", { className: "target-ribbon" }, [ICONS.leaf("icon"), h("strong", { text: resident.displayName })]),
       h("div", { className: "image-stage checker" }, [residentFigure(resident, { placement: draft, marker: true })]),
-      h(
-        "div",
-        { className: "file-facts" },
-        current
-          ? [
+      current
+        ? h("details", { className: "detail-help" }, [
+            h("summary", { text: "현재 그림 정보" }),
+            h("div", { className: "file-facts" }, [
               h("strong", { text: current.fileName || "resident.webp" }),
               h("span", { text: `${current.width} × ${current.height} / ${formatKB(current.bytes)}` }),
-            ]
-          : [
-              h("strong", { text: "아직 그림이 없어요" }),
-              h("span", { className: "muted", text: "그림이 없어도 모든 기능을 쓸 수 있어요" }),
-            ],
-      ),
+            ]),
+          ])
+        : h("p", { className: "muted", text: "그림 없이도 공방을 이용할 수 있어요." }),
       fileInput,
       h(
         "label",
@@ -134,11 +126,6 @@ function body(resident: Resident, state: AppState, controller: Controller) {
         },
         [h("span", { text: uploading ? "WebP로 저장하는 중…" : current ? "파일 선택 · 교체" : "파일 선택" })],
       ),
-      h("ul", { className: "rules" }, [
-        h("li", { text: "PNG · 정적 WebP 업로드 (20MiB · 4096px까지)" }),
-        h("li", { text: "투명도 유지 · WebP 품질 95 저장" }),
-        h("li", { text: "PNG 원본은 따로 보관하지 않아요." }),
-      ]),
       limits
         ? h("div", { className: "setting-block sliders" }, [
             slider("scale", ICONS.zoom, "그림 크기", draft.scale, limits.scale, controller, (value) => `${value}%`),
@@ -164,6 +151,14 @@ function body(resident: Resident, state: AppState, controller: Controller) {
         },
         [h("span", { text: applying ? "적용하는 중…" : changed ? "적용" : "적용됨" })],
       ),
+      h("details", { className: "detail-help" }, [
+        h("summary", { text: "그림 업로드 안내" }),
+        h("ul", { className: "rules" }, [
+          h("li", { text: "PNG · 정적 WebP 업로드 (20MiB · 4096px까지)" }),
+          h("li", { text: "투명도 유지 · WebP 품질 95 저장" }),
+          h("li", { text: "PNG 원본은 따로 보관하지 않아요." }),
+        ]),
+      ]),
       h("div", { className: "rule-actions even" }, [
         h(
           "button",

@@ -79,7 +79,9 @@ try {
         window.route = route;
       },
       closeSheet() {},
-      readReports() {},
+      readReports(id) {
+        window.readThrough = id;
+      },
     };
     window.renderAssign = () =>
       document
@@ -110,6 +112,11 @@ try {
   );
   assert.ok((await page.locator(".report-item .item-tile").count()) >= 1);
   assert.ok((await page.getByText("산딸기 +3").count()) >= 1);
+  assert.equal(await page.locator(".report-list").isVisible(), false);
+  await page.getByText("최근 작업 내역", { exact: true }).click();
+  assert.equal(await page.locator(".report-list").isVisible(), true);
+  await page.getByRole("button", { name: "확인", exact: true }).click();
+  assert.equal(await page.evaluate(() => window.readThrough), 1);
   console.log("Assignment next steps and report item pictures: OK");
 } finally {
   await browser?.close();

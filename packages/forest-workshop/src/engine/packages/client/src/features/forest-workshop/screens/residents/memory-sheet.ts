@@ -31,34 +31,20 @@ export function renderMemorySheet(state: AppState, controller: Controller) {
     }
     controller.updateMemoryView({ ...patch, page: 0, factId: undefined, draft: undefined });
   };
-  const statusSelect = h(
-    "select",
-    {
-      className: "input",
-      attrs: { "aria-label": "기억 상태 필터" },
-      on: { change: () => filter({ status: statusSelect.value as "all" | "active" | "corrected" | "invalidated" }) },
-    },
-    [
-      h("option", { text: "모든 상태", attrs: { value: "all" } }),
-      ...Object.entries(STATUS).map(([value, text]) => h("option", { text, attrs: { value } })),
-    ],
+  const statuses = ["all", "active", "corrected", "invalidated"] as const;
+  const residentIds = ["", ...Object.keys(world.state.residents)];
+  const statusSelect = pagePicker(
+    "기억 상태 필터",
+    Math.max(0, statuses.indexOf(view.status ?? "all")),
+    ["모든 상태", ...Object.values(STATUS)],
+    (index) => filter({ status: statuses[index] }),
   );
-  statusSelect.value = view.status ?? "all";
-  const residentSelect = h(
-    "select",
-    {
-      className: "input",
-      attrs: { "aria-label": "기억 인지 주민 필터" },
-      on: { change: () => filter({ residentId: residentSelect.value }) },
-    },
-    [
-      h("option", { text: "모든 인지 주민", attrs: { value: "" } }),
-      ...Object.entries(world.state.residents).map(([id, r]) =>
-        h("option", { text: r.displayName, attrs: { value: id } }),
-      ),
-    ],
+  const residentSelect = pagePicker(
+    "기억 인지 주민 필터",
+    Math.max(0, residentIds.indexOf(view.residentId ?? "")),
+    residentIds.map((id) => (id ? world.state.residents[id]!.displayName : "모든 인지 주민")),
+    (index) => filter({ residentId: residentIds[index] }),
   );
-  residentSelect.value = view.residentId ?? "";
   const editor = h("textarea", {
     className: "textarea",
     attrs: { "aria-label": "기억 정정문", maxlength: "160", rows: "3" },
@@ -82,7 +68,7 @@ export function renderMemorySheet(state: AppState, controller: Controller) {
             { className: "memory-choices", attrs: { role: "group", "aria-label": "기억 선택" } },
             facts.slice(page * 3, page * 3 + 3).map((f) =>
               button(
-                `#${f.factId} · ${STATUS[f.status]} · ${f.text.slice(0, 32)}`,
+                `${f.text.slice(0, 32)} · ${STATUS[f.status]}`,
                 () => {
                   const current = controller.store.get().sheet;
                   if (current?.kind === "memory" && current.draft !== undefined && current.draft !== selected?.text) {
@@ -107,8 +93,8 @@ export function renderMemorySheet(state: AppState, controller: Controller) {
       ),
       selected
         ? h("section", { className: "memory-detail" }, [
-            h("strong", { text: `#${selected.factId} · ${TYPE[selected.factType]} · ${STATUS[selected.status]}` }),
-            h("p", { text: selected.text }),
+            h("p", { className: "memory-text", text: selected.text }),
+            h("span", { className: "muted", text: `${TYPE[selected.factType]} · ${STATUS[selected.status]}` }),
             h("p", {
               className: "muted",
               text: `아는 주민: ${selected.visibility === "public" ? "모두" : selected.knowerIds.map((id) => world.state.residents[id]?.displayName ?? "주민").join(", ")}`,

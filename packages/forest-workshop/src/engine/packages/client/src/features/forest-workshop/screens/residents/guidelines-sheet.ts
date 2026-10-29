@@ -32,13 +32,7 @@ export function renderGuidelinesSheet(state: AppState, controller: Controller) {
   return sheetDialog("fw-guidelines", view.pairId ? "페어 AI 지침" : "공방 AI 지침", [
     h("p", {
       className: "muted",
-      text: "말투·분위기·관계 진행 속도를 정해요. 주민이 아는 기억이나 보상·게임 규칙은 바꾸지 않아요. 이미 작성한 이야기는 그대로예요.",
-    }),
-    h("p", {
-      className: "muted",
-      text: view.pairId
-        ? "이 페어의 새 이야기에만 적용돼요. 공방 지침보다 이 페어의 서술 선호를 우선해요."
-        : "공방의 모든 새 이야기에서 공통으로 참고해요.",
+      text: view.pairId ? "이 페어의 새 이야기 말투와 분위기를 정해요." : "공방의 새 이야기 말투와 분위기를 정해요.",
     }),
     h(
       "form",
@@ -61,10 +55,6 @@ export function renderGuidelinesSheet(state: AppState, controller: Controller) {
         h("label", { className: "guidelines-toggle" }, [enabled, "지침 사용"]),
         text,
         counter,
-        h("p", {
-          className: "muted",
-          text: `저장 버전 ${stored?.revision ?? 0} · ${stored?.updatedAt?.slice(0, 10) ?? "아직 저장하지 않았어요"}`,
-        }),
         h("button", {
           className: "button",
           text: busy ? "저장 중…" : "지침 저장",
@@ -83,6 +73,14 @@ export function renderGuidelinesSheet(state: AppState, controller: Controller) {
         ),
       ],
     ),
+    h("details", { className: "detail-help" }, [
+      h("summary", { text: "지침 적용 안내" }),
+      h("p", {
+        className: "muted",
+        text: "말투·분위기·관계 진행 속도를 참고해요. 기억·보상·게임 규칙이나 이미 작성한 이야기는 바뀌지 않아요.",
+      }),
+      view.pairId ? h("p", { className: "muted", text: "공방 지침보다 이 페어의 서술 선호를 우선해요." }) : null,
+    ]),
     button("닫기", () => controller.closeSheet(), { variant: "secondary", disabled: busy }),
   ]);
 }

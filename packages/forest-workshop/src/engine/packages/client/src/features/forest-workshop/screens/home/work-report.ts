@@ -6,6 +6,7 @@ import type { AppState, Controller } from "../../app/controller";
 import { button, h } from "../../app/dom";
 import type { GameContent, ProductionReport, WorldView } from "../../app/types";
 import { card } from "../chrome/frame";
+import { sheetDialog } from "../chrome/sheet";
 import { ICONS } from "../chrome/icons";
 import { formatHours, itemName, itemTile, jobProgress, recipeOf } from "../work/production-view";
 
@@ -173,71 +174,67 @@ export function workReportSheet(state: AppState, world: WorldView, controller: C
   const reports = world.state.production.reports;
   const news = unread(world);
   const busy = Boolean(state.busy["reports-read"]);
-  return h("div", { className: "sheet-backdrop" }, [
-    h(
-      "section",
-      { className: "sheet card", attrs: { role: "dialog", "aria-modal": "true", "aria-labelledby": "fw-work-report" } },
-      [
-        h("h2", { className: "section-title", text: "작업 보고", attrs: { id: "fw-work-report" } }),
-        h("p", {
-          className: "muted",
-          text: "만든 물건은 만들어진 순간 창고에 들어갔어요. 보고를 읽어도 다시 지급되지 않아요.",
-        }),
-        news.length
-          ? h("div", { className: "report-total" }, [
-              h("p", {}, [h("strong", { text: "새로 들어온 것 " }), itemsLine(content, sum(news, "produced"), "+")]),
-              h("p", {}, [h("strong", { text: "재료로 쓴 것 " }), itemsLine(content, sum(news, "consumed"), "−")]),
-              news.some((report) => report.gold > 0)
-                ? h("p", {}, [
-                    h("strong", { text: "자동 판매 " }),
-                    itemsLine(content, sum(news, "sold"), "−"),
-                    h("span", { text: ` → +${news.reduce((total, report) => total + report.gold, 0)} G` }),
-                  ])
-                : null,
-            ])
-          : h("p", { className: "empty", text: "새 보고가 없어요." }),
-        reports.length
-          ? h(
-              "ol",
-              { className: "report-list" },
-              reports.slice(0, 10).map((report) =>
-                h(
-                  "li",
-                  {
-                    className: `report-entry${report.reportId > world.state.production.reportsReadThrough ? " new" : ""}`,
-                  },
-                  [
-                    h("span", {
-                      className: "report-time",
-                      text: `${formatTime(report.at)}${report.offlineMs ? ` · 비운 동안 ${formatHours(report.offlineMs)}시간` : ""}`,
-                    }),
-                    report.runs ? h("span", { text: `${report.runs}회 완료` }) : null,
-                    Object.keys(report.produced).length
-                      ? h("div", {}, [h("strong", { text: "들어옴 " }), itemsLine(content, report.produced, "+")])
-                      : null,
-                    Object.keys(report.consumed).length
-                      ? h("div", {}, [h("strong", { text: "재료 " }), itemsLine(content, report.consumed, "−")])
-                      : null,
-                    report.gold
-                      ? h("div", {}, [
-                          h("strong", { text: "자동 판매 " }),
-                          itemsLine(content, report.sold, "−"),
-                          h("span", { text: ` +${report.gold} G` }),
-                        ])
-                      : null,
-                  ],
-                ),
+  return sheetDialog("fw-work-report", "작업 보고", [
+    h("p", {
+      className: "muted",
+      text: "물건은 창고에 자동 입고됐어요. 확인하면 보고만 읽음으로 표시해요.",
+    }),
+    news.length
+      ? h("div", { className: "report-total" }, [
+          h("p", {}, [h("strong", { text: "새로 들어온 것 " }), itemsLine(content, sum(news, "produced"), "+")]),
+          h("p", {}, [h("strong", { text: "재료로 쓴 것 " }), itemsLine(content, sum(news, "consumed"), "−")]),
+          news.some((report) => report.gold > 0)
+            ? h("p", {}, [
+                h("strong", { text: "자동 판매 " }),
+                itemsLine(content, sum(news, "sold"), "−"),
+                h("span", { text: ` → +${news.reduce((total, report) => total + report.gold, 0)} G` }),
+              ])
+            : null,
+        ])
+      : h("p", { className: "empty", text: "새 보고가 없어요." }),
+    reports.length
+      ? h("details", { className: "detail-help" }, [
+          h("summary", { text: "최근 작업 내역" }),
+          h(
+            "ol",
+            { className: "report-list" },
+            reports.slice(0, 10).map((report) =>
+              h(
+                "li",
+                {
+                  className: `report-entry${report.reportId > world.state.production.reportsReadThrough ? " new" : ""}`,
+                },
+                [
+                  h("span", {
+                    className: "report-time",
+                    text: `${formatTime(report.at)}${report.offlineMs ? ` · 비운 동안 ${formatHours(report.offlineMs)}시간` : ""}`,
+                  }),
+                  report.runs ? h("span", { text: `${report.runs}회 완료` }) : null,
+                  Object.keys(report.produced).length
+                    ? h("div", {}, [h("strong", { text: "들어옴 " }), itemsLine(content, report.produced, "+")])
+                    : null,
+                  Object.keys(report.consumed).length
+                    ? h("div", {}, [h("strong", { text: "재료 " }), itemsLine(content, report.consumed, "−")])
+                    : null,
+                  report.gold
+                    ? h("div", {}, [
+                        h("strong", { text: "자동 판매 " }),
+                        itemsLine(content, report.sold, "−"),
+                        h("span", { text: ` +${report.gold} G` }),
+                      ])
+                    : null,
+                ],
               ),
-            )
-          : null,
-        news.length
-          ? button(busy ? "확인하는 중…" : "확인", () => void controller.readReports(reports[0]!.reportId), {
-              disabled: busy,
-              attrs: { "data-wide": "" },
-            })
-          : null,
-        button("닫기", () => controller.closeSheet(), { variant: "secondary", attrs: { "data-wide": "" } }),
-      ],
-    ),
+            ),
+          ),
+        ])
+      : null,
+    news.length
+      ? button(busy ? "확인하는 중…" : "확인", () => void controller.readReports(reports[0]!.reportId), {
+          disabled: busy,
+          attrs: { "data-wide": "" },
+        })
+      : null,
+    button("닫기", () => controller.closeSheet(), { variant: "secondary", attrs: { "data-wide": "" } }),
   ]);
 }

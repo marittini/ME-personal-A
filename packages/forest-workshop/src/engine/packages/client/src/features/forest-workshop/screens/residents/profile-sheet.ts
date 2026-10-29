@@ -1,23 +1,11 @@
 // 프로필 (board 03-1 → 프로필): the resident's 원래 설정 (the source as it was read at registration) beside the
-// 공방 세계 설정, which can be edited here, and the 변경 이력 (plan §10 P2: 변경 이력, 원본 비교). The source card itself
+// 공방 세계 설정, which can be edited here. The source card itself
 // is never changed.
 import type { AppState, Controller } from "../../app/controller";
 import { button, h } from "../../app/dom";
-import type { ResidentChange, WorldView } from "../../app/types";
+import type { WorldView } from "../../app/types";
 import { ICONS } from "../chrome/icons";
-import { pagePicker } from "../chrome/page-picker";
 import { kindTag, residentAvatar } from "./resident-figure";
-
-const CHANGE_LABEL: Record<string, string> = {
-  registered: "등록",
-  setting: "세계 설정 수정",
-  name: "이름 수정",
-  recruited: "영입",
-  image: "그림 등록",
-  image_restored: "이전 그림으로",
-  image_history_cleared: "그림 이력 정리",
-  placement: "배치 변경",
-};
 
 function formatTime(value: string) {
   const date = new Date(value);
@@ -28,14 +16,6 @@ function formatTime(value: string) {
 
 function sourceBlock(label: string, text: string) {
   return text ? h("div", { className: "source-field" }, [h("strong", { text: label }), h("p", { text })]) : null;
-}
-
-function changeRow(change: ResidentChange) {
-  return h("li", { className: "change-row" }, [
-    h("span", { className: "change-kind", text: CHANGE_LABEL[change.kind] ?? change.kind }),
-    h("span", { className: "change-detail", text: change.detail }),
-    h("time", { className: "change-time", text: formatTime(change.at), attrs: { datetime: change.at } }),
-  ]);
 }
 
 export function renderProfileSheet(world: WorldView, state: AppState, controller: Controller, residentId: string) {
@@ -103,35 +83,8 @@ export function renderProfileSheet(world: WorldView, state: AppState, controller
     ),
   ]);
   const sourcePanel = h("div", { className: "profile-panel" }, [original]);
-  const historyList = h("ol", { className: "change-list" });
-  const historyCount = Math.max(1, Math.ceil(resident.changes.length / 2));
-  let historyPage = Math.min(profile?.historyPage ?? 0, historyCount - 1);
-
-  function showHistory(page: number) {
-    historyPage = Math.max(0, Math.min(historyCount - 1, page));
-    controller.rememberProfile({ historyPage });
-    historyList.replaceChildren(...resident.changes.slice(historyPage * 2, historyPage * 2 + 2).map(changeRow));
-  }
-  showHistory(historyPage);
-  const historyPanel = h("div", { className: "profile-panel" }, [
-    h("h3", { className: "subhead", text: "변경 이력" }),
-    resident.changes.length ? historyList : h("p", { className: "muted", text: "아직 변경 이력이 없어요." }),
-    pagePicker(
-      "변경 이력 고르기",
-      historyPage,
-      Array.from(
-        { length: historyCount },
-        (_, index) =>
-          `${index + 1} · ${resident.changes
-            .slice(index * 2, index * 2 + 2)
-            .map((change) => CHANGE_LABEL[change.kind] ?? change.kind)
-            .join(" · ")}`,
-      ),
-      showHistory,
-    ),
-  ]);
-  const panels = [worldPanel, sourcePanel, historyPanel];
-  const tabs = ["공방 설정", "원래 설정", "변경 이력"].map((label, index) =>
+  const panels = [worldPanel, sourcePanel];
+  const tabs = ["공방 설정", "원래 설정"].map((label, index) =>
     h("button", {
       className: "profile-tab",
       text: label,
@@ -148,21 +101,21 @@ export function renderProfileSheet(world: WorldView, state: AppState, controller
     panels.forEach((panel, index) => (panel.hidden = index !== selected));
     tabs.forEach((tab, index) => tab.setAttribute("aria-pressed", index === selected ? "true" : "false"));
   }
-  selectPanel(profile?.panel ?? 0);
+  selectPanel(profile?.panel === 1 ? 1 : 0);
   return h("div", { className: "sheet-backdrop" }, [
     h(
       "section",
       { className: "sheet card", attrs: { role: "dialog", "aria-modal": "true", "aria-labelledby": "fw-profile" } },
       [
         h("div", { className: "sheet-head" }, [
-          h("h2", { className: "section-title", text: `${resident.displayName} 프로필`, attrs: { id: "fw-profile" } }),
-          kindTag(resident),
+          h("h2", { className: "section-title", text: "주민 프로필", attrs: { id: "fw-profile" } }),
           button("닫기", () => controller.closeSheet(), { variant: "secondary" }),
         ]),
         h("div", { className: "profile-identity" }, [
           residentAvatar(resident, "large"),
           h("div", { className: "profile-identity-text" }, [
             h("strong", { text: resident.displayName }),
+            kindTag(resident),
             h("span", { text: resident.recruited ? "공방 주민" : "초대 대기" }),
             h("button", {
               className: "outline-button",

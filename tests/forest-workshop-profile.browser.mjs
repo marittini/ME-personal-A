@@ -14,7 +14,7 @@ try {
   const bundle = join(temp, "bundle.js");
   await writeFile(
     entry,
-    `import { renderProfileSheet } from ${JSON.stringify(join(client, "screens/residents/profile-sheet.ts"))};\nimport { STYLES } from ${JSON.stringify(join(client, "styles.ts"))};\nimport { RESIDENT_STYLES } from ${JSON.stringify(join(client, "styles-residents.ts"))};\nwindow.renderProfileSheet = renderProfileSheet; window.fwStyles = STYLES + RESIDENT_STYLES;`,
+    `import { renderProfileSheet } from ${JSON.stringify(join(client, "screens/residents/profile-sheet.ts"))};\nimport { STYLES } from ${JSON.stringify(join(client, "styles.ts"))};\nimport { RESIDENT_STYLES } from ${JSON.stringify(join(client, "styles-residents.ts"))};\nimport { ART_STYLES } from ${JSON.stringify(join(client, "styles-art.ts"))};\nwindow.renderProfileSheet = renderProfileSheet; window.fwStyles = STYLES + RESIDENT_STYLES + ART_STYLES;`,
   );
   await build({
     entryPoints: [entry],
@@ -94,14 +94,35 @@ try {
   assert.equal(await page.getByText("원본 설명").isVisible(), true);
   await page.getByRole("button", { name: "공방 설정", exact: true }).click();
   assert.equal(await page.locator("#host").locator("textarea").inputValue(), "새 설정");
-  await page.getByRole("button", { name: "변경 이력", exact: true }).click();
-  assert.equal(await page.getByText("첫 기록").isVisible(), true);
-  assert.equal(await page.getByText("셋째 기록").count(), 0);
-  await page.getByLabel("변경 이력 고르기", { exact: true }).click();
-  await page.getByLabel("변경 이력 고르기", { exact: true }).locator("..").locator("button").nth(1).click();
-  assert.equal(await page.getByText("셋째 기록").isVisible(), true);
-  await page.evaluate(() => window.testRender());
-  assert.equal(await page.getByText("셋째 기록").isVisible(), true);
+  assert.equal(await page.getByRole("button", { name: "변경 이력", exact: true }).count(), 0);
+  await page.setViewportSize({ width: 320, height: 640 });
+  await page.evaluate(() => {
+    document.querySelector("#host").style.cssText = "width:320px;height:640px;--fw-font-size:22px";
+    window.testState.sheet.panel = 2; // A stale view must fall back to the editable setting.
+    window.testRender();
+    const root = document.querySelector("#host").shadowRoot;
+    const wrap = document.createElement("div");
+    wrap.className = "shell art-paper art-button";
+    wrap.style.cssText = "height:640px;position:relative";
+    wrap.append(root.querySelector(".sheet-backdrop"));
+    root.append(wrap);
+  });
+  assert.equal(await page.locator("#host").locator("textarea").inputValue(), "새 설정");
+  const geometry = await page.getByRole("button", { name: "관계 보기" }).evaluate((button) => {
+    const box = button.getBoundingClientRect();
+    const range = document.createRange();
+    range.selectNodeContents(button);
+    return { width: box.width, height: box.height, lines: range.getClientRects().length };
+  });
+  assert.ok(geometry.width >= 44 && geometry.height >= 44 && geometry.lines === 1, JSON.stringify(geometry));
+  await page
+    .locator("#host")
+    .locator(".sheet")
+    .evaluate((sheet) => {
+      sheet.scrollTop = sheet.scrollHeight;
+    });
+  const close = await page.getByRole("button", { name: "닫기", exact: true }).boundingBox();
+  assert.ok(close.y >= 0 && close.y + close.height <= 640);
   console.log("Profile panels and draft preservation: OK");
 } finally {
   await browser?.close();

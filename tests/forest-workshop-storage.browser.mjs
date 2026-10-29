@@ -148,6 +148,25 @@ try {
   await page.evaluate(() => window.testRender());
   await page.getByRole("button", { name: "물건 0 보호 수량 저장" }).click();
   assert.deepEqual(await page.evaluate(() => window.protectedSave), { itemId: "item-0", amount: 1 });
+  await page.locator("#host").evaluate((host) => host.style.setProperty("--fw-font-size", "22px"));
+  const controls = await page
+    .locator("#host")
+    .locator(".protect-row:not([hidden]) .step, .protect-row:not([hidden]) > .button")
+    .evaluateAll((buttons) =>
+      buttons.map((button) => {
+        const box = button.getBoundingClientRect();
+        const range = document.createRange();
+        range.selectNodeContents(button);
+        return { text: button.textContent, width: box.width, height: box.height, lines: range.getClientRects().length };
+      }),
+    );
+  assert.ok(
+    controls.every((button) => button.width >= 44 && button.height >= 44 && button.lines === 1),
+    JSON.stringify(controls),
+  );
+  await page.getByRole("button", { name: "늘리기 10", exact: true }).click();
+  await page.getByRole("button", { name: "물건 0 보호 수량 저장" }).click();
+  assert.deepEqual(await page.evaluate(() => window.protectedSave), { itemId: "item-0", amount: 11 });
   console.log("Inventory paging and actions: OK");
 } finally {
   await browser?.close();

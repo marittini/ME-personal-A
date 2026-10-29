@@ -4,6 +4,12 @@
     "forest-workshop": {
       "versions": [
         {
+          "version": "0.6.16",
+          "date": "2026-10-29",
+          "notes": "- 공방 작업의 세부 탭을 통합하고 생산 설정·우선순위·적용을 한 화면에 배치했습니다.\n- 홈의 생산물 보고 카드와 이야기 삽화를 복원했습니다.\n- 탐사 지도, 공방 실내, 초대 장면, 이야기 삽화, 편지지 그림을 추가했습니다.\n- 기존 종이 에셋을 보조 버튼·선택기에 활용하고 메뉴 선택 표시를 통일했습니다.",
+          "highlight": false
+        },
+        {
           "version": "0.6.15",
           "date": "2026-10-29",
           "notes": "- Add illustrated Home, Work, Explore, Residents and Invite navigation icons, with the original accessible labels and fallback icons.",
@@ -115,12 +121,6 @@
           "version": "0.4.0",
           "date": "2026-10-27",
           "notes": "- Automatic production: a gathering yard and a processing bench run on their own from recommended rules (target stock, priority, on/off). Change targets and order on the Work screen and apply them; 추천 설정 previews the recommended rules first.\n- Production is measured against stock plus what is already being made, may finish at most one batch over a target, and never uses protected stock. A waiting facility says why (materials, protected amount, target reached).\n- Time away counts for at most 72 hours per absence, however often the world is opened in the background; a run cut at that edge keeps its remaining time until you return. Only the visible, focused game screen counts as being present.\n- Facility upgrades for gold (faster runs from the next run), stock protection, selling from the storeroom, and the 작업 보고 on Home (reading it never grants anything twice).",
-          "highlight": true
-        },
-        {
-          "version": "0.3.0",
-          "date": "2026-10-27",
-          "notes": "- Screens follow the final mockups: Home, Work, Facilities and Storeroom, Settings and Save · Backup, with parts that open in later phases kept in place and marked 준비 중.\n- Residents: register your characters and personas into a world. The source is only read; its text is kept beside the resident's new 공방 세계 설정 for comparison, with a change history. The same source is always one resident. A persona resident is an inhabitant, never the player.\n- Optional 다시 제안 asks your default language model for a setting draft; nothing is saved until you confirm.\n- Choose one starting resident. Pair any two residents — character or persona, in any combination (one resident may be in several pairs); archive and restore pairs.\n- Resident pictures are your own PNG or static WebP uploads, stored as quality 95 WebP with transparency. Size, position and marker height are saved separately; the last 3 pictures can be restored.\n- Backups now carry the WebP pictures and restore them under new gallery IDs.",
           "highlight": true
         }
       ]

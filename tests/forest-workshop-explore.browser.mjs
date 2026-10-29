@@ -39,8 +39,15 @@ try {
     args: ["--no-sandbox"],
   });
   const page = await browser.newPage({ viewport: { width: 390, height: 740 }, isMobile: true, hasTouch: true });
+  await page.route("http://forest.test/api/capability-packages/forest-workshop/assets/assets/**", async (route) => {
+    const relative = new URL(route.request().url()).pathname.split("/assets/assets/")[1];
+    await route.fulfill({
+      contentType: "image/webp",
+      body: await readFile(resolve("packages/forest-workshop/assets", relative)),
+    });
+  });
   await page.setContent(
-    '<meta name="viewport" content="width=device-width, initial-scale=1"><div id="host" style="height:740px;width:390px"></div>',
+    '<base href="http://forest.test/"><meta name="viewport" content="width=device-width, initial-scale=1"><div id="host" style="height:740px;width:390px"></div>',
   );
   await page.addScriptTag({ content: await readFile(bundle, "utf8") });
   await page.evaluate(() => {
@@ -148,12 +155,15 @@ try {
     };
     window.testRender();
   });
+  await page.locator(".trail-background").evaluate((i) => i.decode());
+  await page.screenshot({ path: join(process.env.FW_ART_SCREENSHOTS ?? temp, "explore-art.png") });
+
   await page.getByRole("button", { name: /2편 이야기 2/ }).click();
   assert.equal(await page.locator("li").filter({ hasText: "이전 이야기 읽기" }).last().isVisible(), true);
   await page.getByRole("button", { name: /1편 이야기 1/ }).click();
   await page.getByRole("button", { name: "탐험 출발" }).click();
   assert.deepEqual(await page.evaluate(() => window.departed), { pairId: "a", episode: 0 });
-  await page.getByRole("button", { name: "여정", exact: true }).click();
+  assert.equal(await page.getByRole("button", { name: "여정", exact: true }).count(), 0);
   assert.equal(await page.getByText("지금은 떠난 탐험이 없어요.").isVisible(), true);
   await page.getByRole("button", { name: "읽은 이야기", exact: true }).click();
   assert.equal(await page.getByText("기록 2", { exact: true }).isVisible(), true);

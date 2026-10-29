@@ -8,6 +8,8 @@ import { h, statusLine } from "../../app/dom";
 import { draftRules, isDraftDirty } from "../../app/production-actions";
 import type { FacilityState, GameContent, Rule, WorldView } from "../../app/types";
 import { card, renderFrame } from "../chrome/frame";
+import { assetImage } from "../../app/assets";
+import { pagePicker } from "../chrome/page-picker";
 import { ICONS, type IconFactory } from "../chrome/icons";
 import { residentAvatar } from "../residents/resident-figure";
 import { renderAssignSheet } from "./assign-sheet";
@@ -58,7 +60,18 @@ function fieldTabs(content: GameContent, world: WorldView, facilityId: string, c
           on: { click: () => controller.selectFacility(facility.id) },
         },
         [
-          field.icon("icon field-glyph"),
+          assetImage(
+            (
+              {
+                gather: "items/herb.webp",
+                grow: "items/wheat.webp",
+                survey: "ui/nav-explore.webp",
+                process: "items/berry-jam.webp",
+                craft: "ui/nav-work.webp",
+              } as Record<string, string>
+            )[field.field] ?? null,
+            { className: "field-art", fallback: () => field.icon("icon field-glyph") },
+          ),
           h("span", { text: field.label }),
           open ? null : h("span", { className: "lock-tag" }, [ICONS.lock("icon tiny")]),
         ],
@@ -522,112 +535,47 @@ function body(state: AppState, content: GameContent, world: WorldView, controlle
   const applying = Boolean(state.busy[`rules:${facilityId}`]);
   const auto = facility.mode === "auto";
   const crew = crewBonus(content, world.state, facilityId);
-  const section = !auto && state.work.section === "priority" ? "recipe" : (state.work.section ?? "status");
-  const ruleSelect = h(
-    "select",
-    {
-      className: "input work-recipe-select",
-      attrs: { "aria-label": "생산 물품 고르기" },
-      on: { change: () => controller.selectRule(facilityId, ruleSelect.value) },
-    },
-    rules.map((rule) =>
-      h("option", {
-        text: `${recipeOf(content, rule.recipeId)?.name ?? rule.recipeId}${rule.enabled ? "" : " (꺼짐)"}`,
-        attrs: { value: rule.policyId },
-      }),
+  const ruleSelect = pagePicker(
+    "생산 물품 고르기",
+    Math.max(
+      0,
+      rules.findIndex((rule) => rule.policyId === selected?.policyId),
     ),
+    rules.map((rule) => `${recipeOf(content, rule.recipeId)?.name ?? rule.recipeId}${rule.enabled ? "" : " (꺼짐)"}`),
+    (index) => {
+      const rule = rules[index];
+      if (rule) controller.selectRule(facilityId, rule.policyId);
+    },
   );
-  ruleSelect.value = selected?.policyId ?? "";
-  const sections = auto
-    ? ([
-        ["status", "현재 작업"],
-        ["recipe", "제작 설정"],
-        ["priority", "순서·적용"],
-      ] as const)
-    : ([
-        ["status", "현재 작업"],
-        ["recipe", "대기열"],
-      ] as const);
   return [
     fieldTabs(content, world, facilityId, controller),
-    h(
-      "div",
-      { className: "work-sections", attrs: { role: "group", "aria-label": "작업 화면" } },
-      sections.map(([id, label]) =>
-        h("button", {
-          className: "pill-tab",
-          text: label,
-          attrs: { type: "button", "aria-pressed": section === id ? "true" : "false" },
-          on: { click: () => controller.setWorkSection(id) },
-        }),
-      ),
-    ),
     card(
       null,
       [
-        section !== "status" ? modeToggle(state, facilityId, facility, controller) : null,
-        ...(section === "status"
+        modeToggle(state, facilityId, facility, controller),
+        facilityCard(state, content, world, facilityId, facility, controller),
+        currentWork(state, content, world, facility),
+        waitingGuide(content, world, facilityId, controller),
+        ...(auto
           ? [
-              currentWork(state, content, world, facility),
-              facilityCard(state, content, world, facilityId, facility, controller),
-              waitingGuide(content, world, facilityId, controller),
-              h("div", { className: "work-stock-actions", attrs: { role: "group", "aria-label": "재고 관리" } }, [
-                h("button", {
-                  className: "outline-button",
-                  text: "재고 보호",
-                  attrs: { type: "button" },
-                  on: {
-                    click: () => {
-                      controller.setFacilitiesTab("protection");
-                      controller.navigate("facilities");
-                    },
-                  },
-                }),
-                h("button", {
-                  className: "outline-button",
-                  text: "창고 · 판매",
-                  attrs: { type: "button" },
-                  on: {
-                    click: () => {
-                      controller.setFacilitiesTab("storage");
-                      controller.navigate("facilities");
-                    },
-                  },
-                }),
-              ]),
-            ]
-          : []),
-        ...(section === "recipe" && auto
-          ? [
-              rules.length ? ruleSelect : null,
+              h("h2", { className: "section-title", text: "생산 설정" }),
+              ruleSelect,
               recipeCard(content, selected, facility.level, crew),
               selected ? targetRow(content, world, facilityId, selected, controller) : null,
               materialsBlock(content, world, selected),
+              h("h2", { className: "section-title", text: "제작 우선순위" }),
+              priorityList(content, facilityId, rules, selected?.policyId, controller),
             ]
-          : section === "recipe"
-            ? [queuePanel(state, content, world, facilityId, controller)]
-            : []),
-        section === "priority" && auto
-          ? priorityList(content, facilityId, rules, selected?.policyId, controller)
-          : null,
-        section === "status" && auto && facility.queue.length
+          : [queuePanel(state, content, world, facilityId, controller)]),
+        auto && facility.queue.length
           ? h("p", {
-              className: "hint center",
+              className: "hint",
               text: `지정 횟수 대기열 ${facility.queue.length}개는 멈춘 채 그대로 남아 있어요.`,
             })
           : null,
         auto && dirty
-          ? h("p", { className: "draft-note" }, [
-              "적용 전",
-              section !== "priority"
-                ? h("button", {
-                    className: "link-button",
-                    text: applying ? "적용 중…" : "적용하기",
-                    disabled: applying,
-                    attrs: { type: "button" },
-                    on: { click: () => void controller.applyRules(facilityId) },
-                  })
-                : null,
+          ? h("div", { className: "draft-note" }, [
+              h("span", { text: "변경한 설정은 적용 후 사용돼요." }),
               h("button", {
                 className: "link-button",
                 text: "되돌리기",
@@ -636,13 +584,9 @@ function body(state: AppState, content: GameContent, world: WorldView, controlle
               }),
             ])
           : null,
-      ],
-      { className: "work-card" },
-    ),
-    auto && (section === "priority" || (section === "status" && !dirty))
-      ? h("div", { className: "rule-actions" }, [
-          section === "priority"
-            ? h(
+        auto
+          ? h("div", { className: "rule-actions" }, [
+              h(
                 "button",
                 {
                   className: "button wide-main",
@@ -650,11 +594,12 @@ function body(state: AppState, content: GameContent, world: WorldView, controlle
                   disabled: !dirty || applying,
                   on: { click: () => void controller.applyRules(facilityId) },
                 },
-                [h("span", { text: applying ? "적용하는 중…" : dirty ? "운영 규칙 적용" : "적용됨" })],
-              )
-            : null,
-          section === "priority" || (section === "status" && !dirty)
-            ? h(
+                [
+                  ICONS.check("icon"),
+                  h("span", { text: applying ? "적용하는 중…" : dirty ? "운영 규칙 적용" : "적용됨" }),
+                ],
+              ),
+              h(
                 "button",
                 {
                   className: "button secondary",
@@ -662,10 +607,42 @@ function body(state: AppState, content: GameContent, world: WorldView, controlle
                   on: { click: () => controller.recommendRules(facilityId) },
                 },
                 [ICONS.gear("icon"), h("span", { text: "추천 설정" })],
-              )
-            : null,
-        ])
-      : null,
+              ),
+            ])
+          : null,
+      ],
+      { className: "work-card" },
+    ),
+    h("div", { className: "work-stock-actions", attrs: { role: "group", "aria-label": "재고 관리" } }, [
+      h(
+        "button",
+        {
+          className: "button secondary",
+          attrs: { type: "button" },
+          on: {
+            click: () => {
+              controller.setFacilitiesTab("protection");
+              controller.navigate("facilities");
+            },
+          },
+        },
+        [ICONS.lock("icon"), "재고 보호"],
+      ),
+      h(
+        "button",
+        {
+          className: "button secondary",
+          attrs: { type: "button" },
+          on: {
+            click: () => {
+              controller.setFacilitiesTab("storage");
+              controller.navigate("facilities");
+            },
+          },
+        },
+        [ICONS.box("icon"), "창고 · 판매"],
+      ),
+    ]),
   ];
 }
 

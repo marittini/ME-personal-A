@@ -111,6 +111,11 @@ export const NAV_ART = {
 
 export const UI_ART = {
   gift: "ui/gift.webp",
+  letterPaper: "ui/letter-paper.webp",
+  storyVignette: "ui/story-vignette.webp",
+  inviteScene: "ui/invite-scene.webp",
+  trail: "backgrounds/forest-trail.webp",
+  interior: "backgrounds/workshop-interior.webp",
   titleSign: "ui/title-sign.webp",
   primaryButton: "ui/primary-button.webp",
   paperPanel: "ui/paper-panel.webp",

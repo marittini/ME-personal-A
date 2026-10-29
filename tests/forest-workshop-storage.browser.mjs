@@ -136,7 +136,7 @@ try {
   assert.ok(smallSize.content <= smallSize.available + 1, `small storage should fit: ${JSON.stringify(smallSize)}`);
   await page.getByRole("button", { name: "물건 3 팔기" }).click();
   assert.deepEqual(await page.evaluate(() => window.openedSheet), { kind: "sell", itemId: "item-3" });
-  await page.getByRole("tab", { name: "재고 보호" }).click();
+  await page.getByRole("tab", { name: "시설", exact: true }).click();
   assert.equal(await page.getByText("물건 0", { exact: true }).count(), 1);
   await page.getByLabel("재고 목록 고르기", { exact: true }).click();
   await page.getByLabel("재고 목록 고르기", { exact: true }).locator("..").locator("button").nth(1).click();

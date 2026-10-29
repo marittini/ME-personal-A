@@ -1,4 +1,4 @@
-// Browser regression for work section navigation and unapplied rule visibility.
+// Browser regression for the unified work plan, art, and reachable controls.
 import assert from "node:assert/strict";
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -13,7 +13,7 @@ try {
     bundle = join(temp, "bundle.js");
   await writeFile(
     entry,
-    `import { renderWorkScreen } from ${JSON.stringify(join(client, "screens/work/work-screen.ts"))};\nimport { STYLES } from ${JSON.stringify(join(client, "styles.ts"))};\nimport { RESIDENT_STYLES } from ${JSON.stringify(join(client, "styles-residents.ts"))};\nimport { PRODUCTION_STYLES } from ${JSON.stringify(join(client, "styles-production.ts"))};\nimport { INVITE_STYLES } from ${JSON.stringify(join(client, "styles-invite.ts"))};\nimport { STORY_STYLES } from ${JSON.stringify(join(client, "styles-story.ts"))};\nimport { ART_STYLES } from ${JSON.stringify(join(client, "styles-art.ts"))};\nwindow.renderWorkScreen = renderWorkScreen; window.fwStyles = STYLES + RESIDENT_STYLES + PRODUCTION_STYLES + INVITE_STYLES + STORY_STYLES + ART_STYLES;`,
+    `import { renderWorkScreen } from ${JSON.stringify(join(client, "screens/work/work-screen.ts"))};\nimport { STYLES } from ${JSON.stringify(join(client, "styles.ts"))};\nimport { RESIDENT_STYLES } from ${JSON.stringify(join(client, "styles-residents.ts"))};\nimport { PRODUCTION_STYLES } from ${JSON.stringify(join(client, "styles-production.ts"))};\nimport { INVITE_STYLES } from ${JSON.stringify(join(client, "styles-invite.ts"))};\nimport { STORY_STYLES } from ${JSON.stringify(join(client, "styles-story.ts"))};\nimport { ART_STYLES } from ${JSON.stringify(join(client, "styles-art.ts"))};\nimport { renderHomeScreen } from ${JSON.stringify(join(client, "screens/home/home-screen.ts"))};\nwindow.renderHomeScreen = renderHomeScreen; window.renderWorkScreen = renderWorkScreen; window.fwStyles = STYLES + RESIDENT_STYLES + PRODUCTION_STYLES + INVITE_STYLES + STORY_STYLES + ART_STYLES;`,
   );
   await build({
     entryPoints: [entry],
@@ -38,12 +38,20 @@ try {
       : {}),
     args: ["--no-sandbox"],
   });
-  const page = await browser.newPage({ viewport: { width: 390, height: 740 }, isMobile: true, hasTouch: true });
+  const page = await browser.newPage({ viewport: { width: 390, height: 740 }, isMobile: false, hasTouch: true });
+  await page.route("http://forest.test/api/capability-packages/forest-workshop/assets/assets/**", async (route) => {
+    const relative = new URL(route.request().url()).pathname.split("/assets/assets/")[1];
+    await route.fulfill({
+      contentType: "image/webp",
+      body: await readFile(resolve("packages/forest-workshop/assets", relative)),
+    });
+  });
   await page.setContent(
-    '<meta name="viewport" content="width=device-width, initial-scale=1"><div id="host" style="height:740px;width:390px"></div>',
+    '<base href="http://forest.test/"><meta name="viewport" content="width=device-width, initial-scale=1"><div id="host" style="height:740px;width:390px"></div>',
   );
   await page.addScriptTag({ content: await readFile(bundle, "utf8") });
   await page.evaluate(() => {
+    document.body.style.margin = "0";
     const root = document.querySelector("#host").attachShadow({ mode: "open" });
     const rule = { policyId: "p", recipeId: "berry", targetStock: 5, priority: 1, enabled: true };
     const facility = {
@@ -84,12 +92,12 @@ try {
             name: "산딸기",
             facilityId: "gather-yard",
             inputs: {},
-            outputs: { berry: 1 },
+            outputs: { "wild-berry": 1 },
             minutes: 1,
             description: "",
           },
         ],
-        items: [{ id: "berry", name: "산딸기" }],
+        items: [{ id: "wild-berry", name: "산딸기" }],
         production: { speedBonusPerLevel: 0, maxLevel: 5, upgradeCosts: [50, 100, 200, 400] },
         crew: { setBonusMax: 0, setBonusPerPair: 0 },
         talents: [],
@@ -147,7 +155,7 @@ try {
     };
     window.testRender();
   });
-  assert.equal(await page.getByText("적용 전", { exact: false }).isVisible(), true);
+  assert.equal(await page.getByText("변경한 설정은 적용 후 사용돼요.", { exact: true }).isVisible(), true);
   await page.getByRole("button", { name: "재고 보호", exact: true }).click();
   assert.equal(await page.evaluate(() => window.facilitiesTab), "protection");
   assert.equal(await page.evaluate(() => window.destination), "facilities");
@@ -158,46 +166,31 @@ try {
   assert.equal(await page.evaluate(() => window.destination), "facilities");
   await page.getByRole("button", { name: "채집터 강화 50 골드" }).click();
   assert.deepEqual(await page.evaluate(() => window.upgraded), { facilityId: "gather-yard", level: 1 });
-  await page.getByRole("button", { name: "적용하기" }).click();
+  await page.getByRole("button", { name: "운영 규칙 적용" }).click();
   assert.equal(await page.evaluate(() => window.appliedRules), true);
-  const statusSize = await page.locator("#host").evaluate((host) => {
-    const scroller = host.shadowRoot.querySelector(".scroll");
-    return { content: scroller.scrollHeight, available: scroller.clientHeight };
-  });
-  assert.ok(statusSize.content <= statusSize.available + 1, `work status should fit: ${JSON.stringify(statusSize)}`);
-  await page.setViewportSize({ width: 320, height: 640 });
-  await page.locator("#host").evaluate((host) => {
-    host.style.width = "320px";
-    host.style.height = "640px";
-  });
-  const smallHeight = await page.locator("#host").evaluate((host) => {
-    const scroller = host.shadowRoot.querySelector(".scroll");
-    return { content: scroller.scrollHeight, available: scroller.clientHeight };
-  });
-  assert.ok(
-    smallHeight.content <= smallHeight.available + 1,
-    `small status should fit: ${JSON.stringify(smallHeight)}`,
-  );
-  const smallSize = await page.locator("#host").evaluate((host) => {
-    const scroller = host.shadowRoot.querySelector(".scroll");
-    return { content: scroller.scrollWidth, available: scroller.clientWidth };
-  });
-  assert.ok(
-    smallSize.content <= smallSize.available + 1,
-    `small work status should not overflow horizontally: ${JSON.stringify(smallSize)}`,
-  );
-  await page.setViewportSize({ width: 390, height: 740 });
-  await page.locator("#host").evaluate((host) => {
-    host.style.width = "390px";
-    host.style.height = "740px";
-  });
-  await page.getByRole("button", { name: "순서·적용", exact: true }).click();
-  assert.equal(await page.getByRole("button", { name: "운영 규칙 적용", exact: true }).isVisible(), true);
-  await page.getByRole("button", { name: /산딸기 목표 6/ }).click();
-  assert.equal(await page.getByText("재료 사용 설정").isVisible(), true);
-  assert.equal(await page.getByText("적용 전", { exact: false }).isVisible(), true);
-  await page.getByRole("button", { name: "순서·적용", exact: true }).click();
-  assert.equal(await page.getByRole("button", { name: "운영 규칙 적용", exact: true }).isEnabled(), true);
+  assert.equal(await page.getByRole("button", { name: "현재 작업", exact: true }).count(), 0);
+  assert.equal(await page.getByRole("heading", { name: "생산 설정" }).count(), 1);
+  assert.equal(await page.getByRole("heading", { name: "제작 우선순위" }).count(), 1);
+  for (const [width, height] of [
+    [390, 740],
+    [320, 640],
+  ]) {
+    await page.setViewportSize({ width, height });
+    await page.locator("#host").evaluate(
+      (host, size) => {
+        host.style.width = size.width + "px";
+        host.style.height = size.height + "px";
+      },
+      { width, height },
+    );
+    const size = await page.locator("#host").evaluate((host) => {
+      const s = host.shadowRoot.querySelector(".scroll");
+      return { width: s.clientWidth, content: s.scrollWidth };
+    });
+    assert.ok(size.content <= size.width + 1, JSON.stringify(size));
+    await page.getByRole("button", { name: "추천 설정", exact: true }).scrollIntoViewIfNeeded();
+    assert.equal(await page.getByRole("button", { name: "추천 설정", exact: true }).isVisible(), true);
+  }
   await page.evaluate(() => {
     const state = window.testState;
     state.work.section = "recipe";
@@ -260,7 +253,7 @@ try {
       name: `제작 ${i}`,
       facilityId: "gather-yard",
       inputs: {},
-      outputs: { berry: 1 },
+      outputs: { "wild-berry": 1 },
       minutes: 1,
       description: "",
     }));
@@ -335,7 +328,66 @@ try {
     window.testRender();
   });
   assert.equal(await page.getByRole("tab", { name: "조사대 (해금 전)" }).count(), 1);
-  console.log("Work sections, draft visibility and waiting guidance: OK");
+  // Capture the real art at default and enlarged mobile sizes.
+  for (const width of [390, 320]) {
+    await page.setViewportSize({ width, height: 844 });
+    await page.evaluate((width) => {
+      const host = document.querySelector("#host");
+      host.style.width = width + "px";
+      host.style.height = "844px";
+      const state = window.testState;
+      state.fontSize = width === 320 ? 22 : 16;
+      host.style.setProperty("--fw-font-size", state.fontSize + "px");
+      const facility = state.world.value.state.production.facilities["gather-yard"];
+      facility.mode = "auto";
+      facility.waiting = null;
+      state.work.facilityId = "gather-yard";
+      window.testRender();
+    }, width);
+    await page
+      .locator(".field-art")
+      .first()
+      .evaluate((i) => i.decode());
+    await page.locator(".scroll").evaluate((n) => (n.scrollTop = 0));
+    await page.screenshot({ path: join(process.env.FW_ART_SCREENSHOTS ?? temp, `work-unified-${width}.png`) });
+    const size = await page.locator(".scroll").evaluate((n) => [n.scrollWidth, n.clientWidth]);
+    assert.ok(size[0] <= size[1] + 1, JSON.stringify(size));
+    await page.getByRole("button", { name: "운영 규칙 적용" }).scrollIntoViewIfNeeded();
+  }
+  await page.evaluate(() => {
+    const state = window.testState;
+    state.route = "home";
+    state.fontSize = 16;
+    const w = state.world.value;
+    Object.assign(w.state, {
+      progress: { starterKitClaimed: true, starterResidentId: null },
+      stories: { pairs: {}, expedition: null },
+      settings: { ground: { left: 0, right: 100, top: 0, bottom: 100 } },
+    });
+    Object.assign(w.state.production, {
+      reports: [{ reportId: 1, produced: { "wild-berry": 3 }, consumed: {}, sold: {} }],
+      reportsReadThrough: 0,
+      activity: { lastAbsence: null },
+    });
+    const host = document.querySelector("#host");
+    host.style.width = "390px";
+    host.style.setProperty("--fw-font-size", "16px");
+    const root = host.shadowRoot;
+    root.innerHTML = "";
+    const style = document.createElement("style");
+    style.textContent = window.fwStyles;
+    root.append(style, window.renderHomeScreen(state, window.testController));
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.locator("#host").evaluate(async (host) => {
+    await Promise.all([...host.shadowRoot.querySelectorAll("img")].map((i) => i.decode()));
+  });
+  await page.waitForLoadState("networkidle");
+  await page.locator(".scroll").evaluate((n) => (n.scrollTop = n.scrollHeight));
+  await page.screenshot({ path: join(process.env.FW_ART_SCREENSHOTS ?? temp, "home-art-report.png") });
+  assert.equal(await page.getByText("+3", { exact: true }).count(), 1);
+  await page.getByRole("button", { name: "작업 보고", exact: false }).click();
+  console.log("Unified work, save action, material guidance, 320px large text and home art report: OK");
 } finally {
   await browser?.close();
   await rm(temp, { recursive: true, force: true });

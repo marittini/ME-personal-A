@@ -1,4 +1,12 @@
+## 0.6.16 — 2026-10-29
+
+- 공방 작업의 세부 탭을 통합하고 생산 설정·우선순위·적용을 한 화면에 배치했습니다.
+- 홈의 생산물 보고 카드와 이야기 삽화를 복원했습니다.
+- 탐사 지도, 공방 실내, 초대 장면, 이야기 삽화, 편지지 그림을 추가했습니다.
+- 기존 종이 에셋을 보조 버튼·선택기에 활용하고 메뉴 선택 표시를 통일했습니다.
+
 ## 0.6.15 — 2026-10-29
+
 - Add illustrated Home, Work, Explore, Residents and Invite navigation icons, with the original accessible labels and fallback icons.
 
 ## 0.6.14 — 2026-10-29

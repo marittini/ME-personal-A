@@ -9,7 +9,7 @@ import { BACKGROUND_ART, SEASONS, UI_ART, cssAssetUrl } from "./app/assets";
 
 const seasonBases = SEASONS.map(
   (season) =>
-    `.season-${season}.art-base.backdrop-forest .scroll { background: var(--fw-page) ${cssAssetUrl(BACKGROUND_ART[season].base)} center top / cover no-repeat; }`,
+    `.season-${season}.art-base:is(.backdrop-forest, .backdrop-wood) .scroll { background: var(--fw-page) ${cssAssetUrl(BACKGROUND_ART[season].base)} center top / cover no-repeat; }`,
 ).join("\n");
 
 export const ART_STYLES = `
@@ -130,4 +130,65 @@ img.emotion-bubble.emotion-art { min-width: 0; width: 2.6em; height: 2.6em; padd
 .work-card .current-work .plan-label { grid-column: 1 / -1; }
 .work-card .current-work .plan-progress { grid-column: auto; }
 .art-paper .work-card { padding: 0.6em 0.8em; gap: 0.25em; }
+
+.big-tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+/* Mockup art pass: read the whole production plan in one flow. */
+.work-card .section-title { font-size: calc(var(--fs) * 1.1); padding-top: 0.65em; border-top: 1px solid #dcc49a; }
+.art-paper .work-card { padding: 1em 1.15em; gap: 0.7em; }
+.work-card .facility-art, .work-card .facility-image { width: 5em; height: 4.5em; }
+.work-fields .field-art { display: block; width: 1.9em; height: 1.9em; object-fit: contain; }
+.work-fields .field-tab { display: flex; flex-direction: column; gap: 0.2em; padding: 0.4em 0.15em; }
+.work-stock-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.6em; }
+.work-stock-actions .button { width: 100%; padding: 0.5em; }
+.art-paper .card :is(.priority-row, .usage, .setting-row, .storage-item, .usage-rows, .menu-row) { border-color: #dcc49a; box-shadow: none; }
+.art-paper .card .outline-button { border-width: 2px; box-shadow: 0 2px 0 #d7bd92; }
+.art-paper .card .muted { font-weight: 500; }
+.art-paper .card .recipe-text strong { font-weight: 800; }
+
+/* The original paper and button pictures also dress secondary controls. */
+.art-paper .button.secondary, .art-paper .page-picker-summary {
+  border: 0; border-image: ${cssAssetUrl(UI_ART.paperPanel)} 105 154 fill / 15px 22px / 0 stretch;
+  background: transparent; box-shadow: none; padding: 0.6em 1.1em;
+}
+.tab.current { background: var(--fw-leaf-soft); box-shadow: inset 0 0 0 1px #769b55; }
+.tab.current .tab-label { border: 0; background: none; color: var(--fw-text); padding: 0; }
+
+/* Restore the report illustration and story banner; content may scroll instead of shrinking. */
+.home-layout .scroll { overflow-y: auto; }
+.home-layout .column { height: auto; min-height: 100%; }
+.home-layout .scene { flex: none; height: clamp(18em, 48vh, 30em); }
+.home-layout .page { grid-template-columns: minmax(0, 1fr); gap: 0.6em; }
+.home-layout .report-card { padding: 1em 1.15em; }
+.home-layout .report-title { font-size: calc(var(--fs) * 1.2); }
+.home-layout .report-body { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0.5em; }
+.home-layout .report-items { padding: 0; border: 0; }
+.home-layout .report-slot { padding: 0; border: 0; background: none; }
+.home-layout .report-actions { min-width: 0; }
+.home-layout .report-button { min-width: 0; width: 100%; font-size: var(--fs); }
+.home-layout .strip.story { min-height: 5em; padding: 0.5em 0.8em; }
+.home-layout .story-art { display: flex; flex: none; width: 4em; height: 4em; padding: 0; border: 0; background: none; }
+.story-vignette { width: 100%; height: 100%; object-fit: contain; }
+.home-layout .story-text { flex: 1; min-width: 0; }
+.home-layout .story-text strong { font-size: var(--fs); }
+.home-layout .story-text span { font-size: calc(var(--fs) * 0.875); }
+.home-layout .strip.offline { grid-row: 2; }
+.trail-scene { position: relative; background: #dcebc4; aspect-ratio: 360 / 200; overflow: hidden; }
+.trail-background { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.trail-scene .trail-art { position: absolute; inset: 0; width: 100%; height: 100%; }
+.invite-scene { display: block; width: 100%; max-height: 17em; object-fit: cover; border-radius: 1em; }
+@media (max-width: 340px) {
+  .home-layout .report-body { grid-template-columns: minmax(0, 1fr); }
+  .home-layout .report-items { justify-content: space-around; }
+  .home-layout .report-button { min-height: 44px; }
+  .rule-actions { grid-template-columns: minmax(0, 1fr); }
+}
+
+.letter-detail {
+  border: 0;
+  border-image: ${cssAssetUrl(UI_ART.letterPaper)} 200 190 fill / 55px 42px / 0 stretch;
+  padding: 3.6em 1.6em 2.6em;
+  color: var(--fw-text);
+}
+.letter-detail h3 { margin: 0; font-size: calc(var(--fs) * 1.15); }
+.letter-body { overflow-wrap: anywhere; }
 `;

@@ -1,11 +1,10 @@
 {
   "schemaVersion": 1,
-  "packVersion": "1.2.0",
+  "packVersion": "1.3.0",
   "packageId": "forest-workshop",
   "referenceCodeCommit": "570a64bc7dfd35436ca97a6c6f081214df970009",
   "notes": [
-    "87-image pack: previous 82 preserved byte-for-byte plus five navigation icons.",
-    "All images are individually AI-generated; no free asset packs."
+    "Existing 87 images preserved; original scene art added for mockup restoration."
   ],
   "assets": {
     "backgrounds/workshop-base-autumn": {
@@ -2007,6 +2006,86 @@
         1254,
         1254
       ]
+    },
+    "backgrounds/forest-trail": {
+      "path": "backgrounds/forest-trail.webp",
+      "width": 960,
+      "height": 640,
+      "bytes": 261174,
+      "sha256": "528622e76a82e5f83219bee7d0cea769acada33ebda64538cf1d86eb769f32b2",
+      "hasTransparency": false,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1536,
+        1024
+      ]
+    },
+    "backgrounds/workshop-interior": {
+      "path": "backgrounds/workshop-interior.webp",
+      "width": 1200,
+      "height": 800,
+      "bytes": 234092,
+      "sha256": "7e0b5c3950c489214512c27148e18858b3f3c776eb8a8ac0111d973897e81c63",
+      "hasTransparency": false,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1536,
+        1024
+      ]
+    },
+    "ui/invite-scene": {
+      "path": "ui/invite-scene.webp",
+      "width": 960,
+      "height": 640,
+      "bytes": 142950,
+      "sha256": "bed381ae7b8d3a0540044b2388776762a161a47f08a086352f5ecd2c9b6a84f8",
+      "hasTransparency": false,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1536,
+        1024
+      ]
+    },
+    "ui/story-vignette": {
+      "path": "ui/story-vignette.webp",
+      "width": 384,
+      "height": 256,
+      "bytes": 25674,
+      "sha256": "dc1f3333fd7d0076ee0c0211fcf4abef9e19adf7986ba559a74b3d0c4ccddc45",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1536,
+        1024
+      ]
+    },
+    "ui/letter-paper": {
+      "path": "ui/letter-paper.webp",
+      "width": 768,
+      "height": 1152,
+      "bytes": 131844,
+      "sha256": "e0b1a70b5d5964944e59f01e450094a0c16d3cdaf2394ce3c6f24d3462205704",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1024,
+        1536
+      ]
     }
   },
   "itemMap": {
@@ -2104,6 +2183,11 @@
     "nav-work": "ui/nav-work",
     "nav-explore": "ui/nav-explore",
     "nav-residents": "ui/nav-residents",
-    "nav-invite": "ui/nav-invite"
+    "nav-invite": "ui/nav-invite",
+    "trail": "backgrounds/forest-trail",
+    "interior": "backgrounds/workshop-interior",
+    "inviteScene": "ui/invite-scene",
+    "storyVignette": "ui/story-vignette",
+    "letterPaper": "ui/letter-paper"
   }
 }

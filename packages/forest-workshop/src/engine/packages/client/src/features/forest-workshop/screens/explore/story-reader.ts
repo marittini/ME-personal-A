@@ -5,7 +5,7 @@
 // (plan §15.6). The first open of an unlocked episode writes the scene: that is a language-model call, so the box
 // says so, and a failure offers the same plan again (no new expedition, no cost).
 import { currentSeason, type AppState, type Controller } from "../../app/controller";
-import { BACKGROUND_ART, EMOTION_ART, assetImage, type Season } from "../../app/assets";
+import { UI_ART, EMOTION_ART, assetImage, type Season } from "../../app/assets";
 import { button, h } from "../../app/dom";
 import { storyTextPages } from "../../app/story-pages";
 
@@ -47,11 +47,11 @@ function nameOf(world: WorldView, residentId: string) {
   return world.state.residents[residentId]?.displayName ?? "주민";
 }
 
-function stage(season: Season, world: WorldView, story: StoryDocument | null, current: Segment | undefined) {
+function stage(_season: Season, world: WorldView, story: StoryDocument | null, current: Segment | undefined) {
   const ids = story?.participants ?? [];
   const speaking = current?.kind === "line" ? current.speakerId : current?.kind === "choice" ? current.askerId : null;
   return h("section", { className: "story-stage", attrs: { "aria-hidden": "true" } }, [
-    assetImage(BACKGROUND_ART[season].scene, {
+    assetImage(UI_ART.interior, {
       className: "stage-art",
       fallback: () => h("span", { className: "stage-shelf" }),
     }),

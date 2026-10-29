@@ -26,15 +26,19 @@ function tabs(state: AppState, controller: Controller) {
     h(
       "button",
       {
-        className: `big-tab${state.facilitiesTab === id ? " current" : ""}`,
-        attrs: { type: "button", role: "tab", "aria-selected": state.facilitiesTab === id ? "true" : "false" },
+        className: `big-tab${(state.facilitiesTab === "protection" ? "facilities" : state.facilitiesTab) === id ? " current" : ""}`,
+        attrs: {
+          type: "button",
+          role: "tab",
+          "aria-selected":
+            (state.facilitiesTab === "protection" ? "facilities" : state.facilitiesTab) === id ? "true" : "false",
+        },
         on: { click: () => controller.setFacilitiesTab(id) },
       },
       [icon, h("span", { text: label })],
     );
   return h("div", { className: "big-tabs", attrs: { role: "tablist", "aria-label": "시설과 창고" } }, [
     tab("facilities", "시설", ICONS.house("icon big")),
-    tab("protection", "재고 보호", ICONS.lock("icon big")),
     tab("storage", "창고", ICONS.box("icon big")),
   ]);
 }
@@ -368,11 +372,14 @@ export function renderFacilitiesScreen(state: AppState, controller: Controller) 
     body: ready
       ? [
           tabs(state, controller),
-          ...(state.facilitiesTab === "facilities"
-            ? [facilityCard(state, content, world, controller)]
-            : state.facilitiesTab === "protection"
-              ? [protectionCard(state, world, content, controller)]
-              : [storageCard(state, world, content, controller)]),
+          ...(state.facilitiesTab !== "storage"
+            ? [
+                world.state.production.facilities[state.work.facilityId] && content.facilities
+                  ? facilityCard(state, content, world, controller)
+                  : null,
+                protectionCard(state, world, content, controller),
+              ]
+            : [storageCard(state, world, content, controller)]),
         ]
       : [statusLine("세계를 불러오는 중…")],
     nav: true,

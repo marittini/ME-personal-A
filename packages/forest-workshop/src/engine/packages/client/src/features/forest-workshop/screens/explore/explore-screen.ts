@@ -4,6 +4,7 @@
 // 72-hour note. Read arcs stay below to read again (도감). The beat is never shown before reading.
 // 조사 · 순찰 keep their place, locked (P4b).
 import type { AppState, Controller } from "../../app/controller";
+import { UI_ART, assetImage } from "../../app/assets";
 import { button, errorLine, h, statusLine } from "../../app/dom";
 import type { EpisodeView, GameContent, PairStoryView, WorldView } from "../../app/types";
 import { card, renderFrame } from "../chrome/frame";
@@ -61,11 +62,11 @@ function trail(pair: PairStoryView, current: number) {
     pair.episodes[index]!.status === "read" ? "#5a9a44" : index === current ? "#fff8e8" : "#cdbf9f";
   svg.innerHTML = `
     <g stroke="#4b2e1a" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
-      <rect width="360" height="170" fill="#cfe5c0" stroke="none"/>
-      <path d="M-5 150 Q90 110 170 130 T365 105 V175 H-5z" fill="#a9cc86"/>
-      <path d="M200 -5 Q215 60 190 95 T230 175 H262 Q240 120 262 85 T236 -5z" fill="#9fd0e6"/>
-      <circle cx="30" cy="40" r="26" fill="#8fbf6e"/><circle cx="330" cy="140" r="22" fill="#8fbf6e"/>
-      <rect x="300" y="22" width="34" height="46" rx="4" fill="#cdbf9f"/><path d="M308 68 V40 a9 9 0 0 1 18 0 V68" fill="#a9cc86"/>
+
+
+
+
+
       <path d="M20 135 Q60 120 ${stops[0]![0]} ${stops[0]![1]} Q120 100 ${stops[1]![0]} ${stops[1]![1]} Q230 80 ${stops[2]![0]} ${stops[2]![1]}"
         fill="none" stroke="#fff8e8" stroke-width="6" stroke-dasharray="10 8"/>
       ${stops.map(([x, y], index) => `<circle cx="${x}" cy="${y}" r="11" fill="${fill(index)}"/>`).join("")}
@@ -74,7 +75,13 @@ function trail(pair: PairStoryView, current: number) {
         <path d="M14 18 c0-6 0-9 0-12 M14 12 c-4-1-6-4-6-7 4 1 6 3 6 7z M14 10 c4-1 5-4 5-7-4 1-5 3-5 7z" fill="#5a9a44" stroke-width="2"/>
       </g>
     </g>`;
-  return svg;
+  return h("div", { className: "trail-scene" }, [
+    assetImage(UI_ART.trail, {
+      className: "trail-background",
+      fallback: () => h("span", { className: "trail-background" }),
+    }),
+    svg,
+  ]);
 }
 
 function pairChooser(state: AppState, world: WorldView, overview: PairStoryView[], controller: Controller) {
@@ -362,10 +369,9 @@ function body(state: AppState, world: WorldView, content: GameContent, controlle
   const selected = pair.episodes.some((episode) => episode.index === state.explore.selectedEpisode)
     ? state.explore.selectedEpisode!
     : (pair.episodes.find((episode) => episode.status !== "read")?.index ?? 2);
-  const section = state.explore.section ?? "episode";
+  const section = state.explore.section === "history" ? "history" : "episode";
   const sections = [
     ["episode", "탐험 준비"],
-    ["journey", "여정"],
     ["history", "읽은 이야기"],
   ] as const;
   return [
@@ -383,7 +389,7 @@ function body(state: AppState, world: WorldView, content: GameContent, controlle
         }),
       ),
     ),
-    section === "journey"
+    section === "episode"
       ? h("section", { className: "card trail-card", attrs: { "aria-label": `${pair.arc.place} 지도` } }, [
           trail(pair, selected),
           h("span", { className: "place-sign", text: pair.arc.place }),
@@ -399,7 +405,7 @@ function body(state: AppState, world: WorldView, content: GameContent, controlle
           { className: "arc-card" },
         )
       : null,
-    section === "journey" ? statusStrip(state, world, pairs, content) : null,
+    section === "episode" ? statusStrip(state, world, pairs, content) : null,
     section === "history" ? completedList(state, pair, controller) : null,
   ];
 }

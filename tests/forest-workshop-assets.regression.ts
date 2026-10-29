@@ -45,8 +45,8 @@ const keyPath = (key: string) => manifest.assets[key]?.path;
 
 // 1. Every file on disk is in the manifest and matches it byte for byte.
 const files = readdirSync(ROOT, { recursive: true, encoding: "utf8" }).filter((file) => file.endsWith(".webp"));
-assert.equal(files.length, 87, "87 WebP pictures");
-assert.equal(byPath.size, 87, "the manifest lists 87 pictures");
+assert.equal(files.length, 92, "92 WebP pictures");
+assert.equal(byPath.size, 92, "the manifest lists 92 pictures");
 for (const file of files) {
   const entry = byPath.get(file);
   assert.ok(entry, `${file} is in the manifest`);

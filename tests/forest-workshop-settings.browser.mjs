@@ -68,6 +68,10 @@ try {
       rememberSettingsNickname(worldId, value) {
         window.testState.settingsNicknameDraft = { worldId, value };
       },
+      setAutoReading(value) {
+        window.testState.autoReading = value;
+        window.testRender();
+      },
       openGroundEditor() {
         window.groundOpened = true;
       },
@@ -98,6 +102,11 @@ try {
   await page.getByLabel("닉네임").fill("새 이름");
   await page.getByRole("button", { name: "표시", exact: true }).click();
   assert.equal(await page.getByText("글자 크기").isVisible(), true);
+  await page.getByRole("switch", { name: "이야기 자동 넘기기" }).click();
+  assert.equal(await page.getByRole("switch", { name: "이야기 자동 넘기기" }).getAttribute("aria-checked"), "true");
+  await page.getByLabel("이야기 자동 넘기기 간격").selectOption("7");
+  assert.equal(await page.evaluate(() => window.testState.autoReading.seconds), 7);
+
   await page.getByRole("button", { name: "내 공방", exact: true }).click();
   assert.equal(await page.getByLabel("닉네임").inputValue(), "새 이름");
   await page.getByRole("button", { name: "수정", exact: true }).click();

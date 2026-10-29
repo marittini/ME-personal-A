@@ -3,6 +3,7 @@
 // the 종표 교환 card (n / 5 · 원하는 주민 선택). [종표 교환] lists the registered residents to choose from.
 // Every registered resident has the same chance (no grades); the server rolls and decides (plan §7.2-F).
 import type { AppState, Controller } from "../../app/controller";
+import { UI_ART, assetImage } from "../../app/assets";
 import { button, h, statusLine } from "../../app/dom";
 import type { GameContent, Resident, WorldView } from "../../app/types";
 import { card, renderFrame } from "../chrome/frame";
@@ -83,6 +84,9 @@ function inviteBody(state: AppState, world: WorldView, content: GameContent, con
   const waiting = residents.filter((resident) => !resident.recruited).length;
   const guaranteeIn = content.invite.guaranteeAfter - world.state.invite.sinceNew + 1;
   return [
+    h("div", { className: "invite-stage" }, [
+      assetImage(UI_ART.inviteScene, { className: "invite-scene", fallback: () => ICONS.ticket("icon huge") }),
+    ]),
     card(null, [
       h(
         "button",

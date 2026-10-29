@@ -39,8 +39,15 @@ try {
     args: ["--no-sandbox"],
   });
   const page = await browser.newPage({ viewport: { width: 390, height: 740 }, isMobile: true, hasTouch: true });
+  await page.route("http://forest.test/api/capability-packages/forest-workshop/assets/assets/**", async (route) => {
+    const relative = new URL(route.request().url()).pathname.split("/assets/assets/")[1];
+    await route.fulfill({
+      contentType: "image/webp",
+      body: await readFile(resolve("packages/forest-workshop/assets", relative)),
+    });
+  });
   await page.setContent(
-    '<meta name="viewport" content="width=device-width, initial-scale=1"><div id="host" style="height:740px;width:390px"></div>',
+    '<base href="http://forest.test/"><meta name="viewport" content="width=device-width, initial-scale=1"><div id="host" style="height:740px;width:390px"></div>',
   );
   await page.addScriptTag({ content: await readFile(bundle, "utf8") });
   await page.evaluate(() => {
@@ -76,6 +83,7 @@ try {
       },
       content: null,
       artReady: [
+        "backgrounds/workshop-base-spring.webp",
         "ui/title-sign.webp",
         "ui/paper-panel.webp",
         "ui/primary-button.webp",
@@ -130,6 +138,9 @@ try {
     };
     window.testRender();
   });
+  await page.locator(".stage-art").evaluate((i) => i.decode());
+  await page.screenshot({ path: join(process.env.FW_ART_SCREENSHOTS ?? temp, "reader-art.png") });
+
   const fit = async () =>
     page.locator("#host").evaluate((host) => {
       const s = host.shadowRoot.querySelector(".scroll");
@@ -166,6 +177,7 @@ try {
     host.style.width = "320px";
     host.style.height = "640px";
   });
+  await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
   const smallChoiceSize = await fit();
   assert.ok(
     smallChoiceSize.content <= smallChoiceSize.available + 1,

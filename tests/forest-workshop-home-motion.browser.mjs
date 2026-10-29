@@ -169,6 +169,18 @@ try {
   await page.emulateMedia({ reducedMotion: "reduce" });
   assert.equal(await resident.locator(".figure").evaluate((node) => getComputedStyle(node).animationName), "none");
   assert.equal(await resident.locator("..").evaluate((node) => getComputedStyle(node).animationName), "none");
+  const weatherKeys = await page.evaluate(() => {
+    const state = window.homeTestState,
+      controller = window.homeTestController;
+    const a = window.renderHomeScene({ ...state, weatherEffects: { enabled: true, kind: "rain" } }, controller).dataset
+      .homeScene;
+    const b = window.renderHomeScene({ ...state, weatherEffects: { enabled: true, kind: "snow" } }, controller).dataset
+      .homeScene;
+    const c = window.renderHomeScene({ ...state, weatherEffects: { enabled: false, kind: "rain" } }, controller).dataset
+      .homeScene;
+    return [a !== b, a !== c];
+  });
+  assert.deepEqual(weatherKeys, [true, true], "preserved scenes refresh when weather preferences change");
   console.log("Home motion, reduced motion and resident target: OK");
 } finally {
   await browser?.close();

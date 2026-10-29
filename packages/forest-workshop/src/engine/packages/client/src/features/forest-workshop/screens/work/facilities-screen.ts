@@ -9,7 +9,7 @@ import type { GameContent, WorldView } from "../../app/types";
 import { card, renderFrame } from "../chrome/frame";
 import { ICONS } from "../chrome/icons";
 import { pagePicker } from "../chrome/page-picker";
-import { amountPicker } from "../chrome/sheet";
+import { amountPicker, sheetDialog } from "../chrome/sheet";
 import { renderAutoSellSheet } from "./auto-sell-sheet";
 import { crewBonus, facilityOf, facilityPicture, itemName, itemTile, percent, speedPercent } from "./production-view";
 
@@ -26,15 +26,19 @@ function tabs(state: AppState, controller: Controller) {
     h(
       "button",
       {
-        className: `big-tab${state.facilitiesTab === id ? " current" : ""}`,
-        attrs: { type: "button", role: "tab", "aria-selected": state.facilitiesTab === id ? "true" : "false" },
+        className: `big-tab${(state.facilitiesTab === "protection" ? "facilities" : state.facilitiesTab) === id ? " current" : ""}`,
+        attrs: {
+          type: "button",
+          role: "tab",
+          "aria-selected":
+            (state.facilitiesTab === "protection" ? "facilities" : state.facilitiesTab) === id ? "true" : "false",
+        },
         on: { click: () => controller.setFacilitiesTab(id) },
       },
       [icon, h("span", { text: label })],
     );
   return h("div", { className: "big-tabs", attrs: { role: "tablist", "aria-label": "시설과 창고" } }, [
     tab("facilities", "시설", ICONS.house("icon big")),
-    tab("protection", "재고 보호", ICONS.lock("icon big")),
     tab("storage", "창고", ICONS.box("icon big")),
   ]);
 }
@@ -303,21 +307,11 @@ function protectSheet(state: AppState, world: WorldView, content: GameContent, c
     controller.rememberProtection({ page });
   }
   showPage(page);
-  return h("div", { className: "sheet-backdrop" }, [
-    h(
-      "section",
-      {
-        className: "sheet card",
-        attrs: { role: "dialog", "aria-modal": "true", "aria-labelledby": "fw-protect-edit" },
-      },
-      [
-        h("h2", { className: "section-title", text: "재고 보호 편집", attrs: { id: "fw-protect-edit" } }),
-        h("p", { className: "muted", text: "보호한 수량은 자동 제작과 판매에 쓰지 않아요. 0이면 보호하지 않아요." }),
-        picker,
-        h("ul", { className: "protect-list" }, rows),
-        button("닫기", () => controller.closeSheet(), { variant: "secondary", attrs: { "data-wide": "" } }),
-      ],
-    ),
+  return sheetDialog("fw-protect-edit", "재고 보호", [
+    picker,
+    h("ul", { className: "protect-list" }, rows),
+    h("p", { className: "muted", text: "보호한 수량은 자동 제작과 판매에 쓰지 않아요. 0이면 보호하지 않아요." }),
+    button("닫기", () => controller.closeSheet(), { variant: "secondary" }),
   ]);
 }
 
@@ -368,11 +362,14 @@ export function renderFacilitiesScreen(state: AppState, controller: Controller) 
     body: ready
       ? [
           tabs(state, controller),
-          ...(state.facilitiesTab === "facilities"
-            ? [facilityCard(state, content, world, controller)]
-            : state.facilitiesTab === "protection"
-              ? [protectionCard(state, world, content, controller)]
-              : [storageCard(state, world, content, controller)]),
+          ...(state.facilitiesTab !== "storage"
+            ? [
+                world.state.production.facilities[state.work.facilityId] && content.facilities
+                  ? facilityCard(state, content, world, controller)
+                  : null,
+                protectionCard(state, world, content, controller),
+              ]
+            : [storageCard(state, world, content, controller)]),
         ]
       : [statusLine("세계를 불러오는 중…")],
     nav: true,

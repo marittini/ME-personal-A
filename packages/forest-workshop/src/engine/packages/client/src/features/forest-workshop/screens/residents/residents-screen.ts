@@ -12,7 +12,7 @@ import { card, renderFrame } from "../chrome/frame";
 import { ICONS, type IconFactory } from "../chrome/icons";
 import { FIELD_ICONS, FIELD_LABELS, passiveOf, percent, talentOf } from "../work/production-view";
 import { searchField } from "../chrome/search-field";
-import { kindTag, residentAvatar, residentFigure } from "./resident-figure";
+import { kindTag, residentFigure } from "./resident-figure";
 import { renderFieldSheet } from "./field-sheet";
 import { renderProfileSheet } from "./profile-sheet";
 
@@ -79,25 +79,30 @@ function fieldTag(resident: Resident, controller: Controller) {
   );
 }
 
-function residentCard(resident: Resident, controller: Controller) {
-  return h("li", { className: "resident-list-item" }, [
+function residentCard(resident: Resident, controller: Controller, selected: boolean) {
+  return h("li", { className: `resident-card${selected ? " selected" : ""}` }, [
     h(
       "button",
       {
-        className: "resident-list-open",
+        className: "resident-card-main",
         attrs: {
           type: "button",
           "aria-label": `${resident.displayName} 자세히 보기`,
+          "aria-pressed": String(selected),
         },
         on: { click: () => controller.selectResident(resident.residentId) },
       },
       [
-        residentAvatar(resident),
-        h("span", { className: "resident-list-copy" }, [
-          h("strong", { text: resident.displayName }),
-          h("span", { text: `${FIELD_LABELS[resident.field]} · ${resident.recruited ? "영입 완료" : "초대 대기"}` }),
+        h("span", { className: "card-stage" }, [residentFigure(resident)]),
+        h("strong", { className: "resident-name", text: resident.displayName }),
+        h("span", { className: "tag-row" }, [
+          kindTag(resident),
+          h("span", { className: "resident-field-label", text: FIELD_LABELS[resident.field] }),
         ]),
-        ICONS.chevron("icon"),
+        h("span", {
+          className: `status-pill ${resident.recruited ? "done" : "waiting"}`,
+          text: resident.recruited ? "영입 완료" : "초대 대기",
+        }),
       ],
     ),
   ]);
@@ -190,21 +195,11 @@ function body(world: WorldView, state: AppState, controller: Controller) {
   const view = state.residentsView;
   const all = Object.values(world.state.residents);
   const shown = visibleResidents(world.state, view);
-  const selected = world.state.residents[view.selectedId ?? ""] ?? null;
-  if (view.detailOpen && selected) {
-    return [
-      h("button", {
-        className: "outline-button residents-back",
-        text: "← 주민 목록",
-        attrs: { type: "button" },
-        on: { click: () => controller.showResidentsList() },
-      }),
-      detail(selected, world, state.content, controller),
-    ];
-  }
   const pageSize = 2;
   const pageCount = Math.max(1, Math.ceil(shown.length / pageSize));
   const page = Math.min(view.page ?? 0, pageCount - 1);
+  const visible = shown.slice(page * pageSize, (page + 1) * pageSize);
+  const selected = visible.find((resident) => resident.residentId === view.selectedId) ?? visible[0] ?? null;
   const grid =
     all.length === 0
       ? h("div", { className: "empty-state" }, [
@@ -216,7 +211,7 @@ function body(world: WorldView, state: AppState, controller: Controller) {
         : h(
             "ul",
             { className: "resident-grid" },
-            shown.slice(page * pageSize, (page + 1) * pageSize).map((resident) => residentCard(resident, controller)),
+            visible.map((resident) => residentCard(resident, controller, resident.residentId === selected?.residentId)),
           );
   return [
     searchBar(view, controller),
@@ -237,6 +232,7 @@ function body(world: WorldView, state: AppState, controller: Controller) {
         (value) => controller.setResidentsPage(value),
       ),
     ]),
+    selected ? detail(selected, world, state.content, controller) : null,
     h(
       "button",
       {

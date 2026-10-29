@@ -2,6 +2,7 @@
 // card with 작업 보고 and the 72-hour absence bar (work-report.ts); the story card; the bottom bar. Blocks without their
 // feature yet are locked in place (docs/forest-workshop/ui-spec.md). The welcome package opens as a sheet above.
 import type { AppState, Controller } from "../../app/controller";
+import { UI_ART, assetImage } from "../../app/assets";
 import { button, errorLine, h, statusLine } from "../../app/dom";
 import { card, renderFrame } from "../chrome/frame";
 import { ICONS } from "../chrome/icons";
@@ -9,7 +10,7 @@ import type { GameContent, WorldState } from "../../app/types";
 import { editingGround, groundActions } from "./ground-editor";
 import { renderHomeScene } from "./home-scene";
 import { renderStarterKitSheet } from "./starter-kit-sheet";
-import { absenceStrip, compactWorkReport, workReportSheet } from "./work-report";
+import { absenceStrip, workReportCard, workReportSheet } from "./work-report";
 
 /** What the story card says, from the world: an opened episode first, then a running expedition. */
 function storyLine(world: WorldState, content: GameContent | null): string {
@@ -39,7 +40,9 @@ function storyCard(world: WorldState, content: GameContent | null, controller: C
       on: { click: () => controller.openExplore() },
     },
     [
-      h("span", { className: "story-art", attrs: { "aria-hidden": "true" } }, [ICONS.book("icon")]),
+      h("span", { className: "story-art", attrs: { "aria-hidden": "true" } }, [
+        assetImage(UI_ART.storyVignette, { className: "story-vignette", fallback: () => ICONS.book("icon") }),
+      ]),
       h("span", { className: "story-text" }, [
         h("strong", { text: "주민 이야기" }),
         h("span", { text: storyLine(world, content) }),
@@ -74,7 +77,7 @@ export function renderHomeScreen(state: AppState, controller: Controller) {
     body: editingGround(state)
       ? [groundActions(state, controller)]
       : [
-          compactWorkReport(state, world.value, controller),
+          workReportCard(world.value, state.content, controller),
           storyCard(world.value.state, state.content, controller),
           absenceStrip(world.value, state.content, controller),
         ],

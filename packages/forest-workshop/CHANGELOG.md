@@ -1,3 +1,18 @@
+## 0.6.20 — 2026-10-29
+
+- 주민 프로필의 변경 이력 탭과 AI 지침의 저장 버전 표시를 제거했습니다.
+- 상세 창의 닫기 위치·종이 여백·초상 크기를 보정하고, 재고 보호 수량 버튼을 큰 글자에서도 읽기 쉽게 배치했습니다.
+- 기억 필터를 공통 선택 UI로 통일하고 내용 중심으로 정리했습니다. 작업 보고 내역과 업로드 규격은 펼쳐볼 수 있습니다.
+- 주민 그림 조절부를 미리보기 가까이 옮기고, 좁은 화면의 조절 슬라이더와 보조 버튼 배치를 개선했습니다.
+
+## 0.6.19 — 2026-10-29
+
+- 목업에 맞춰 작업 세부 탭·시설/재고 보호·탐사 지도와 준비를 통합하고 주민 그림 카드와 선택 상세를 같은 화면에 배치했습니다.
+- 사계절 바탕·홈·지도·실내·초대 장면을 단순한 그림으로 교체하고 이야기 삽화·편지지·관리 아이콘을 추가했습니다.
+- 간판 위치, 버튼·입력창·카드의 정렬과 간격, 좁은 화면의 글자 겹침을 보정했습니다.
+- 우편 숫자를 새 편지 반짝임 표시로 바꾸고, 맑음·흐림·비·눈의 수동 배경 연출 및 켜기/끄기를 추가했습니다. 현실 날씨 조회는 아직 제공하지 않습니다.
+- 최신 main의 주민 편지·AI 연결 선택·홈 이동/반응·전체 화면·기록 보관 기능을 유지합니다.
+
 ## 0.6.16 — 2026-10-29
 - Generate one resident letter from a completed activity with a separately selected AI connection. Activity results remain intact when generation fails; a slot is reserved for any activity in progress. Letters count toward the existing 200-mail limit; completed activities retain the 100-record limit. Actual model output and Android use remain unverified.
 - Choose separate Engine connections for story generation and resident-setting suggestions on this browser. Existing stories stay unchanged; unavailable selected connections do not fall back automatically.

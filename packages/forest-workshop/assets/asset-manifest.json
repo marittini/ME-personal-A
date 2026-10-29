@@ -1,31 +1,26 @@
 {
   "schemaVersion": 1,
-  "packVersion": "1.2.0",
+  "packVersion": "1.4.1",
   "packageId": "forest-workshop",
   "referenceCodeCommit": "570a64bc7dfd35436ca97a6c6f081214df970009",
   "notes": [
-    "87-image pack: previous 82 preserved byte-for-byte plus five navigation icons.",
-    "All images are individually AI-generated; no free asset packs."
+    "100 images, including four management icons. Resident portraits remain user supplied."
   ],
   "assets": {
     "backgrounds/workshop-base-autumn": {
       "path": "backgrounds/workshop-base-autumn.webp",
-      "width": 1024,
-      "height": 1536,
-      "bytes": 853586,
-      "sha256": "2b5f02f155f932d4d2377d7aecdd093340bc53135c05e7f9c01559f3d421b818",
+      "width": 768,
+      "height": 1152,
+      "bytes": 31680,
+      "sha256": "f66c396937a68e36c13d161bb34d2a8a3e64662343dc850d4c6de8b6f89fab3c",
       "hasTransparency": false,
       "source": {
         "type": "ai-generated",
-        "method": "built-in-imagegen"
+        "method": "built-in-imagegen",
+        "artDirection": "simple-cartoon-low-detail",
+        "original": "exec-a8ab4f9f-cadb-41c0-b56b-0b1d2af7b4d7.png"
       },
       "sourceCanvas": [
-        1024,
-        1536
-      ],
-      "preparedCrop": [
-        0,
-        0,
         1024,
         1536
       ]
@@ -404,24 +399,20 @@
     },
     "backgrounds/workshop-scene-autumn": {
       "path": "backgrounds/workshop-scene-autumn.webp",
-      "width": 1536,
-      "height": 1024,
-      "bytes": 954590,
-      "sha256": "437037f465629b5d2e723d8068b55a8f638026ab200e6b0e3f75359c9c7899d3",
+      "width": 768,
+      "height": 1152,
+      "bytes": 55872,
+      "sha256": "b96e4e79198e1f8ffd3ccbb277530a5634902e4c9eac2d52d3575904c5c04d02",
       "hasTransparency": false,
       "source": {
         "type": "ai-generated",
-        "method": "built-in-imagegen"
+        "method": "built-in-imagegen",
+        "artDirection": "simple-cartoon-low-detail",
+        "original": "exec-0518eea6-208d-46f6-aba5-ed64408a3fa4.png"
       },
       "sourceCanvas": [
-        1536,
-        1024
-      ],
-      "preparedCrop": [
-        0,
-        0,
-        1536,
-        1024
+        1024,
+        1536
       ],
       "residentFeetAnchorsNormalized": [
         {
@@ -833,46 +824,38 @@
     },
     "backgrounds/workshop-base-spring": {
       "path": "backgrounds/workshop-base-spring.webp",
-      "width": 1024,
-      "height": 1536,
-      "bytes": 870034,
-      "sha256": "f66f8251d601a67f59dc8f6a7ec0946b688dcfc06528feca1f8d5a84beaed5b4",
+      "width": 768,
+      "height": 1152,
+      "bytes": 25708,
+      "sha256": "0b17a95d0b2b60db70967d3e9446689060d3949e3a45a50ac8a70af12f6badf4",
       "hasTransparency": false,
       "source": {
         "type": "ai-generated",
-        "method": "built-in-imagegen"
+        "method": "built-in-imagegen",
+        "artDirection": "simple-cartoon-low-detail",
+        "original": "exec-bdcf77c7-fcbb-4c5a-bc23-e24ffe086864.png"
       },
       "sourceCanvas": [
-        1024,
-        1536
-      ],
-      "preparedCrop": [
-        0,
-        0,
         1024,
         1536
       ]
     },
     "backgrounds/workshop-scene-spring": {
       "path": "backgrounds/workshop-scene-spring.webp",
-      "width": 1536,
-      "height": 1024,
-      "bytes": 928250,
-      "sha256": "a5a806ae7275d69f7438c5f2291fcbffbf790e67e4e03f59c62078559b6c501a",
+      "width": 768,
+      "height": 1152,
+      "bytes": 43996,
+      "sha256": "2bcb36b0fb6c1c7352018b63d1ca3e5deea3fbd2623d8b67b206dea3ebef0394",
       "hasTransparency": false,
       "source": {
         "type": "ai-generated",
-        "method": "built-in-imagegen"
+        "method": "built-in-imagegen",
+        "artDirection": "simple-cartoon-low-detail",
+        "original": "exec-c07eb6c4-9995-4348-be7c-8946a737c874.png"
       },
       "sourceCanvas": [
-        1536,
-        1024
-      ],
-      "preparedCrop": [
-        0,
-        0,
-        1536,
-        1024
+        1024,
+        1536
       ],
       "residentFeetAnchorsNormalized": [
         {
@@ -888,46 +871,38 @@
     },
     "backgrounds/workshop-base-summer": {
       "path": "backgrounds/workshop-base-summer.webp",
-      "width": 1024,
-      "height": 1536,
-      "bytes": 839656,
-      "sha256": "78b6db6a45aff499154c937720ae9a8f0a08d5e3c0d3727567d99e664e87d41c",
+      "width": 768,
+      "height": 1152,
+      "bytes": 23330,
+      "sha256": "b105f7be5e22c6cd911eba5f6241fed7c569105caa6eb86dadc982495539bc89",
       "hasTransparency": false,
       "source": {
         "type": "ai-generated",
-        "method": "built-in-imagegen"
+        "method": "built-in-imagegen",
+        "artDirection": "simple-cartoon-low-detail",
+        "original": "exec-dc61afe0-7913-40b7-8520-9e466a8651bd.png"
       },
       "sourceCanvas": [
-        1024,
-        1536
-      ],
-      "preparedCrop": [
-        0,
-        0,
         1024,
         1536
       ]
     },
     "backgrounds/workshop-scene-summer": {
       "path": "backgrounds/workshop-scene-summer.webp",
-      "width": 1536,
-      "height": 1024,
-      "bytes": 953940,
-      "sha256": "2af1c8fb53bd78819a7d75b8207a4cf650c76e99c7e7ec438002105406e4db8e",
+      "width": 768,
+      "height": 1152,
+      "bytes": 47560,
+      "sha256": "c42e68f6b0e201ba05898f4b11dc38ce730e1243189a4ce9d320b1964e2a607d",
       "hasTransparency": false,
       "source": {
         "type": "ai-generated",
-        "method": "built-in-imagegen"
+        "method": "built-in-imagegen",
+        "artDirection": "simple-cartoon-low-detail",
+        "original": "exec-d7a27d77-610b-422d-9711-2fd6ced779be.png"
       },
       "sourceCanvas": [
-        1536,
-        1024
-      ],
-      "preparedCrop": [
-        0,
-        0,
-        1536,
-        1024
+        1024,
+        1536
       ],
       "residentFeetAnchorsNormalized": [
         {
@@ -943,46 +918,38 @@
     },
     "backgrounds/workshop-base-winter": {
       "path": "backgrounds/workshop-base-winter.webp",
-      "width": 1024,
-      "height": 1536,
-      "bytes": 844482,
-      "sha256": "4f7b9a196f26f02983f179468501d510c0289d547f93ffb4d0a85b8ce3b7a114",
+      "width": 768,
+      "height": 1152,
+      "bytes": 23160,
+      "sha256": "5656af88809f2fcdc73c84be046f7ab246f7887308fdca71cedd9c76ac08f74f",
       "hasTransparency": false,
       "source": {
         "type": "ai-generated",
-        "method": "built-in-imagegen"
+        "method": "built-in-imagegen",
+        "artDirection": "simple-cartoon-low-detail",
+        "original": "exec-bcf54520-6ee9-4af5-8df8-23f98c0c8e71.png"
       },
       "sourceCanvas": [
-        1024,
-        1536
-      ],
-      "preparedCrop": [
-        0,
-        0,
         1024,
         1536
       ]
     },
     "backgrounds/workshop-scene-winter": {
       "path": "backgrounds/workshop-scene-winter.webp",
-      "width": 1536,
-      "height": 1024,
-      "bytes": 907100,
-      "sha256": "7b8e9bf24f5c99b743fd5de06502b07958f62910d57c23eabbe1848e37946efe",
+      "width": 768,
+      "height": 1152,
+      "bytes": 48232,
+      "sha256": "8052570e070f3bf3d0877ccef2aaede3b93802f5ee42ba7e9e18581e9f60537a",
       "hasTransparency": false,
       "source": {
         "type": "ai-generated",
-        "method": "built-in-imagegen"
+        "method": "built-in-imagegen",
+        "artDirection": "simple-cartoon-low-detail",
+        "original": "exec-b7e1ceb4-0958-40b1-bb5f-b1ee3d2c39d5.png"
       },
       "sourceCanvas": [
-        1536,
-        1024
-      ],
-      "preparedCrop": [
-        0,
-        0,
-        1536,
-        1024
+        1024,
+        1536
       ],
       "residentFeetAnchorsNormalized": [
         {
@@ -2007,6 +1974,228 @@
         1254,
         1254
       ]
+    },
+    "backgrounds/forest-trail": {
+      "path": "backgrounds/forest-trail.webp",
+      "width": 960,
+      "height": 640,
+      "bytes": 45336,
+      "sha256": "180b95cf16e1f6e8bcd99f0c19a469cb9a38cad7fc35c14d6c3471df87f8aa31",
+      "hasTransparency": false,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen",
+        "artDirection": "simple-cartoon-low-detail",
+        "original": "exec-ed716c62-0ad6-45b3-b8bd-cfbc351460af.png"
+      },
+      "sourceCanvas": [
+        1536,
+        1024
+      ]
+    },
+    "backgrounds/workshop-interior": {
+      "path": "backgrounds/workshop-interior.webp",
+      "width": 960,
+      "height": 640,
+      "bytes": 23776,
+      "sha256": "7d7af619d366430f92b2e90c35381f45c8b289a67327be855563404e266bcdae",
+      "hasTransparency": false,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen",
+        "artDirection": "simple-cartoon-low-detail",
+        "original": "exec-3954bdc8-1155-4821-a2e4-6b79f3898f82.png"
+      },
+      "sourceCanvas": [
+        1536,
+        1024
+      ]
+    },
+    "ui/invite-scene": {
+      "path": "ui/invite-scene.webp",
+      "width": 960,
+      "height": 640,
+      "bytes": 30244,
+      "sha256": "5cf2cabc28fcdf26526f46b7e2e7ef4934cabfc161b63936f760c68ec491a622",
+      "hasTransparency": false,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen",
+        "artDirection": "simple-cartoon-low-detail",
+        "original": "exec-3e8aed7c-aea8-43a2-a057-672f82621b9b.png"
+      },
+      "sourceCanvas": [
+        1536,
+        1024
+      ]
+    },
+    "ui/story-vignette": {
+      "path": "ui/story-vignette.webp",
+      "width": 384,
+      "height": 256,
+      "bytes": 25674,
+      "sha256": "dc1f3333fd7d0076ee0c0211fcf4abef9e19adf7986ba559a74b3d0c4ccddc45",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1536,
+        1024
+      ]
+    },
+    "ui/letter-paper": {
+      "path": "ui/letter-paper.webp",
+      "width": 768,
+      "height": 1152,
+      "bytes": 131844,
+      "sha256": "e0b1a70b5d5964944e59f01e450094a0c16d3cdaf2394ce3c6f24d3462205704",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1024,
+        1536
+      ]
+    },
+    "ui/weather-sun": {
+      "path": "ui/weather-sun.webp",
+      "width": 128,
+      "height": 128,
+      "bytes": 6800,
+      "sha256": "6759a0f331920db398297ae3dba503db7230de7b201753c6e7d357fa9bc01dc6",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen",
+        "original": "exec-c608bf10-7e80-439a-bebe-79080eef7e0c.png"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ]
+    },
+    "ui/weather-cloud": {
+      "path": "ui/weather-cloud.webp",
+      "width": 128,
+      "height": 128,
+      "bytes": 3084,
+      "sha256": "a67a0ed07b5e3832d62a491300838ecf9899545c531c43ff1b2c9ec94f130ac8",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen",
+        "original": "exec-cb7f8e30-bcf8-45a0-b3c6-335c59a36969.png"
+      },
+      "sourceCanvas": [
+        1536,
+        1024
+      ]
+    },
+    "ui/weather-rain": {
+      "path": "ui/weather-rain.webp",
+      "width": 128,
+      "height": 128,
+      "bytes": 2502,
+      "sha256": "13d5628c9b15fd4bdbbc8a52959a84bad2591fd3a8e8284e1c3905cfec87975d",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen",
+        "original": "exec-0d608c01-5d50-4fdf-ac41-1d028f1ab265.png"
+      },
+      "sourceCanvas": [
+        1303,
+        1207
+      ]
+    },
+    "ui/weather-snow": {
+      "path": "ui/weather-snow.webp",
+      "width": 128,
+      "height": 128,
+      "bytes": 9354,
+      "sha256": "fc77fc75739c114954d5cbf2dbe4c4e34873042909e642ce87c346449d71f2bd",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen",
+        "original": "exec-b21f019b-89e7-4b84-990e-66e064226b21.png"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ]
+    },
+    "ui/manage-portrait": {
+      "path": "ui/manage-portrait.webp",
+      "width": 128,
+      "height": 128,
+      "bytes": 4048,
+      "sha256": "272e0b41c01165334d4de35fcdd7a50ddee0d150cd30ae84834b1c840fb35880",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen",
+        "original": "exec-b456c037-b4c3-490e-8c56-18df4705c8fc.png"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ]
+    },
+    "ui/manage-guidelines": {
+      "path": "ui/manage-guidelines.webp",
+      "width": 128,
+      "height": 128,
+      "bytes": 6490,
+      "sha256": "4d5475c7960e7c44e70d61e7fb02af1559b34d88864fc40293904f7daa330b0b",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen",
+        "original": "exec-5c7c9e83-3b91-4b78-872a-6f7187e0a0a8.png"
+      },
+      "sourceCanvas": [
+        1262,
+        1246
+      ]
+    },
+    "ui/manage-memory": {
+      "path": "ui/manage-memory.webp",
+      "width": 128,
+      "height": 128,
+      "bytes": 5928,
+      "sha256": "4dfd864abdca071a6c325ab81afbadf3b3d9aee1747204345950b545c7b64dc4",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen",
+        "original": "exec-36e99aee-3f6e-4929-9f93-dd3993d8b90b.png"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ]
+    },
+    "ui/manage-backup": {
+      "path": "ui/manage-backup.webp",
+      "width": 128,
+      "height": 128,
+      "bytes": 4080,
+      "sha256": "2810137dae560c6abc938f2991a79798c0f376e8c1ec4df0d9b0ea19e1a472a2",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen",
+        "original": "exec-c8563f32-74bc-4035-9123-ffc2e04bdce7.png"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ]
     }
   },
   "itemMap": {
@@ -2104,6 +2293,19 @@
     "nav-work": "ui/nav-work",
     "nav-explore": "ui/nav-explore",
     "nav-residents": "ui/nav-residents",
-    "nav-invite": "ui/nav-invite"
+    "nav-invite": "ui/nav-invite",
+    "trail": "backgrounds/forest-trail",
+    "interior": "backgrounds/workshop-interior",
+    "inviteScene": "ui/invite-scene",
+    "storyVignette": "ui/story-vignette",
+    "letterPaper": "ui/letter-paper",
+    "weather-sun": "ui/weather-sun",
+    "weather-cloud": "ui/weather-cloud",
+    "weather-rain": "ui/weather-rain",
+    "weather-snow": "ui/weather-snow",
+    "manage-portrait": "ui/manage-portrait",
+    "manage-guidelines": "ui/manage-guidelines",
+    "manage-memory": "ui/manage-memory",
+    "manage-backup": "ui/manage-backup"
   }
 }

@@ -6,7 +6,7 @@ const work = { facilityId: "gather-yard", drafts: {}, selected: {}, queueRecipe:
 const state = { route: "residents" as const, residentsView, work, facilitiesTab: "facilities" as const };
 assert.equal(screenPageKey(state), screenPageKey({ ...state, residentsView: { ...residentsView, query: "a" } }));
 assert.notEqual(screenPageKey(state), screenPageKey({ ...state, residentsView: { ...residentsView, page: 1 } }));
-assert.notEqual(
+assert.equal(
   screenPageKey(state),
   screenPageKey({ ...state, residentsView: { ...residentsView, selectedId: "a", detailOpen: true } }),
 );

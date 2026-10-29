@@ -27,7 +27,7 @@ export type ResidentSheet =
       residentId?: string;
       status?: "all" | "active" | "corrected" | "invalidated";
     }
-  | { kind: "profile"; residentId: string; panel?: number; draft?: string; historyPage?: number }
+  | { kind: "profile"; residentId: string; panel?: number; draft?: string }
   | { kind: "pair-add"; residentId: string }
   | { kind: "image-history"; residentId: string }
   | { kind: "history-cleanup" }
@@ -179,10 +179,24 @@ export function createResidentActions(core: ControllerCore) {
     setResidentsFilter: (filter: ResidentsView["filter"]) => patchView({ filter, page: 0 }),
     setResidentsPage: (page: number) => patchView({ page: Math.max(0, page) }),
     showResidentsList: () => patchView({ detailOpen: false }),
-    selectResident: (residentId: string) => patchView({ selectedId: residentId, detailOpen: true }),
+    selectResident: (residentId: string) => patchView({ selectedId: residentId }),
 
     openResidents(residentId?: string) {
-      patchView(residentId ? { selectedId: residentId, detailOpen: true } : { detailOpen: false });
+      if (residentId) {
+        const view: ResidentsView = {
+          ...store.get().residentsView,
+          tab: "all",
+          query: "",
+          filter: "all",
+          selectedId: residentId,
+          detailOpen: false,
+        };
+        const world = core.currentWorld();
+        const index = world
+          ? visibleResidents(world.state, view).findIndex((resident) => resident.residentId === residentId)
+          : 0;
+        patchView({ ...view, page: Math.max(0, Math.floor(index / 2)) });
+      } else patchView({ detailOpen: false });
       core.navigate("residents");
     },
 
@@ -205,7 +219,7 @@ export function createResidentActions(core: ControllerCore) {
       store.set({ sheet: null });
     },
 
-    rememberProfile(patch: { panel?: number; draft?: string; historyPage?: number }) {
+    rememberProfile(patch: { panel?: number; draft?: string }) {
       store.remember((state) => (state.sheet?.kind === "profile" ? { sheet: { ...state.sheet, ...patch } } : {}));
     },
 
@@ -222,7 +236,7 @@ export function createResidentActions(core: ControllerCore) {
         store.remember((state) =>
           state.sheet?.kind === "profile" ? { sheet: { ...state.sheet, draft: undefined } } : {},
         );
-        core.notify("공방 세계 설정을 고쳤어요. 변경 이력에 남았어요.");
+        core.notify("공방 세계 설정을 저장했어요.");
       }
       return response;
     },

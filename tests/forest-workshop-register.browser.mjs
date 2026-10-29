@@ -38,12 +38,20 @@ try {
       : {}),
     args: ["--no-sandbox"],
   });
-  const page = await browser.newPage({ viewport: { width: 390, height: 740 }, isMobile: true, hasTouch: true });
+  const page = await browser.newPage({ viewport: { width: 390, height: 740 }, isMobile: false, hasTouch: true });
+  await page.route("http://forest.test/api/capability-packages/forest-workshop/assets/assets/**", async (route) => {
+    const path = new URL(route.request().url()).pathname.split("/assets/assets/")[1];
+    await route.fulfill({
+      contentType: "image/webp",
+      body: await readFile(resolve("packages/forest-workshop/assets", path)),
+    });
+  });
   await page.setContent(
-    '<meta name="viewport" content="width=device-width, initial-scale=1"><div id="host" style="height:740px;width:390px"></div>',
+    '<base href="http://forest.test/"><meta name="viewport" content="width=device-width, initial-scale=1"><div id="host" style="height:740px;width:390px"></div>',
   );
   await page.addScriptTag({ content: await readFile(bundle, "utf8") });
   await page.evaluate(() => {
+    document.body.style.margin = "0";
     const root = document.querySelector("#host").attachShadow({ mode: "open" });
     window.testState = {
       route: "register",
@@ -178,6 +186,18 @@ try {
   await page.getByRole("button", { name: "다음", exact: true }).click();
   await page.getByRole("radio", { name: /주민 1/ }).click();
   assert.equal(await page.getByRole("button", { name: /주민 1과\(와\) 시작하기/ }).isEnabled(), true);
+  await page.setViewportSize({ width: 320, height: 844 });
+  await page.locator("#host").evaluate((host) => {
+    host.style.width = "320px";
+    host.style.height = "844px";
+    host.style.setProperty("--fw-font-size", "22px");
+  });
+  const size = await page.locator(".scroll").evaluate((n) => [n.scrollWidth, n.clientWidth]);
+  assert.ok(size[0] <= size[1] + 1, JSON.stringify(size));
+  const pager = page.getByRole("button", { name: "이전", exact: true });
+  assert.equal(await pager.evaluate((n) => getComputedStyle(n).whiteSpace), "nowrap");
+  await page.locator(".scroll").evaluate((n) => (n.scrollTop = 0));
+  await page.screenshot({ path: join(process.env.FW_ART_SCREENSHOTS ?? temp, "register-art-320.png") });
   console.log("Registration step navigation and draft preservation: OK");
 } finally {
   await browser?.close();

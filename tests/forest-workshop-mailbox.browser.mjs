@@ -12,7 +12,7 @@ try {
     bundle = join(temp, "bundle.js");
   await writeFile(
     entry,
-    `import {renderMailboxSheet} from ${JSON.stringify(join(client, "screens/home/mailbox-sheet.ts"))}; import {STYLES} from ${JSON.stringify(join(client, "styles.ts"))}; import {RESIDENT_STYLES} from ${JSON.stringify(join(client, "styles-residents.ts"))}; Object.assign(window,{renderMailboxSheet,fwStyles:STYLES+RESIDENT_STYLES});`,
+    `import {renderMailboxSheet} from ${JSON.stringify(join(client, "screens/home/mailbox-sheet.ts"))}; import {STYLES} from ${JSON.stringify(join(client, "styles.ts"))}; import {RESIDENT_STYLES} from ${JSON.stringify(join(client, "styles-residents.ts"))}; import {ART_STYLES} from ${JSON.stringify(join(client, "styles-art.ts"))}; Object.assign(window,{renderMailboxSheet,fwStyles:STYLES+RESIDENT_STYLES+ART_STYLES});`,
   );
   await build({
     entryPoints: [entry],
@@ -27,7 +27,16 @@ try {
     args: ["--no-sandbox"],
   });
   const page = await browser.newPage({ viewport: { width: 320, height: 640 }, hasTouch: true });
-  await page.setContent('<div id="host" style="width:320px;height:640px"></div>');
+  await page.route("http://forest.test/api/capability-packages/forest-workshop/assets/assets/**", async (route) => {
+    const relative = new URL(route.request().url()).pathname.split("/assets/assets/")[1];
+    await route.fulfill({
+      contentType: "image/webp",
+      body: await readFile(resolve("packages/forest-workshop/assets", relative)),
+    });
+  });
+  await page.setContent(
+    '<base href="http://forest.test/"><meta name="viewport" content="width=device-width,initial-scale=1"><div id="host" style="width:320px;height:640px"></div>',
+  );
   await page.addScriptTag({ content: await readFile(bundle, "utf8") });
   await page.evaluate(() => {
     const root = document.querySelector("#host").attachShadow({ mode: "open" });
@@ -84,7 +93,10 @@ try {
       root.replaceChildren();
       const style = document.createElement("style");
       style.textContent = window.fwStyles;
-      root.append(style, window.renderMailboxSheet(state, controller));
+      const shell = document.createElement("div");
+      shell.className = "shell art-paper";
+      shell.append(window.renderMailboxSheet(state, controller));
+      root.append(style, shell);
     }
     render();
   });

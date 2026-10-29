@@ -5,13 +5,14 @@ import { readModelConnection, writeModelConnection, type GenerationPurpose } fro
 // Real now: nickname, text size and 저장 · 백업. The rest keeps its place, locked until its phase.
 import type { StoredSeasonChoice } from "../../app/preferences";
 import { SEASON_LABELS, seasonForDate } from "../../app/season";
-import type { AppState, Controller, Route } from "../../app/controller";
+import type { AppState, Controller } from "../../app/controller";
 import { h, statusLine } from "../../app/dom";
-import type { LockedFeature } from "../../app/features";
+import { normalizeWeatherEffects, WEATHER_KINDS, WEATHER_LABELS } from "../../app/preferences";
+import { MANAGEMENT_ART, WEATHER_ART, assetImage } from "../../app/assets";
 import { FONT_SIZE } from "../../app/preferences";
 import type { WorldView } from "../../app/types";
 import { card, renderFrame } from "../chrome/frame";
-import { ICONS, type IconFactory } from "../chrome/icons";
+import { ICONS } from "../chrome/icons";
 import { featureButton } from "../chrome/locked";
 
 function nicknameRow(view: WorldView, state: AppState, controller: Controller) {
@@ -183,37 +184,65 @@ function autoReadingRow(state: AppState, controller: Controller) {
   ]);
 }
 
-function toggleRow(controller: Controller, feature: LockedFeature, icon: IconFactory, title: string, detail: string) {
-  return featureButton(controller, feature, {
-    className: "toggle-row",
-    label: title,
-    children: [
-      h("span", { className: "toggle-icon" }, [icon("icon")]),
-      h("span", { className: "toggle-text" }, [h("strong", { text: title }), h("span", { text: detail })]),
-      h("span", { className: "switch off" }, [h("span", { className: "knob" })]),
-    ],
-  });
+function weatherEffectsControls(state: AppState, controller: Controller) {
+  const preference = normalizeWeatherEffects(state.weatherEffects);
+  return h("div", { className: "setting-block weather-settings" }, [
+    h(
+      "button",
+      {
+        className: "toggle-row",
+        attrs: {
+          type: "button",
+          role: "switch",
+          "aria-label": "날씨 효과",
+          "aria-checked": String(preference.enabled),
+        },
+        on: { click: () => controller.setWeatherEffects({ ...preference, enabled: !preference.enabled }) },
+      },
+      [
+        h("span", { className: "toggle-text" }, [
+          h("strong", { text: "날씨 효과" }),
+          h("span", { text: preference.enabled ? "공방 배경에 은은하게 표시해요" : "배경 효과를 쉬어요" }),
+        ]),
+        h("span", { className: `switch ${preference.enabled ? "on" : "off"}`, attrs: { "aria-hidden": "true" } }, [
+          h("span", { className: "knob" }),
+        ]),
+      ],
+    ),
+    h(
+      "div",
+      { className: "weather-choices", attrs: { role: "group", "aria-label": "날씨 연출 선택" } },
+      WEATHER_KINDS.map((kind) =>
+        h(
+          "button",
+          {
+            className: `weather-choice${preference.kind === kind ? " current" : ""}`,
+            attrs: { type: "button", "aria-pressed": String(preference.kind === kind) },
+            on: { click: () => controller.setWeatherEffects({ ...preference, kind }) },
+          },
+          [
+            assetImage(WEATHER_ART[kind === "clear" ? "sun" : kind === "cloudy" ? "cloud" : kind], {
+              className: "weather-choice-art",
+              fallback: () => ICONS.weather("icon"),
+            }),
+            h("span", { text: WEATHER_LABELS[kind] }),
+          ],
+        ),
+      ),
+    ),
+    h("p", {
+      className: "muted",
+      text: "직접 고르는 배경 연출이에요. 현실 날씨·생산에는 영향을 주지 않아요. 동작 줄이기 설정에서는 움직이지 않아요.",
+    }),
+  ]);
 }
 
-function manageRow(
-  controller: Controller,
-  icon: IconFactory,
-  title: string,
-  target: { route: Route } | { feature: LockedFeature },
-) {
-  const children = [
-    h("span", { className: "manage-icon" }, [icon("icon")]),
-    h("span", { className: "manage-title", text: title }),
+function manageRow(icon: keyof typeof MANAGEMENT_ART, label: string, onClick: () => void) {
+  return h("button", { className: "manage-row", attrs: { type: "button" }, on: { click: onClick } }, [
+    assetImage(MANAGEMENT_ART[icon], { className: "manage-art", fallback: () => ICONS.document("icon") }),
+    h("span", { className: "manage-title", text: label }),
     h("span", { className: "menu-chevron" }, [ICONS.chevron()]),
-  ];
-  if ("route" in target) {
-    return h(
-      "button",
-      { className: "manage-row", attrs: { type: "button" }, on: { click: () => controller.navigate(target.route) } },
-      children,
-    );
-  }
-  return featureButton(controller, target.feature, { className: "manage-row", label: title, children });
+  ]);
 }
 
 function modelConnections() {
@@ -310,7 +339,7 @@ export function renderSettingsScreen(state: AppState, controller: Controller) {
               [
                 fontSizeRow(state, controller),
                 seasonRow(state, controller),
-                toggleRow(controller, "weather-effects", ICONS.leaf, "날씨 효과", "공방 배경에 현재 날씨를 반영해요."),
+                weatherEffectsControls(state, controller),
                 autoReadingRow(state, controller),
               ],
               { id: "fw-display" },
@@ -321,20 +350,10 @@ export function renderSettingsScreen(state: AppState, controller: Controller) {
               "관리",
               [
                 modelConnections(),
-                manageRow(controller, ICONS.image, "주민 그림 관리", { route: "residents" }),
-                h("button", {
-                  className: "manage-row",
-                  text: "AI 지침 관리",
-                  attrs: { type: "button" },
-                  on: { click: () => controller.openGuidelines() },
-                }),
-                h("button", {
-                  className: "manage-row",
-                  text: "기억 관리",
-                  attrs: { type: "button" },
-                  on: { click: () => controller.openMemory() },
-                }),
-                manageRow(controller, ICONS.folder, "저장 · 백업", { route: "backup" }),
+                manageRow("portrait", "주민 그림 관리", () => controller.navigate("residents")),
+                manageRow("guidelines", "AI 지침 관리", () => controller.openGuidelines()),
+                manageRow("memory", "기억 관리", () => controller.openMemory()),
+                manageRow("backup", "저장 · 백업", () => controller.navigate("backup")),
                 h("div", { className: "note-box" }, [
                   ICONS.clock("icon"),
                   h("span", {}, [

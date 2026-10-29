@@ -109,8 +109,27 @@ export const NAV_ART = {
   invite: "ui/nav-invite.webp",
 } as const;
 
+export const MANAGEMENT_ART = {
+  portrait: "ui/manage-portrait.webp",
+  guidelines: "ui/manage-guidelines.webp",
+  memory: "ui/manage-memory.webp",
+  backup: "ui/manage-backup.webp",
+} as const;
+
+export const WEATHER_ART = {
+  sun: "ui/weather-sun.webp",
+  cloud: "ui/weather-cloud.webp",
+  rain: "ui/weather-rain.webp",
+  snow: "ui/weather-snow.webp",
+} as const;
+
 export const UI_ART = {
   gift: "ui/gift.webp",
+  letterPaper: "ui/letter-paper.webp",
+  storyVignette: "ui/story-vignette.webp",
+  inviteScene: "ui/invite-scene.webp",
+  trail: "backgrounds/forest-trail.webp",
+  interior: "backgrounds/workshop-interior.webp",
   titleSign: "ui/title-sign.webp",
   primaryButton: "ui/primary-button.webp",
   paperPanel: "ui/paper-panel.webp",

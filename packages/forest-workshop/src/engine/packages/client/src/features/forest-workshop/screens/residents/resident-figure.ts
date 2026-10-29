@@ -1,7 +1,7 @@
 // How a resident is drawn everywhere (home scene, 주민 cards, 관계 rows, 주민 그림 preview), from the one picture the
 // player uploaded (plan §8: one picture per resident runs every feature). The placement (size, left/right position,
 // marker height) is applied here at display time and is never baked into the file. Without a picture the resident
-// keeps an ordinary slot with its name and "PNG 등록" — never a generated or profile-avatar stand-in (plan §8.1).
+// keeps an ordinary slot with its name and "그림 없음" — never a generated or profile-avatar stand-in (plan §8.1).
 import { h } from "../../app/dom";
 import type { Placement, Resident } from "../../app/types";
 
@@ -51,7 +51,7 @@ export function residentFigure(resident: Resident, options: { placement?: Placem
     stage.append(
       h("span", { className: "figure-empty" }, [
         silhouette("figure-silhouette"),
-        h("span", { className: "figure-empty-text", text: "PNG 등록" }),
+        h("span", { className: "figure-empty-text", text: "그림 없음" }),
       ]),
     );
   } else {

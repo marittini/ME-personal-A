@@ -87,5 +87,18 @@
   "assets/ui/nav-work.webp",
   "assets/ui/nav-explore.webp",
   "assets/ui/nav-residents.webp",
-  "assets/ui/nav-invite.webp"
+  "assets/ui/nav-invite.webp",
+  "assets/backgrounds/forest-trail.webp",
+  "assets/backgrounds/workshop-interior.webp",
+  "assets/ui/invite-scene.webp",
+  "assets/ui/story-vignette.webp",
+  "assets/ui/letter-paper.webp",
+  "assets/ui/weather-sun.webp",
+  "assets/ui/weather-cloud.webp",
+  "assets/ui/weather-rain.webp",
+  "assets/ui/weather-snow.webp",
+  "assets/ui/manage-portrait.webp",
+  "assets/ui/manage-guidelines.webp",
+  "assets/ui/manage-memory.webp",
+  "assets/ui/manage-backup.webp"
 ]

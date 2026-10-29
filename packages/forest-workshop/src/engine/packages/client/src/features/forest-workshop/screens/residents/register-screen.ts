@@ -2,6 +2,7 @@
 // 공방 세계 설정 with its n / 200 counter, 수정 · 다시 제안, 주민 그림 직접 등록 (PNG · WebP → WebP 저장),
 // "원본 프로필은 바뀌지 않아요.", 재구축 확정 and 나중에 그림 등록. ① and ③ use the same frame for the two steps the
 // board shows only in its step bar. This is a form, so the bottom bar is hidden and 뒤로 is explicit (plan §15.6).
+import { MANAGEMENT_ART, assetImage } from "../../app/assets";
 import { FIELD_ICONS, FIELD_LABELS, talentOf } from "../work/production-view";
 import type { AppState, Controller } from "../../app/controller";
 import { button, errorLine, h, statusLine } from "../../app/dom";
@@ -69,7 +70,7 @@ function sourceList(register: RegisterState, controller: Controller) {
               on: { click: () => void controller.chooseSource(source) },
             },
             [
-              h("span", { className: "menu-icon light" }, [ICONS.document()]),
+              assetImage(MANAGEMENT_ART.portrait, { className: "manage-art", fallback: () => ICONS.document() }),
               h("span", { className: "menu-text" }, [
                 h("span", { className: "menu-title", text: source.name }),
                 h("span", {
@@ -242,7 +243,7 @@ function stepTwo(register: RegisterState, state: AppState, controller: Controlle
         "button",
         { className: "menu-row quiet", attrs: { type: "button" }, on: { click: () => controller.backToSources() } },
         [
-          h("span", { className: "menu-icon light" }, [ICONS.document()]),
+          assetImage(MANAGEMENT_ART.portrait, { className: "manage-art", fallback: () => ICONS.document() }),
           h("span", { className: "menu-text" }, [
             h("small", { className: "muted", text: "선택한 자료" }),
             h("span", { className: "menu-title", text: `${KIND_LABEL[selected.kind]} · ${selected.name}` }),

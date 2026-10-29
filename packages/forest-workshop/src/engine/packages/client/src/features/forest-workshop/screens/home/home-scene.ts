@@ -12,6 +12,8 @@ import { currentSeason } from "../../app/controller";
 import { ICONS } from "../chrome/icons";
 import { residentFigure } from "../residents/resident-figure";
 
+import { normalizeWeatherEffects } from "../../app/preferences";
+import { weatherLayer } from "./weather-layer";
 import { editingGround, groundOverlay } from "./ground-editor";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
@@ -149,16 +151,20 @@ export function renderHomeScene(state: AppState, controller: Controller) {
     [
       // Layers (plan §8): the season's workshop picture → residents (their own picture) → DOM UI.
       assetImage(BACKGROUND_ART[currentSeason(state)].scene, { className: "scene-art", fallback: drawnBackdrop }),
+      editingGround(state) ? null : weatherLayer(state),
       cast,
       editingGround(state)
         ? groundOverlay(state, controller, cast)
         : world
-          ? h("button", {
-              className: "ground-launch outline-button",
-              text: "지면 편집",
-              attrs: { type: "button" },
-              on: { click: () => controller.openGroundEditor() },
-            })
+          ? h(
+              "button",
+              {
+                className: "ground-launch icon-button",
+                attrs: { type: "button", "aria-label": "지면 편집", title: "지면 편집" },
+                on: { click: () => controller.openGroundEditor() },
+              },
+              [ICONS.pencil("icon")],
+            )
           : null,
       // With a resident standing here the empty place speaks for itself; the caption would sit under their name.
       residents.length === 0
@@ -169,6 +175,7 @@ export function renderHomeScene(state: AppState, controller: Controller) {
   scene.dataset.homeScene = JSON.stringify([
     state.world?.state === "ready" ? state.world.value.worldId : null,
     currentSeason(state),
+    normalizeWeatherEffects(state.weatherEffects),
     residents,
     ground,
     editingGround(state),

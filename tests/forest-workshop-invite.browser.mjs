@@ -39,8 +39,15 @@ try {
     args: ["--no-sandbox"],
   });
   const page = await browser.newPage({ viewport: { width: 390, height: 740 }, isMobile: true, hasTouch: true });
+  await page.route("http://forest.test/api/capability-packages/forest-workshop/assets/assets/**", async (route) => {
+    const relative = new URL(route.request().url()).pathname.split("/assets/assets/")[1];
+    await route.fulfill({
+      contentType: "image/webp",
+      body: await readFile(resolve("packages/forest-workshop/assets", relative)),
+    });
+  });
   await page.setContent(
-    '<meta name="viewport" content="width=device-width, initial-scale=1"><div id="host" style="height:740px;width:390px"></div>',
+    '<base href="http://forest.test/"><meta name="viewport" content="width=device-width, initial-scale=1"><div id="host" style="height:740px;width:390px"></div>',
   );
   await page.addScriptTag({ content: await readFile(bundle, "utf8") });
   await page.evaluate(() => {
@@ -134,6 +141,19 @@ try {
     };
     window.testRender();
   });
+  await page.evaluate(() => {
+    window.testState.inviteTab = "invite";
+    Object.assign(window.testState.content.invite, { ticketsPerDraw: 1, guaranteeAfter: 10, multiDraw: 10 });
+    window.testState.world.value.state.invite.sinceNew = 0;
+    window.testRender();
+  });
+  await page.locator(".invite-scene").evaluate((i) => i.decode());
+  await page.screenshot({ path: join(process.env.FW_ART_SCREENSHOTS ?? temp, "invite-art.png") });
+  await page.evaluate(() => {
+    window.testState.inviteTab = "exchange";
+    window.testRender();
+  });
+
   assert.equal(await page.getByText("주민 0", { exact: true }).isVisible(), true);
   assert.equal(await page.getByText("주민 2", { exact: true }).count(), 0);
   await page.getByLabel("교환 주민 목록 고르기", { exact: true }).click();

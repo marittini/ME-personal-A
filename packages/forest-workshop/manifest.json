@@ -10,7 +10,7 @@
   },
   "id": "forest-workshop",
   "name": "Forest Workshop",
-  "version": "0.6.16",
+  "version": "0.6.20",
   "description": "A portrait cozy workshop game in development. This 0.6 build adds story expeditions: each pair of residents travels through three-episode arcs on the explore screen, and each scene is written by your language model when you first read it, from the plan and only the memories its residents share, with one answer you can give a resident. What residents learn is recorded per resident. On top of the complete workshop: five facilities with 34 materials and goods, rules or counted queues, residents whose field and talent come from their own character text, auto-selling, invitations with tickets from daily deliveries, and backups that carry pictures and scenes; letters, memory management and AI guidelines follow. Install it, restart Marinara Engine when prompted, then open Home → 숲결 공방.",
   "engine": {
     "min": "2.5.1",
@@ -120,7 +120,20 @@
         "assets/ui/nav-work.webp",
         "assets/ui/nav-explore.webp",
         "assets/ui/nav-residents.webp",
-        "assets/ui/nav-invite.webp"
+        "assets/ui/nav-invite.webp",
+        "assets/backgrounds/forest-trail.webp",
+        "assets/backgrounds/workshop-interior.webp",
+        "assets/ui/invite-scene.webp",
+        "assets/ui/story-vignette.webp",
+        "assets/ui/letter-paper.webp",
+        "assets/ui/weather-sun.webp",
+        "assets/ui/weather-cloud.webp",
+        "assets/ui/weather-rain.webp",
+        "assets/ui/weather-snow.webp",
+        "assets/ui/manage-portrait.webp",
+        "assets/ui/manage-guidelines.webp",
+        "assets/ui/manage-memory.webp",
+        "assets/ui/manage-backup.webp"
       ]
     }
   },
@@ -132,23 +145,23 @@
     },
     {
       "path": "server.mjs",
-      "sha256": "3f57510ee08fe3fc6b08c46d7dfbfe0cbf203f53c56dc8b8989ab4d9117809fa",
+      "sha256": "4396af5fd14928c3c150c4aa8759eb50e511385028163a74b8b22e3fd849754c",
       "bytes": 153086
     },
     {
       "path": "client.js",
-      "sha256": "d4ecbfd4ff65db3b550db93cf210cc1b3ebac61f89156b1688c752c626f7cbf6",
-      "bytes": 332141
+      "sha256": "0b4de483ec048bb0f3d6d171152ab94db77b34011e46b0d50c5aae8e37c14a3e",
+      "bytes": 347562
     },
     {
       "path": "assets/asset-manifest.json",
-      "sha256": "3590eae0c405ec306d81e481923c2442bfb1d6e3016a0ee45ef677fe7cda45a7",
-      "bytes": 48261
+      "sha256": "daebeee964b6b688436a7261ffb1736fe80791a42fd37e3aba80d68515af1a86",
+      "bytes": 55279
     },
     {
       "path": "assets/backgrounds/workshop-base-autumn.webp",
-      "sha256": "2b5f02f155f932d4d2377d7aecdd093340bc53135c05e7f9c01559f3d421b818",
-      "bytes": 853586
+      "sha256": "f66c396937a68e36c13d161bb34d2a8a3e64662343dc850d4c6de8b6f89fab3c",
+      "bytes": 31680
     },
     {
       "path": "assets/facilities/gather-yard.webp",
@@ -227,8 +240,8 @@
     },
     {
       "path": "assets/backgrounds/workshop-scene-autumn.webp",
-      "sha256": "437037f465629b5d2e723d8068b55a8f638026ab200e6b0e3f75359c9c7899d3",
-      "bytes": 954590
+      "sha256": "b96e4e79198e1f8ffd3ccbb277530a5634902e4c9eac2d52d3575904c5c04d02",
+      "bytes": 55872
     },
     {
       "path": "assets/items/wild-berry.webp",
@@ -322,33 +335,33 @@
     },
     {
       "path": "assets/backgrounds/workshop-base-spring.webp",
-      "sha256": "f66f8251d601a67f59dc8f6a7ec0946b688dcfc06528feca1f8d5a84beaed5b4",
-      "bytes": 870034
+      "sha256": "0b17a95d0b2b60db70967d3e9446689060d3949e3a45a50ac8a70af12f6badf4",
+      "bytes": 25708
     },
     {
       "path": "assets/backgrounds/workshop-scene-spring.webp",
-      "sha256": "a5a806ae7275d69f7438c5f2291fcbffbf790e67e4e03f59c62078559b6c501a",
-      "bytes": 928250
+      "sha256": "2bcb36b0fb6c1c7352018b63d1ca3e5deea3fbd2623d8b67b206dea3ebef0394",
+      "bytes": 43996
     },
     {
       "path": "assets/backgrounds/workshop-base-summer.webp",
-      "sha256": "78b6db6a45aff499154c937720ae9a8f0a08d5e3c0d3727567d99e664e87d41c",
-      "bytes": 839656
+      "sha256": "b105f7be5e22c6cd911eba5f6241fed7c569105caa6eb86dadc982495539bc89",
+      "bytes": 23330
     },
     {
       "path": "assets/backgrounds/workshop-scene-summer.webp",
-      "sha256": "2af1c8fb53bd78819a7d75b8207a4cf650c76e99c7e7ec438002105406e4db8e",
-      "bytes": 953940
+      "sha256": "c42e68f6b0e201ba05898f4b11dc38ce730e1243189a4ce9d320b1964e2a607d",
+      "bytes": 47560
     },
     {
       "path": "assets/backgrounds/workshop-base-winter.webp",
-      "sha256": "4f7b9a196f26f02983f179468501d510c0289d547f93ffb4d0a85b8ce3b7a114",
-      "bytes": 844482
+      "sha256": "5656af88809f2fcdc73c84be046f7ab246f7887308fdca71cedd9c76ac08f74f",
+      "bytes": 23160
     },
     {
       "path": "assets/backgrounds/workshop-scene-winter.webp",
-      "sha256": "7b8e9bf24f5c99b743fd5de06502b07958f62910d57c23eabbe1848e37946efe",
-      "bytes": 907100
+      "sha256": "8052570e070f3bf3d0877ccef2aaede3b93802f5ee42ba7e9e18581e9f60537a",
+      "bytes": 48232
     },
     {
       "path": "assets/items/herb.webp",
@@ -579,6 +592,71 @@
       "path": "assets/ui/nav-invite.webp",
       "sha256": "35ea01dfd960bde4bde8cfc6ba6971f23edadd486f89ed34ec1c4b0f810a4f2f",
       "bytes": 12700
+    },
+    {
+      "path": "assets/backgrounds/forest-trail.webp",
+      "sha256": "180b95cf16e1f6e8bcd99f0c19a469cb9a38cad7fc35c14d6c3471df87f8aa31",
+      "bytes": 45336
+    },
+    {
+      "path": "assets/backgrounds/workshop-interior.webp",
+      "sha256": "7d7af619d366430f92b2e90c35381f45c8b289a67327be855563404e266bcdae",
+      "bytes": 23776
+    },
+    {
+      "path": "assets/ui/invite-scene.webp",
+      "sha256": "5cf2cabc28fcdf26526f46b7e2e7ef4934cabfc161b63936f760c68ec491a622",
+      "bytes": 30244
+    },
+    {
+      "path": "assets/ui/story-vignette.webp",
+      "sha256": "dc1f3333fd7d0076ee0c0211fcf4abef9e19adf7986ba559a74b3d0c4ccddc45",
+      "bytes": 25674
+    },
+    {
+      "path": "assets/ui/letter-paper.webp",
+      "sha256": "e0b1a70b5d5964944e59f01e450094a0c16d3cdaf2394ce3c6f24d3462205704",
+      "bytes": 131844
+    },
+    {
+      "path": "assets/ui/weather-sun.webp",
+      "sha256": "6759a0f331920db398297ae3dba503db7230de7b201753c6e7d357fa9bc01dc6",
+      "bytes": 6800
+    },
+    {
+      "path": "assets/ui/weather-cloud.webp",
+      "sha256": "a67a0ed07b5e3832d62a491300838ecf9899545c531c43ff1b2c9ec94f130ac8",
+      "bytes": 3084
+    },
+    {
+      "path": "assets/ui/weather-rain.webp",
+      "sha256": "13d5628c9b15fd4bdbbc8a52959a84bad2591fd3a8e8284e1c3905cfec87975d",
+      "bytes": 2502
+    },
+    {
+      "path": "assets/ui/weather-snow.webp",
+      "sha256": "fc77fc75739c114954d5cbf2dbe4c4e34873042909e642ce87c346449d71f2bd",
+      "bytes": 9354
+    },
+    {
+      "path": "assets/ui/manage-portrait.webp",
+      "sha256": "272e0b41c01165334d4de35fcdd7a50ddee0d150cd30ae84834b1c840fb35880",
+      "bytes": 4048
+    },
+    {
+      "path": "assets/ui/manage-guidelines.webp",
+      "sha256": "4d5475c7960e7c44e70d61e7fb02af1559b34d88864fc40293904f7daa330b0b",
+      "bytes": 6490
+    },
+    {
+      "path": "assets/ui/manage-memory.webp",
+      "sha256": "4dfd864abdca071a6c325ab81afbadf3b3d9aee1747204345950b545c7b64dc4",
+      "bytes": 5928
+    },
+    {
+      "path": "assets/ui/manage-backup.webp",
+      "sha256": "2810137dae560c6abc938f2991a79798c0f376e8c1ec4df0d9b0ea19e1a472a2",
+      "bytes": 4080
     }
   ],
   "permissions": [

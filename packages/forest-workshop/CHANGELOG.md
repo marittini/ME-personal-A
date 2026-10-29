@@ -1,3 +1,6 @@
+## 0.6.11 — 2026-10-29
+- Configure world and pair writing preferences for newly generated stories. Existing stories and memory visibility remain unchanged. Generation records store applied guideline revisions. Schema 9 worlds cannot be opened by older packages.
+
 ## 0.6.8 — 2026-10-28
 - Edit the rectangular movement area directly over the home background by dragging its four edges. Save, cancel and reset are available on Home. Home residents move horizontally and vertically within this range. Ground is included in world backups. Schema 8 worlds cannot be opened by older packages. Obstacles, polygon editing and full interaction behavior remain in development.
 

@@ -2,6 +2,10 @@
 // resident figure used everywhere (home scene included). Same tokens and sizing rules as styles.ts, which appends
 // this sheet.
 export const RESIDENT_STYLES = `
+.guidelines-form { display: grid; gap: 0.5em; }
+.guidelines-toggle { display: flex; align-items: center; gap: 0.5em; min-height: 44px; }
+.guidelines-toggle input { width: 24px; height: 24px; }
+
 /* ── Shared: ribbon, figure, avatar, tags ──────────────────────────────── */
 .ribbon {
   justify-self: center;

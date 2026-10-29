@@ -92,6 +92,10 @@ export const storyDocumentSchema = z
         factIds: z.array(z.number().int().min(1)),
         estimatedTokens: z.number().int().min(0),
         worldRevision: z.number().int().min(0),
+        guidelineRevisions: z
+          .object({ world: z.number().int().min(0), pair: z.number().int().min(0) })
+          .strict()
+          .optional(),
       })
       .strict(),
     generatedAt: z.string().datetime(),

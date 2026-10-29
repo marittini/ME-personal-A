@@ -30,7 +30,10 @@ import { chooseStarter, registerResident, updateResident } from "./residents";
 import { cancelExpedition, chooseAnswer, departExpedition, markStoryRead } from "./stories";
 import { updateSettings } from "./settings";
 
+import { updateGuidelines } from "./guidelines";
+
 const DEFINITIONS = [
+  updateGuidelines,
   updateSettings,
   claimStarterKit,
   registerResident,

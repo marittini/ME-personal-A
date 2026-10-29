@@ -94,11 +94,7 @@ function pairRow(
               label: "기억 보기",
               children: [ICONS.book("icon"), h("span", { text: "기억 보기" })],
             }),
-            featureButton(controller, "pair-guidelines", {
-              className: "outline-button",
-              label: "지침 관리",
-              children: [ICONS.gear("icon"), h("span", { text: "지침 관리" })],
-            }),
+            button("지침 관리", () => controller.openGuidelines(pair.pairId), { variant: "secondary" }),
           ]),
     ]),
   ]);

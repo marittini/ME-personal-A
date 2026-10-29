@@ -78,6 +78,10 @@ export function createStoryService(runtime: HostRuntime, persistence: HostPersis
       })),
       relationLabel,
       sharedFacts: shared,
+      writingPreferences: {
+        world: state.guidelines.world.enabled ? state.guidelines.world.text : "",
+        pair: state.guidelines.pairs[pairId]?.enabled ? state.guidelines.pairs[pairId]!.text : "",
+      },
     });
 
     const resolve = runtime.languageModels?.resolve;
@@ -152,6 +156,10 @@ export function createStoryService(runtime: HostRuntime, persistence: HostPersis
         factIds: shared.map((fact) => fact.factId),
         estimatedTokens: fitted?.estimatedTokensAfter ?? 0,
         worldRevision: world.revision,
+        guidelineRevisions: {
+          world: state.guidelines.world.revision,
+          pair: state.guidelines.pairs[pairId]?.revision ?? 0,
+        },
       },
       generatedAt: new Date().toISOString(),
     });

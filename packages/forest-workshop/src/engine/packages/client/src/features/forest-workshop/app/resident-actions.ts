@@ -16,6 +16,7 @@ export interface ResidentsView {
 }
 
 export type ResidentSheet =
+  | { kind: "guidelines"; pairId?: string; draft?: { enabled: boolean; text: string } }
   | { kind: "profile"; residentId: string; panel?: number; draft?: string; historyPage?: number }
   | { kind: "pair-add"; residentId: string }
   | { kind: "image-history"; residentId: string }
@@ -62,6 +63,29 @@ export function createResidentActions(core: ControllerCore) {
   }
 
   return {
+    openGuidelines(pairId?: string) {
+      store.set({ sheet: { kind: "guidelines", pairId } });
+    },
+    rememberGuidelines(draft: { enabled: boolean; text: string }) {
+      store.remember((state) =>
+        state.sheet?.kind === "guidelines" ? { sheet: { ...state.sheet, draft: { ...draft } } } : {},
+      );
+    },
+    async saveGuidelines(pairId: string | undefined, draft: { enabled: boolean; text: string }) {
+      const response = await core.runCommand(`guidelines:${pairId ?? "world"}`, "guidelines.update", {
+        ...(pairId ? { pairId } : {}),
+        ...draft,
+      });
+      if (!response) return;
+      store.set((state) =>
+        state.sheet?.kind === "guidelines" &&
+        state.sheet.pairId === pairId &&
+        JSON.stringify(state.sheet.draft) === JSON.stringify(draft)
+          ? { sheet: { ...state.sheet, draft: undefined } }
+          : {},
+      );
+      core.notify("AI 지침을 저장했어요. 다음에 새로 쓰는 이야기부터 적용돼요.");
+    },
     setResidentsTab: (tab: ResidentsView["tab"]) => patchView({ tab, page: 0 }),
     setResidentsQuery: (query: string) => patchView({ query, page: 0 }),
     setResidentsFilter: (filter: ResidentsView["filter"]) => patchView({ filter, page: 0 }),

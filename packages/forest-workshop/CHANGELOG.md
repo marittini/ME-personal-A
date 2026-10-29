@@ -7,6 +7,9 @@
 ## 0.6.11 — 2026-10-29
 - Configure world and pair writing preferences for newly generated stories. Existing stories and memory visibility remain unchanged. Generation records store applied guideline revisions. Schema 9 worlds cannot be opened by older packages.
 
+## 0.6.10 — 2026-10-29
+- Manage memories and view a pair’s shared memories. Corrections preserve the original and its knowledge scope; memories can be disabled and restored. New memory writes refuse at capacity instead of silently discarding records. Previously discarded memories cannot be recovered.
+
 ## 0.6.9 — 2026-10-29
 - Display settings now control automatic story advance by default with a 2–10 second interval. Questions, backlog, leaving the story and backgrounding pause it. Finishing and saving a story stays explicit. Preferences are local to this browser.
 

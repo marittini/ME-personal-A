@@ -3,7 +3,8 @@
 //     prompt is assembled; nothing is taken out of a combined list afterwards.
 //   - sharedBy(): what every participant of a scene knows. A scene prompt reads only this (plus public facts), so one
 //     resident's private memories never reach a scene with someone who does not know them.
-//   - appendFacts(): new facts, numbered, capped (oldest corrected/invalidated go first, then oldest).
+//   - appendFacts(): new facts, numbered; refuses when full so history is never silently discarded.
+import { FwError } from "../errors";
 import { MEMORY_LIMIT, type Fact, type Memory } from "../model/memory";
 
 export function knownBy(memory: Memory, residentId: string): Fact[] {
@@ -23,17 +24,8 @@ export function sharedBy(memory: Memory, residentIds: readonly string[]): Fact[]
 export function appendFacts(memory: Memory, facts: ReadonlyArray<Omit<Fact, "factId">>): Memory {
   let nextFactId = memory.nextFactId;
   const added = facts.map((fact) => ({ ...fact, factId: nextFactId++ }));
-  let all = [...memory.facts, ...added];
-  if (all.length > MEMORY_LIMIT) {
-    const overflow = all.length - MEMORY_LIMIT;
-    const retired = new Set(
-      all
-        .filter((fact) => fact.status !== "active")
-        .slice(0, overflow)
-        .map((fact) => fact.factId),
-    );
-    all = all.filter((fact) => !retired.has(fact.factId));
-    if (all.length > MEMORY_LIMIT) all = all.slice(all.length - MEMORY_LIMIT);
-  }
+  const all = [...memory.facts, ...added];
+  if (all.length > MEMORY_LIMIT)
+    throw new FwError("invalid_payload", { message: "기억 저장 한도에 도달했어요. 기존 기억은 삭제하지 않았어요." });
   return { facts: all, nextFactId };
 }

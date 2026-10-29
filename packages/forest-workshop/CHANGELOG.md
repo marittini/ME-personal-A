@@ -1,3 +1,6 @@
+## 0.6.15 — 2026-10-29
+- Add illustrated Home, Work, Explore, Residents and Invite navigation icons, with the original accessible labels and fallback icons.
+
 ## 0.6.14 — 2026-10-29
 - Fit story text to the dialogue area, clarify resident registration and production waiting states, show item pictures in reports and the starter kit, open activity letters directly, and use game-style page selectors.
 

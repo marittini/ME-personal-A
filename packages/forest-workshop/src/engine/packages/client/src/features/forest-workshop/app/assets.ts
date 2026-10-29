@@ -100,6 +100,15 @@ export const EMOTION_ART: Readonly<Record<Exclude<Emotion, "none">, string>> = {
   annoyance: "emotions/annoyance.webp",
 };
 
+/** Illustrated bottom navigation icons; their corresponding SVG remains the fallback. */
+export const NAV_ART = {
+  home: "ui/nav-home.webp",
+  work: "ui/nav-work.webp",
+  explore: "ui/nav-explore.webp",
+  residents: "ui/nav-residents.webp",
+  invite: "ui/nav-invite.webp",
+} as const;
+
 export const UI_ART = {
   gift: "ui/gift.webp",
   titleSign: "ui/title-sign.webp",

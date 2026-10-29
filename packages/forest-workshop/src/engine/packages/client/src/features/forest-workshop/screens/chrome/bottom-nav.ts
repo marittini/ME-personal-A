@@ -2,6 +2,7 @@
 // with a lock and says which phase opens it. Settings and its sub-screens keep 홈 selected, as board 04 shows.
 import type { AppState, Controller, Route } from "../../app/controller";
 import { h } from "../../app/dom";
+import { NAV_ART, assetImage } from "../../app/assets";
 import { isLocked, type LockedFeature } from "../../app/features";
 import { ICONS, type IconFactory } from "./icons";
 import { lockTag } from "./locked";
@@ -9,17 +10,23 @@ import { lockTag } from "./locked";
 interface Tab {
   label: string;
   icon: IconFactory;
+  art: string;
   /** Routes that show this tab as selected; the first is where the tab goes. */
   routes: Route[];
   feature?: LockedFeature;
 }
 
 const TABS: readonly Tab[] = [
-  { label: "홈", icon: ICONS.home, routes: ["home", "settings", "backup", "diagnostics"] },
-  { label: "작업", icon: ICONS.hammer, routes: ["work", "facilities"] },
-  { label: "탐사", icon: ICONS.compass, routes: ["explore", "story"] },
-  { label: "주민", icon: ICONS.residents, routes: ["residents", "relations", "resident-image"] },
-  { label: "초대", icon: ICONS.ticket, routes: ["invite"] },
+  { label: "홈", icon: ICONS.home, art: NAV_ART.home, routes: ["home", "settings", "backup", "diagnostics"] },
+  { label: "작업", icon: ICONS.hammer, art: NAV_ART.work, routes: ["work", "facilities"] },
+  { label: "탐사", icon: ICONS.compass, art: NAV_ART.explore, routes: ["explore", "story"] },
+  {
+    label: "주민",
+    icon: ICONS.residents,
+    art: NAV_ART.residents,
+    routes: ["residents", "relations", "resident-image"],
+  },
+  { label: "초대", icon: ICONS.ticket, art: NAV_ART.invite, routes: ["invite"] },
 ];
 
 export function renderBottomNav(state: AppState, controller: Controller) {
@@ -48,7 +55,7 @@ export function renderBottomNav(state: AppState, controller: Controller) {
         },
         [
           h("span", { className: "tab-icon" }, [
-            tab.icon("icon tab-glyph"),
+            assetImage(tab.art, { className: "tab-glyph tab-art", fallback: () => tab.icon("icon tab-glyph") }),
             locked && tab.feature ? lockTag(tab.feature) : null,
           ]),
           h("span", { className: "tab-label", text: tab.label }),

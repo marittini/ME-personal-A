@@ -46,3 +46,32 @@ export function writeSeasonChoice(value: StoredSeasonChoice) {
     // Blocked storage: the choice still applies for this session.
   }
 }
+
+export interface AutoReadingPreference {
+  enabled: boolean;
+  seconds: number;
+}
+const AUTO_READING_KEY = "forest-workshop:auto-reading";
+export function normalizeAutoReading(value: Partial<AutoReadingPreference> | null | undefined): AutoReadingPreference {
+  return {
+    enabled: value?.enabled === true,
+    seconds:
+      typeof value?.seconds === "number" && Number.isFinite(value.seconds)
+        ? Math.max(2, Math.min(10, Math.round(value.seconds)))
+        : 4,
+  };
+}
+export function readAutoReading(): AutoReadingPreference {
+  try {
+    return normalizeAutoReading(JSON.parse(localStorage.getItem(AUTO_READING_KEY) ?? "null"));
+  } catch {
+    return normalizeAutoReading(null);
+  }
+}
+export function writeAutoReading(value: AutoReadingPreference) {
+  try {
+    localStorage.setItem(AUTO_READING_KEY, JSON.stringify(normalizeAutoReading(value)));
+  } catch {
+    /* Session state remains usable. */
+  }
+}

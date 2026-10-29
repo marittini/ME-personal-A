@@ -11,6 +11,7 @@ import {
   EMOTION_ART,
   FACILITY_ART,
   ITEM_ART,
+  NAV_ART,
   SEASONS,
   UI_ART,
   assetUrl,
@@ -42,10 +43,10 @@ const manifest = JSON.parse(readFileSync(join(ROOT, "asset-manifest.json"), "utf
 const byPath = new Map(Object.values(manifest.assets).map((entry) => [entry.path, entry]));
 const keyPath = (key: string) => manifest.assets[key]?.path;
 
-// 1. Every file on disk is in the manifest and matches it byte for byte; 82 pictures in all.
+// 1. Every file on disk is in the manifest and matches it byte for byte.
 const files = readdirSync(ROOT, { recursive: true, encoding: "utf8" }).filter((file) => file.endsWith(".webp"));
-assert.equal(files.length, 82, "82 WebP pictures");
-assert.equal(byPath.size, 82, "the manifest lists 82 pictures");
+assert.equal(files.length, 87, "87 WebP pictures");
+assert.equal(byPath.size, 87, "the manifest lists 87 pictures");
 for (const file of files) {
   const entry = byPath.get(file);
   assert.ok(entry, `${file} is in the manifest`);
@@ -72,7 +73,12 @@ for (const season of SEASONS) {
   assert.deepEqual(BACKGROUND_ART[season], { base: keyPath(mapped.base), scene: keyPath(mapped.scene) }, season);
 }
 assert.equal(UI_ART.gift, keyPath(manifest.uiMap.gift!), "gift action icon");
-for (const path of [...Object.values(UI_ART), ...Object.values(EMOTION_ART)]) assert.ok(byPath.has(path), path);
+for (const path of [...Object.values(UI_ART), ...Object.values(EMOTION_ART), ...Object.values(NAV_ART)])
+  assert.ok(byPath.has(path), path);
+for (const [name, path] of Object.entries(NAV_ART)) {
+  assert.equal(path, keyPath(manifest.uiMap[`nav-${name}`]!), `navigation ${name}`);
+  assert.ok(byPath.get(path)?.hasTransparency, `${path} is transparent`);
+}
 assert.deepEqual(
   Object.keys(EMOTION_ART).sort(),
   EMOTIONS.filter((emotion) => emotion !== "none").sort(),

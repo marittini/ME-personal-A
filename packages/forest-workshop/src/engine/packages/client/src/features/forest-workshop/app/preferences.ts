@@ -75,3 +75,34 @@ export function writeAutoReading(value: AutoReadingPreference) {
     /* Session state remains usable. */
   }
 }
+
+export const WEATHER_KINDS = ["clear", "cloudy", "rain", "snow"] as const;
+export type WeatherKind = (typeof WEATHER_KINDS)[number];
+export interface WeatherEffectsPreference {
+  enabled: boolean;
+  kind: WeatherKind;
+}
+export const WEATHER_LABELS: Record<WeatherKind, string> = { clear: "맑음", cloudy: "흐림", rain: "비", snow: "눈" };
+const WEATHER_EFFECTS_KEY = "forest-workshop:weather-effects";
+export function normalizeWeatherEffects(
+  value: Partial<WeatherEffectsPreference> | null | undefined,
+): WeatherEffectsPreference {
+  return {
+    enabled: value?.enabled !== false,
+    kind: WEATHER_KINDS.includes(value?.kind as WeatherKind) ? value!.kind! : "clear",
+  };
+}
+export function readWeatherEffects(): WeatherEffectsPreference {
+  try {
+    return normalizeWeatherEffects(JSON.parse(localStorage.getItem(WEATHER_EFFECTS_KEY) ?? "null"));
+  } catch {
+    return normalizeWeatherEffects(null);
+  }
+}
+export function writeWeatherEffects(value: WeatherEffectsPreference) {
+  try {
+    localStorage.setItem(WEATHER_EFFECTS_KEY, JSON.stringify(normalizeWeatherEffects(value)));
+  } catch {
+    /* Blocked storage: retain session state. */
+  }
+}

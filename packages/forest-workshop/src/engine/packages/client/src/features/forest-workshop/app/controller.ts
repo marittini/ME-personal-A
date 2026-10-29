@@ -12,6 +12,10 @@ import { gameApi } from "./api";
 import { previewBackup, type BackupSummary } from "./backup-preview";
 import { lockedMessage, type LockedFeature } from "./features";
 import {
+  readWeatherEffects,
+  writeWeatherEffects,
+  normalizeWeatherEffects,
+  type WeatherEffectsPreference,
   readAutoReading,
   normalizeAutoReading,
   writeAutoReading,
@@ -86,6 +90,7 @@ export interface AppState {
   /** 설정 → 표시 → 글자 크기, per viewer. */
   fontSize: number;
   autoReading: AutoReadingPreference;
+  weatherEffects?: WeatherEffectsPreference;
   /** 설정 → 표시 → 계절: follow today's date, or one season (per viewer, visual only). */
   seasonChoice: StoredSeasonChoice;
   /** Pack files that loaded (app/assets.ts probeAsset); the frame turns their CSS art on. */
@@ -192,6 +197,7 @@ export function createController() {
     restore: null,
     fontSize: readFontSize(),
     autoReading: readAutoReading(),
+    weatherEffects: readWeatherEffects(),
     seasonChoice: readSeasonChoice(),
     artReady: [],
     facilitiesTab: "facilities",
@@ -448,6 +454,12 @@ export function createController() {
       writeSeasonChoice(choice);
       store.set({ seasonChoice: choice });
       loadFrameArt();
+    },
+
+    setWeatherEffects(value: WeatherEffectsPreference) {
+      const weatherEffects = normalizeWeatherEffects(value);
+      writeWeatherEffects(weatherEffects);
+      store.set({ weatherEffects });
     },
 
     setAutoReading(value: AutoReadingPreference) {

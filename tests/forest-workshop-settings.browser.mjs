@@ -68,6 +68,10 @@ try {
       rememberSettingsNickname(worldId, value) {
         window.testState.settingsNicknameDraft = { worldId, value };
       },
+      setWeatherEffects(value) {
+        window.testState.weatherEffects = value;
+        window.testRender();
+      },
       setAutoReading(value) {
         window.testState.autoReading = value;
         window.testRender();
@@ -102,6 +106,15 @@ try {
   await page.getByLabel("닉네임").fill("새 이름");
   await page.getByRole("button", { name: "표시", exact: true }).click();
   assert.equal(await page.getByText("글자 크기").isVisible(), true);
+  await page.getByRole("button", { name: "눈", exact: true }).click();
+  assert.deepEqual(await page.evaluate(() => window.testState.weatherEffects), { enabled: true, kind: "snow" });
+  await page.getByRole("switch", { name: "날씨 효과", exact: true }).click();
+  assert.equal(
+    await page.getByRole("switch", { name: "날씨 효과", exact: true }).getAttribute("aria-checked"),
+    "false",
+  );
+  await page.getByRole("button", { name: "비", exact: true }).click();
+  assert.deepEqual(await page.evaluate(() => window.testState.weatherEffects), { enabled: false, kind: "rain" });
   await page.getByRole("switch", { name: "이야기 자동 넘기기" }).click();
   assert.equal(await page.getByRole("switch", { name: "이야기 자동 넘기기" }).getAttribute("aria-checked"), "true");
   await page.getByLabel("이야기 자동 넘기기 간격").selectOption("7");

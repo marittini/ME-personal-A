@@ -7,6 +7,7 @@ import { createHash } from "node:crypto";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import {
+  WEATHER_ART,
   BACKGROUND_ART,
   EMOTION_ART,
   FACILITY_ART,
@@ -45,8 +46,8 @@ const keyPath = (key: string) => manifest.assets[key]?.path;
 
 // 1. Every file on disk is in the manifest and matches it byte for byte.
 const files = readdirSync(ROOT, { recursive: true, encoding: "utf8" }).filter((file) => file.endsWith(".webp"));
-assert.equal(files.length, 92, "92 WebP pictures");
-assert.equal(byPath.size, 92, "the manifest lists 92 pictures");
+assert.equal(files.length, 96, "96 WebP pictures");
+assert.equal(byPath.size, 96, "the manifest lists 96 pictures");
 for (const file of files) {
   const entry = byPath.get(file);
   assert.ok(entry, `${file} is in the manifest`);
@@ -73,7 +74,12 @@ for (const season of SEASONS) {
   assert.deepEqual(BACKGROUND_ART[season], { base: keyPath(mapped.base), scene: keyPath(mapped.scene) }, season);
 }
 assert.equal(UI_ART.gift, keyPath(manifest.uiMap.gift!), "gift action icon");
-for (const path of [...Object.values(UI_ART), ...Object.values(EMOTION_ART), ...Object.values(NAV_ART)])
+for (const path of [
+  ...Object.values(UI_ART),
+  ...Object.values(EMOTION_ART),
+  ...Object.values(NAV_ART),
+  ...Object.values(WEATHER_ART),
+])
   assert.ok(byPath.has(path), path);
 for (const [name, path] of Object.entries(NAV_ART)) {
   assert.equal(path, keyPath(manifest.uiMap[`nav-${name}`]!), `navigation ${name}`);
@@ -124,3 +130,5 @@ for (const season of SEASONS) {
 }
 
 console.log("forest-workshop asset regressions: OK");
+
+for (const path of Object.values(WEATHER_ART)) assert.ok(byPath.get(path)?.hasTransparency, `weather sprite ${path}`);

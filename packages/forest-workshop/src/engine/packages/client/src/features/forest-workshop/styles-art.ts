@@ -120,7 +120,7 @@ img.emotion-bubble.emotion-art { min-width: 0; width: 2.6em; height: 2.6em; padd
 .work-stock-actions .outline-button { justify-content: center; text-align: center; }
 .work-fields { margin-bottom: 0; }
 .work-fields .field-tab { min-height: 44px; padding: 0.3em 0.1em; border-bottom: var(--line) solid var(--ink); border-radius: 0.65em; }
-.work-fields .field-glyph { display: none; }
+.work-fields .field-glyph { display: block; margin: 0 auto; }
 .work-card .facility-art, .work-card .facility-image { width: 44px; height: 44px; }
 .work-card .facility-text strong { font-size: var(--fs); }
 .work-card .facility-open { gap: 0.4em; }
@@ -201,4 +201,47 @@ img.emotion-bubble.emotion-art { min-width: 0; width: 2.6em; height: 2.6em; padd
 
 .season-weather { display: flex; align-items: center; gap: 0.4em; }
 .season-badge { display: inline-grid; place-items: center; min-height: 2em; padding: 0.15em 0.65em; border: 1.5px solid var(--ink); border-radius: 999px; background: var(--fw-surface-3); color: var(--fw-text); font-weight: 700; }
+
+/* Align icon and label as one centered control; keep reading and action gaps distinct. */
+.work-fields .field-tab { align-items: center; justify-content: center; text-align: center; min-height: 4.4em; padding: 0.5em 0.2em; gap: 0.25em; font-weight: 700; }
+.work-fields .field-art { flex: none; width: 1.7em; height: 1.7em; margin: 0 auto; }
+.work-fields .field-tab > span:not(.lock-tag) { width: 100%; text-align: center; line-height: 1.25; }
+.work-card .facility-entry { gap: 0.6em; padding: 0.65em; }
+.work-card .recipe { gap: 0.7em; padding: 0.75em; }
+.work-card .recipe-art .item-tile.big:has(.item-art) { width: 3.5em; height: 3.5em; }
+.work-card .recipe-text strong { font-size: calc(var(--fs) * 1.1); line-height: 1.3; }
+.work-card .recipe-text > span { font-size: calc(var(--fs) * 0.875); line-height: 1.5; }
+.work-card .section-title { gap: 0.4em; font-size: calc(var(--fs) * 1.1); }
+.mail-new { position: absolute; right: -0.2em; top: -0.2em; display: grid; place-items: center; width: 1.1em; height: 1.1em; border: 1px solid var(--ink); border-radius: 50%; background: var(--fw-gold); color: var(--ink); }
+.mail-new .icon { width: 0.8em; height: 0.8em; }
+.weather-choices { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.4em; }
+.weather-choice { display: grid; place-items: center; align-content: center; gap: 0.25em; min-width: 0; min-height: 44px; padding: 0.5em 0.2em; border: 1px solid #b49a72; border-radius: 0.7em; background: var(--fw-surface-3); color: var(--fw-text); font: inherit; cursor: pointer; }
+.weather-choice.current { border: 2px solid var(--fw-accent); background: var(--fw-leaf-soft); font-weight: 700; }
+.weather-choice-art { width: 1.6em; height: 1.6em; object-fit: contain; }
+.weather-layer { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 1; opacity: 0.6; }
+.weather-layer img { object-fit: contain; }
+.weather-sun { position: absolute; width: 3em; height: 3em; right: 18%; top: 23%; }
+.weather-cloud { position: absolute; width: 4.5em; height: 3em; left: 12%; top: 24%; animation: fw-cloud-drift 12s ease-in-out infinite alternate; }
+.weather-particle { position: absolute; left: var(--weather-x); top: -10%; width: 0.8em; height: 0.8em; animation: fw-weather-fall var(--weather-duration) linear var(--weather-delay) infinite; }
+.weather-snow .weather-particle { width: 1em; height: 1em; }
+.weather-sprite { width: 100%; height: 100%; }
+.scene-stage { z-index: 2; }
+.ground-launch, .scene-caption { z-index: 2; }
+@keyframes fw-weather-fall { from { transform: translate(0, 0); } to { transform: translate(0.8em, calc(60vh + 4em)); } }
+@keyframes fw-cloud-drift { from { transform: translateX(0); } to { transform: translateX(1em); } }
+@media (prefers-reduced-motion: reduce) {
+  .weather-layer * { animation: none !important; }
+  .weather-particle { top: var(--weather-top); opacity: 0.4; }
+}
+
+.work-card .facility-text strong { white-space: normal; line-height: 1.3; }
+.work-card .facility-entry { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@container (max-width: 360px) {
+  .art-sign .top-sub.with-resources .top-row { flex-wrap: wrap; }
+  .art-sign .top-sub.with-resources .resources { flex: 1 0 100%; justify-content: flex-end; margin-left: 0; }
+}
+@media (max-width: 360px) {
+  .work-card .facility-entry .outline-button { grid-column: 1 / -1; white-space: normal; }
+  .work-card .facility-art, .work-card .facility-image { width: 3.8em; height: 3.8em; }
+}
 `;

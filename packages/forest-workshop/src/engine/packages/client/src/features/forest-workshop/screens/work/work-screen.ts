@@ -33,7 +33,7 @@ import {
 const FIELDS: ReadonlyArray<{ field: string; label: string; icon: IconFactory }> = [
   { field: "gather", label: "채집", icon: ICONS.leaf },
   { field: "grow", label: "재배", icon: ICONS.sprout },
-  { field: "survey", label: "조사대", icon: ICONS.search },
+  { field: "survey", label: "조사", icon: ICONS.search },
   { field: "process", label: "가공", icon: ICONS.jar },
   { field: "craft", label: "제작", icon: ICONS.hammer },
 ];

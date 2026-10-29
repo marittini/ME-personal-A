@@ -92,5 +92,9 @@
   "assets/backgrounds/workshop-interior.webp",
   "assets/ui/invite-scene.webp",
   "assets/ui/story-vignette.webp",
-  "assets/ui/letter-paper.webp"
+  "assets/ui/letter-paper.webp",
+  "assets/ui/weather-sun.webp",
+  "assets/ui/weather-cloud.webp",
+  "assets/ui/weather-rain.webp",
+  "assets/ui/weather-snow.webp"
 ]

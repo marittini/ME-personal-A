@@ -15,7 +15,7 @@
         },
         "id": "forest-workshop",
         "name": "Forest Workshop",
-        "version": "0.6.17",
+        "version": "0.6.18",
         "description": "A portrait cozy workshop game in development. This 0.6 build adds story expeditions: each pair of residents travels through three-episode arcs on the explore screen, and each scene is written by your language model when you first read it, from the plan and only the memories its residents share, with one answer you can give a resident. What residents learn is recorded per resident. On top of the complete workshop: five facilities with 34 materials and goods, rules or counted queues, residents whose field and talent come from their own character text, auto-selling, invitations with tickets from daily deliveries, and backups that carry pictures and scenes; letters, memory management and AI guidelines follow. Install it, restart Marinara Engine when prompted, then open Home → 숲결 공방.",
         "engine": {
           "min": "2.5.1",
@@ -130,7 +130,11 @@
               "assets/backgrounds/workshop-interior.webp",
               "assets/ui/invite-scene.webp",
               "assets/ui/story-vignette.webp",
-              "assets/ui/letter-paper.webp"
+              "assets/ui/letter-paper.webp",
+              "assets/ui/weather-sun.webp",
+              "assets/ui/weather-cloud.webp",
+              "assets/ui/weather-rain.webp",
+              "assets/ui/weather-snow.webp"
             ]
           }
         },
@@ -142,18 +146,18 @@
           },
           {
             "path": "server.mjs",
-            "sha256": "257d0effad60482730c0c3f8c8866ddf380e3333e5f71ee460c20aabac16bdee",
+            "sha256": "e724370203bd587b253e80a2915d1859c9699af830b25d9393533e1fbfe7e434",
             "bytes": 147681
           },
           {
             "path": "client.js",
-            "sha256": "926a1d5cf178e78a2cbb97068631a6a70f9ea754d15164a4c9caf05dbd211726",
-            "bytes": 329422
+            "sha256": "3c6415a11a828ecb88f848a4a060ea266267cec2e342af9b14506526b03ad941",
+            "bytes": 335310
           },
           {
             "path": "assets/asset-manifest.json",
-            "sha256": "b573a2393e370d5ede4c7e8e0741d903c0756ea2b0b75ca27a94f06e958ce8e2",
-            "bytes": 51185
+            "sha256": "2ed7910c22bb59d8d7d8a8a1df4c3ed930187e4b93244fef534faa45ec125adc",
+            "bytes": 53198
           },
           {
             "path": "assets/backgrounds/workshop-base-autumn.webp",
@@ -614,6 +618,26 @@
             "path": "assets/ui/letter-paper.webp",
             "sha256": "e0b1a70b5d5964944e59f01e450094a0c16d3cdaf2394ce3c6f24d3462205704",
             "bytes": 131844
+          },
+          {
+            "path": "assets/ui/weather-sun.webp",
+            "sha256": "6759a0f331920db398297ae3dba503db7230de7b201753c6e7d357fa9bc01dc6",
+            "bytes": 6800
+          },
+          {
+            "path": "assets/ui/weather-cloud.webp",
+            "sha256": "a67a0ed07b5e3832d62a491300838ecf9899545c531c43ff1b2c9ec94f130ac8",
+            "bytes": 3084
+          },
+          {
+            "path": "assets/ui/weather-rain.webp",
+            "sha256": "13d5628c9b15fd4bdbbc8a52959a84bad2591fd3a8e8284e1c3905cfec87975d",
+            "bytes": 2502
+          },
+          {
+            "path": "assets/ui/weather-snow.webp",
+            "sha256": "fc77fc75739c114954d5cbf2dbe4c4e34873042909e642ce87c346449d71f2bd",
+            "bytes": 9354
           }
         ],
         "permissions": [
@@ -626,9 +650,9 @@
       "category": "misc",
       "iconUrl": "https://raw.githubusercontent.com/marittini/ME-personal-A/main/artwork/agent-covers/forest-workshop.png",
       "artifact": {
-        "url": "https://raw.githubusercontent.com/marittini/ME-personal-A/main/artifacts/forest-workshop-0.6.17.zip",
-        "sha256": "d7a639bd125a370f8e57a8797092c54457b2a13d0e2d08a3a8265a628e460bcd",
-        "bytes": 3660911
+        "url": "https://raw.githubusercontent.com/marittini/ME-personal-A/main/artifacts/forest-workshop-0.6.18.zip",
+        "sha256": "aed9df53d4c4402431c5967de960f84c72eafcbf0f939268dc5f0f6b84c8d122",
+        "bytes": 3691876
       },
       "documentationUrl": "https://github.com/marittini/ME-personal-A/blob/main/packages/forest-workshop/README.md"
     }

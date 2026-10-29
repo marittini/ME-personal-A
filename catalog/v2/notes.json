@@ -4,6 +4,12 @@
     "forest-workshop": {
       "versions": [
         {
+          "version": "0.6.18",
+          "date": "2026-10-29",
+          "notes": "- 작업 분야의 아이콘·글자를 가운데 맞추고 카드 여백과 글자 위계를 조정했습니다.\n- 우편 숫자 대신 새 편지가 있을 때만 반짝임 표시를 보여줍니다.\n- 맑음·흐림·비·눈의 홈 배경 연출과 효과 켜기/끄기, 브라우저별 설정 저장을 추가했습니다. 현실 날씨 조회는 아직 제공하지 않습니다.\n- 날씨 그림 4종을 추가하고 동작 줄이기 설정을 반영했습니다.",
+          "highlight": false
+        },
+        {
           "version": "0.6.17",
           "date": "2026-10-29",
           "notes": "- 사계절 화면 바탕과 홈 배경, 지도·실내·초대 장면 11개를 여백이 넓은 단순한 그림으로 교체했습니다.\n- 간판 글자를 나무판 영역에 고정하고 홈에 현재 계절 문구를 표시합니다.\n- 지면 편집을 44px 아이콘 버튼으로 바꾸고 빈 상태를 중앙 정렬했습니다.\n- 보조 버튼과 선택기에 축소 종이 장식을 반복하던 표현을 정리했습니다.",
@@ -116,12 +122,6 @@
           "date": "2026-10-27",
           "notes": "- More to make: 15 materials (pinecones, acorns, pumpkins, cotton, tea leaves, beeswax, feathers, four-leaf clovers…), 8 processed goods and 11 finished goods, with longer chains such as cotton → thread → scarf or tea → herb tea → gift box. More delivery requests use them.\n- A resident's field and talent are now decided when they are registered, read from their own character or persona text, and shown before you confirm; they no longer change afterwards. Each talent speeds up one recipe of that field or saves one input.\n- Existing residents keep a field you already chose and get a matching talent; others get both from their stored source text.",
           "highlight": false
-        },
-        {
-          "version": "0.5.0",
-          "date": "2026-10-27",
-          "notes": "- Five facilities, one per field; 재배밭, 조사대 and 제작대 open once their condition is met. New materials and goods.\n- 지정 횟수: a facility can run a queue (1–99 runs per request, 3–5 slots by level) instead of its rules; switching lets the current run finish.\n- Residents get a field you choose and speed up a facility of that field (5%, up to 10% with breakthroughs); a pair placed together adds a small bonus everywhere.\n- 자동 판매 per item, off by default: never below your amount, the production target or protected stock, at most your daily amount per UTC day.\n- 초대: 1 or 10 invitations with tickets, equal chances (a wished resident more), breakthroughs, tokens and a chosen-resident exchange, with a guarantee, 확률 보기 and 초대 기록.\n- Tickets come from the starter kit and daily delivery requests. Worlds that already claimed the kit get its tickets once.",
-          "highlight": true
         }
       ]
     }

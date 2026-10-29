@@ -109,6 +109,13 @@ export const NAV_ART = {
   invite: "ui/nav-invite.webp",
 } as const;
 
+export const WEATHER_ART = {
+  sun: "ui/weather-sun.webp",
+  cloud: "ui/weather-cloud.webp",
+  rain: "ui/weather-rain.webp",
+  snow: "ui/weather-snow.webp",
+} as const;
+
 export const UI_ART = {
   gift: "ui/gift.webp",
   letterPaper: "ui/letter-paper.webp",

@@ -158,6 +158,16 @@ try {
     };
     window.testRender();
   });
+  const alignment = await page.getByRole("tab", { name: "채집", exact: true }).evaluate((button) => {
+    const b = button.getBoundingClientRect(),
+      i = button.querySelector(".field-art").getBoundingClientRect(),
+      t = button.querySelector("span:not(.lock-tag)").getBoundingClientRect();
+    return [Math.abs((i.left + i.right - b.left - b.right) / 2), Math.abs((t.left + t.right - b.left - b.right) / 2)];
+  });
+  assert.ok(
+    alignment.every((d) => d < 1),
+    JSON.stringify(alignment),
+  );
   const titleBounds = await page.locator(".sign").evaluate((sign) => {
     const b = sign.getBoundingClientRect(),
       range = document.createRange();
@@ -344,8 +354,17 @@ try {
     state.world.value.state.production.facilities["survey-desk"] = { unlocked: false };
     window.testRender();
   });
-  assert.equal(await page.getByRole("tab", { name: "조사대 (해금 전)" }).count(), 1);
-  // Capture the real art at default and enlarged mobile sizes.
+  assert.equal(await page.getByRole("tab", { name: "조사 (해금 전)" }).count(), 1);
+  await page.evaluate(() => {
+    for (const [id, field, name] of [
+      ["process-bench", "process", "가공대"],
+      ["craft-bench", "craft", "제작대"],
+    ]) {
+      window.testState.content.facilities.push({ id, field, name });
+      window.testState.world.value.state.production.facilities[id] = { unlocked: false };
+    }
+  });
+  // Capture all five fields at default and enlarged mobile sizes.
   for (const width of [390, 320]) {
     await page.setViewportSize({ width, height: 844 });
     await page.evaluate((width) => {
@@ -425,12 +444,50 @@ try {
       state.artReady.push(`backgrounds/workshop-base-${season}.webp`);
       window.renderHomePreview();
     }, season);
-    await page.locator(".scene img").evaluate((i) => i.decode());
+    await page.locator(".scene img.scene-art").evaluate((i) => i.decode());
     assert.equal(await page.getByLabel(`현재 계절 ${label}`, { exact: true }).count(), 1);
     await page.locator(".scroll").evaluate((n) => (n.scrollTop = 0));
     await page.screenshot({ path: join(process.env.FW_ART_SCREENSHOTS ?? temp, `home-calm-${season}.png`) });
   }
-  console.log("Unified work, title bounds, compact ground edit, seasons, large text and home report: OK");
+  assert.equal(await page.locator(".mail-unread").count(), 0);
+  assert.equal(await page.locator(".mail-new").count(), 0);
+  await page.evaluate(() => {
+    window.testState.world.value.state.mailbox = { letters: [{ id: "l", readAt: null, archived: false }] };
+    window.renderHomePreview();
+  });
+  assert.equal(await page.getByRole("button", { name: "우편함 · 새 편지 있음", exact: true }).count(), 1);
+  assert.equal(await page.locator(".mail-new").count(), 1);
+  await page.evaluate(() => {
+    window.testState.world.value.state.mailbox.letters[0].readAt = "now";
+    window.renderHomePreview();
+  });
+  assert.equal(await page.locator(".mail-new").count(), 0);
+  for (const kind of ["clear", "cloudy", "rain", "snow"]) {
+    await page.evaluate((kind) => {
+      window.testState.weatherEffects = { enabled: true, kind };
+      window.renderHomePreview();
+    }, kind);
+    await page
+      .locator(".weather-layer img")
+      .first()
+      .evaluate((i) => i.decode());
+    assert.equal(await page.locator(".weather-layer").evaluate((n) => getComputedStyle(n).pointerEvents), "none");
+    await page.screenshot({ path: join(process.env.FW_ART_SCREENSHOTS ?? temp, `home-weather-${kind}.png`) });
+  }
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  assert.equal(
+    await page
+      .locator(".weather-particle")
+      .first()
+      .evaluate((n) => getComputedStyle(n).animationName),
+    "none",
+  );
+  await page.evaluate(() => {
+    window.testState.weatherEffects.enabled = false;
+    window.renderHomePreview();
+  });
+  assert.equal(await page.locator(".weather-layer").count(), 0);
+  console.log("Work alignment, title bounds, compact ground edit, seasons, mail indicator and weather effects: OK");
 } finally {
   await browser?.close();
   await rm(temp, { recursive: true, force: true });

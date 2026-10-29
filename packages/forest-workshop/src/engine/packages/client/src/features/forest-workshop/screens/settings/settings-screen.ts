@@ -6,6 +6,8 @@ import { SEASON_LABELS, seasonForDate } from "../../app/season";
 import type { AppState, Controller, Route } from "../../app/controller";
 import { h, statusLine } from "../../app/dom";
 import type { LockedFeature } from "../../app/features";
+import { normalizeWeatherEffects, WEATHER_KINDS, WEATHER_LABELS } from "../../app/preferences";
+import { WEATHER_ART, assetImage } from "../../app/assets";
 import { FONT_SIZE } from "../../app/preferences";
 import type { WorldView } from "../../app/types";
 import { card, renderFrame } from "../chrome/frame";
@@ -181,16 +183,57 @@ function autoReadingRow(state: AppState, controller: Controller) {
   ]);
 }
 
-function toggleRow(controller: Controller, feature: LockedFeature, icon: IconFactory, title: string, detail: string) {
-  return featureButton(controller, feature, {
-    className: "toggle-row",
-    label: title,
-    children: [
-      h("span", { className: "toggle-icon" }, [icon("icon")]),
-      h("span", { className: "toggle-text" }, [h("strong", { text: title }), h("span", { text: detail })]),
-      h("span", { className: "switch off" }, [h("span", { className: "knob" })]),
-    ],
-  });
+function weatherEffectsControls(state: AppState, controller: Controller) {
+  const preference = normalizeWeatherEffects(state.weatherEffects);
+  return h("div", { className: "setting-block weather-settings" }, [
+    h(
+      "button",
+      {
+        className: "toggle-row",
+        attrs: {
+          type: "button",
+          role: "switch",
+          "aria-label": "날씨 효과",
+          "aria-checked": String(preference.enabled),
+        },
+        on: { click: () => controller.setWeatherEffects({ ...preference, enabled: !preference.enabled }) },
+      },
+      [
+        h("span", { className: "toggle-text" }, [
+          h("strong", { text: "날씨 효과" }),
+          h("span", { text: preference.enabled ? "공방 배경에 은은하게 표시해요" : "배경 효과를 쉬어요" }),
+        ]),
+        h("span", { className: `switch ${preference.enabled ? "on" : "off"}`, attrs: { "aria-hidden": "true" } }, [
+          h("span", { className: "knob" }),
+        ]),
+      ],
+    ),
+    h(
+      "div",
+      { className: "weather-choices", attrs: { role: "group", "aria-label": "날씨 연출 선택" } },
+      WEATHER_KINDS.map((kind) =>
+        h(
+          "button",
+          {
+            className: `weather-choice${preference.kind === kind ? " current" : ""}`,
+            attrs: { type: "button", "aria-pressed": String(preference.kind === kind) },
+            on: { click: () => controller.setWeatherEffects({ ...preference, kind }) },
+          },
+          [
+            assetImage(WEATHER_ART[kind === "clear" ? "sun" : kind === "cloudy" ? "cloud" : kind], {
+              className: "weather-choice-art",
+              fallback: () => ICONS.weather("icon"),
+            }),
+            h("span", { text: WEATHER_LABELS[kind] }),
+          ],
+        ),
+      ),
+    ),
+    h("p", {
+      className: "muted",
+      text: "직접 고르는 배경 연출이에요. 현실 날씨·생산에는 영향을 주지 않아요. 동작 줄이기 설정에서는 움직이지 않아요.",
+    }),
+  ]);
 }
 
 function manageRow(
@@ -249,7 +292,7 @@ export function renderSettingsScreen(state: AppState, controller: Controller) {
               [
                 fontSizeRow(state, controller),
                 seasonRow(state, controller),
-                toggleRow(controller, "weather-effects", ICONS.leaf, "날씨 효과", "공방 배경에 현재 날씨를 반영해요."),
+                weatherEffectsControls(state, controller),
                 autoReadingRow(state, controller),
               ],
               { id: "fw-display" },

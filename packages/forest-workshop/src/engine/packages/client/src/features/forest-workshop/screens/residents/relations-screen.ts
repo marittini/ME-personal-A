@@ -8,7 +8,6 @@ import { button, h, statusLine } from "../../app/dom";
 import type { GameContent, Pair, Resident, WorldView } from "../../app/types";
 import { card, renderFrame } from "../chrome/frame";
 import { ICONS } from "../chrome/icons";
-import { featureButton } from "../chrome/locked";
 import { pairAddKey, partnerOf } from "../../app/resident-actions";
 import { kindTag, residentAvatar } from "./resident-figure";
 
@@ -89,11 +88,7 @@ function pairRow(
             }),
           ])
         : h("div", { className: "pair-actions" }, [
-            featureButton(controller, "pair-memory", {
-              className: "outline-button",
-              label: "기억 보기",
-              children: [ICONS.book("icon"), h("span", { text: "기억 보기" })],
-            }),
+            button("기억 보기", () => controller.openMemory(pair.pairId), { variant: "secondary" }),
             button("지침 관리", () => controller.openGuidelines(pair.pairId), { variant: "secondary" }),
           ]),
     ]),

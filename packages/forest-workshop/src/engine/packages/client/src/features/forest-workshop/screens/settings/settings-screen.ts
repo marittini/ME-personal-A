@@ -266,7 +266,12 @@ export function renderSettingsScreen(state: AppState, controller: Controller) {
                   attrs: { type: "button" },
                   on: { click: () => controller.openGuidelines() },
                 }),
-                manageRow(controller, ICONS.people, "기억 관리", { feature: "memory" }),
+                h("button", {
+                  className: "manage-row",
+                  text: "기억 관리",
+                  attrs: { type: "button" },
+                  on: { click: () => controller.openMemory() },
+                }),
                 manageRow(controller, ICONS.folder, "저장 · 백업", { route: "backup" }),
                 h("div", { className: "note-box" }, [
                   ICONS.clock("icon"),

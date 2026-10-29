@@ -1,7 +1,14 @@
+export interface WritingGuideline {
+  enabled: boolean;
+  text: string;
+  revision: number;
+  updatedAt: string | null;
+}
 // Shapes the server sends. Structural copies of the server's types (the client bundle cannot import server code);
 // the server is the authority, the client only renders them.
 
 export interface WorldState {
+  guidelines: { world: WritingGuideline; pairs: Record<string, WritingGuideline> };
   schemaVersion: number;
   worldId: string;
   createdAt: string;

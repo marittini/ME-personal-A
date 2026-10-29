@@ -260,7 +260,12 @@ export function renderSettingsScreen(state: AppState, controller: Controller) {
               "관리",
               [
                 manageRow(controller, ICONS.image, "주민 그림 관리", { route: "residents" }),
-                manageRow(controller, ICONS.flower, "AI 지침 관리", { feature: "ai-guidelines" }),
+                h("button", {
+                  className: "manage-row",
+                  text: "AI 지침 관리",
+                  attrs: { type: "button" },
+                  on: { click: () => controller.openGuidelines() },
+                }),
                 h("button", {
                   className: "manage-row",
                   text: "기억 관리",

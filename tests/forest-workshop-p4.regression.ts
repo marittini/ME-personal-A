@@ -318,6 +318,8 @@ async function main() {
     );
     const storyId = arcView(unlocked, env.pairAB)!.episodes[0]!.storyId;
     assert.equal(await findStory(env.host.persistence.documents, WORLD, storyId), null, "nothing stored");
+    await env.run("guidelines.update", { enabled: true, text: "차분하고 짧은 대화" });
+    await env.run("guidelines.update", { pairId: env.pairAB, enabled: true, text: "이 페어는 간결하게" });
     model.state.next = () => sceneJson([a!], { choice: true });
     model.state.calls = 0;
     const [one, two] = await Promise.all([
@@ -327,14 +329,19 @@ async function main() {
     assert.equal(model.state.calls, 1, "one model call for concurrent requests");
     assert.deepEqual(one, two);
     assert.equal(one.storyId, storyId, "the plan's scene ID");
+    assert.deepEqual(one.manifest.guidelineRevisions, { world: 1, pair: 1 });
+    await env.run("guidelines.update", { enabled: true, text: "밝고 짧은 대화" });
     const again = await env.stories.generate({ worldId: WORLD, pairId: env.pairAB, episode: 0 });
     assert.equal(model.state.calls, 1, "a written scene is never rewritten");
     assert.equal(again.generatedAt, one.generatedAt);
+    assert.deepEqual(again.manifest.guidelineRevisions, { world: 1, pair: 1 });
     // Source text is data, inside its tag.
     const prompt = model.prompts
       .at(-1)!
       .map((m) => m.content)
       .join("\n");
+    assert.match(prompt, /차분하고 짧은 대화/u);
+    assert.match(prompt, /이 페어는 간결하게/u);
     assert.match(prompt, /<source_notes resident="[^"]+">\n조용하다\.\n<\/source_notes>/u);
 
     // Choice once: trust +1 with the asker; a memory only the asker holds.

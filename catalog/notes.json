@@ -4,6 +4,12 @@
     "forest-workshop": {
       "versions": [
         {
+          "version": "0.6.11",
+          "date": "2026-10-29",
+          "notes": "- Configure world and pair writing preferences for newly generated stories. Existing stories and memory visibility remain unchanged. Generation records store applied guideline revisions. Schema 9 worlds cannot be opened by older packages.",
+          "highlight": false
+        },
+        {
           "version": "0.6.10",
           "date": "2026-10-29",
           "notes": "- Manage memories and view a pair’s shared memories. Corrections preserve the original and its knowledge scope; memories can be disabled and restored. New memory writes refuse at capacity instead of silently discarding records. Previously discarded memories cannot be recovered.",

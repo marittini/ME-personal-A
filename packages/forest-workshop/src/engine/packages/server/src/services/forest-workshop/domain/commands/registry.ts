@@ -30,9 +30,11 @@ import { chooseStarter, registerResident, updateResident } from "./residents";
 import { cancelExpedition, chooseAnswer, departExpedition, markStoryRead } from "./stories";
 import { updateSettings } from "./settings";
 
+import { updateGuidelines } from "./guidelines";
 import { correctMemory, setMemoryStatus } from "./memory";
 
 const DEFINITIONS = [
+  updateGuidelines,
   correctMemory,
   setMemoryStatus,
   updateSettings,

@@ -16,7 +16,9 @@ import { productionSchema } from "./model/production";
 import { initialProduction } from "./production/initial";
 import { MAX_RESIDENTS, residentSchema } from "./model/residents";
 
-export const CURRENT_SCHEMA_VERSION = 8;
+import { guidelinesSchema, initialGuidelines } from "./model/guidelines";
+
+export const CURRENT_SCHEMA_VERSION = 9;
 
 const nonNegativeInt = z.number().int().min(0).max(Number.MAX_SAFE_INTEGER);
 const displayText = (max: number) =>
@@ -75,6 +77,7 @@ const worldShape = z
     deliveries: deliveryStateSchema,
     stories: storiesStateSchema,
     memory: memorySchema,
+    guidelines: guidelinesSchema.default(initialGuidelines),
   })
   .strict();
 
@@ -100,6 +103,9 @@ export const worldStateSchema = worldShape.superRefine((world, context) => {
   if (starter !== null && !world.residents[starter]?.recruited) issue(["progress", "starterResidentId"], "unknown");
 
   // Each couple has one row (archived or not), so its history stays one history.
+  for (const [id, guideline] of Object.entries(world.guidelines.pairs)) {
+    if (!world.pairs[id] || guideline.text.length > 500) issue(["guidelines", "pairs", id], "invalid pair guideline");
+  }
   const couples = new Set<string>();
   for (const [key, pair] of pairs) {
     if (pair.pairId !== key) issue(["pairs", key], "key mismatch");

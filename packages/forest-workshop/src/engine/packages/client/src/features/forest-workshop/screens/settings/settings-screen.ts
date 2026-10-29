@@ -138,6 +138,49 @@ function seasonRow(state: AppState, controller: Controller) {
   ]);
 }
 
+function autoReadingRow(state: AppState, controller: Controller) {
+  const preference = state.autoReading ?? { enabled: false, seconds: 4 };
+  const interval = h(
+    "select",
+    {
+      className: "input",
+      attrs: { "aria-label": "이야기 자동 넘기기 간격" },
+      on: { change: () => controller.setAutoReading({ ...preference, seconds: Number(interval.value) }) },
+    },
+    Array.from({ length: 9 }, (_, index) =>
+      h("option", { text: `${index + 2}초`, attrs: { value: String(index + 2) } }),
+    ),
+  );
+  interval.value = String(preference.seconds);
+  return h("div", { className: "setting-block" }, [
+    h(
+      "button",
+      {
+        className: "toggle-row",
+        attrs: {
+          type: "button",
+          role: "switch",
+          "aria-checked": String(preference.enabled),
+          "aria-label": "이야기 자동 넘기기",
+        },
+        on: { click: () => controller.setAutoReading({ ...preference, enabled: !preference.enabled }) },
+      },
+      [
+        h("span", { className: "toggle-text" }, [
+          h("strong", { text: "이야기 자동 넘기기" }),
+          h("span", { text: preference.enabled ? "새 이야기를 자동으로 넘겨요" : "직접 눌러 넘겨요" }),
+        ]),
+        h("span", { className: `switch ${preference.enabled ? "on" : "off"}` }, [h("span", { className: "knob" })]),
+      ],
+    ),
+    interval,
+    h("p", {
+      className: "muted",
+      text: "질문·기록·화면을 벗어날 때 멈춰요. 다시 시작하려면 이야기의 자동 버튼을 눌러 주세요. 보관은 직접 눌러요.",
+    }),
+  ]);
+}
+
 function toggleRow(controller: Controller, feature: LockedFeature, icon: IconFactory, title: string, detail: string) {
   return featureButton(controller, feature, {
     className: "toggle-row",
@@ -207,7 +250,7 @@ export function renderSettingsScreen(state: AppState, controller: Controller) {
                 fontSizeRow(state, controller),
                 seasonRow(state, controller),
                 toggleRow(controller, "weather-effects", ICONS.leaf, "날씨 효과", "공방 배경에 현재 날씨를 반영해요."),
-                toggleRow(controller, "auto-read", ICONS.book, "자동 읽기", "이야기를 자동으로 넘겨요."),
+                autoReadingRow(state, controller),
               ],
               { id: "fw-display" },
             )

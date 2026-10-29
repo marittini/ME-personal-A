@@ -57,8 +57,10 @@ export const saveResidentLetter = defineCommand({
     if (!activity) throw new FwError("invalid_payload", { message: "완료된 활동을 찾지 못했어요." });
     const id = `resident-${activity.id}`;
     if (state.mailbox.letters.some((letter) => letter.id === id)) return { state, result: { id } };
-    if (state.mailbox.letters.length >= 200)
-      throw new FwError("invalid_payload", { message: "우편 저장 한도에 도달했어요." });
+    if (state.mailbox.letters.length + (state.activities.running ? 1 : 0) >= 200)
+      throw new FwError("invalid_payload", {
+        message: "우편 공간이 부족해요. 진행 중인 활동의 결과 공간을 확보해야 해요.",
+      });
     const resident = state.residents[activity.residentId];
     if (!resident) throw new FwError("invalid_payload", { message: "편지를 보낸 주민을 찾지 못했어요." });
     const letter = {

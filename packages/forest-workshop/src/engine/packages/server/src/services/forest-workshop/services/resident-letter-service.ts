@@ -47,7 +47,7 @@ export function createResidentLetterService(
             revision: world.revision,
             state: world.state,
           };
-        if (world.state.mailbox.letters.length >= 200)
+        if (world.state.mailbox.letters.length + (world.state.activities.running ? 1 : 0) >= 200)
           throw new FwError("invalid_payload", { message: "우편 저장 한도에 도달했어요." });
         const resident = world.state.residents[activity.residentId];
         if (!resident) throw new FwError("invalid_payload");

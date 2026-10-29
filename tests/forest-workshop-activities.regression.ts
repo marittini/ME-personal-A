@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
 import { createResidentLetterService } from "../packages/forest-workshop/src/engine/packages/server/src/services/forest-workshop/services/resident-letter-service";
+import { saveResidentLetter } from "../packages/forest-workshop/src/engine/packages/server/src/services/forest-workshop/domain/commands/mailbox";
+import { settleActivities } from "../packages/forest-workshop/src/engine/packages/server/src/services/forest-workshop/domain/activities";
+import { createWorldDocument } from "../packages/forest-workshop/src/engine/packages/server/src/services/forest-workshop/store/world-repository";
 import { FakeHost } from "./support/forest-workshop-fake-host";
 import { createWorldService } from "../packages/forest-workshop/src/engine/packages/server/src/services/forest-workshop/services/world-service";
 import { createCommandService } from "../packages/forest-workshop/src/engine/packages/server/src/services/forest-workshop/services/command-service";
@@ -114,6 +117,46 @@ async function main() {
   assert.deepEqual(afterFailedLetter.mailbox, beforeFailedLetter.mailbox);
   assert.deepEqual(afterFailedLetter.activities, beforeFailedLetter.activities);
   assert.deepEqual(afterFailedLetter.wallet, beforeFailedLetter.wallet);
+  const filling = Array.from({ length: 197 }, (_, i) => ({
+    ...completed.mailbox.letters[0]!,
+    id: `fill-${i}`,
+    eventId: `fill-${i}`,
+  }));
+  const almostFull = {
+    ...completed,
+    activities: { ...completed.activities, running: started.activities.running },
+    mailbox: { letters: [...completed.mailbox.letters, ...filling] },
+  };
+  assert.equal(almostFull.mailbox.letters.length, 199);
+  const payload = { activityId: id, title: "편지", body: "안녕" };
+  const context = { now: clock().toISOString(), commandId: "capacity-check" };
+  assert.throws(() => saveResidentLetter.apply(almostFull, payload, context), { code: "invalid_payload" });
+  const capacityHost = new FakeHost();
+  await createWorldDocument(capacityHost.persistence.documents, almostFull, clock().toISOString(), "capacity test");
+  let capacityModelCalls = 0;
+  const capacityService = createResidentLetterService(
+    {
+      languageModels: {
+        resolve: async () => {
+          capacityModelCalls++;
+          throw new Error("must not call");
+        },
+      },
+    },
+    capacityHost.persistence,
+    createCommandService(capacityHost.persistence, clock),
+  );
+  await assert.rejects(capacityService.generate({ worldId, activityId: id }), { code: "invalid_payload" });
+  assert.equal(capacityModelCalls, 0, "capacity is checked before a model call");
+  const space = { ...almostFull, mailbox: { letters: almostFull.mailbox.letters.slice(1) } };
+  const saved = saveResidentLetter.apply(space, payload, context).state;
+  assert.equal(saved.mailbox.letters.length, 199);
+  const finished = settleActivities(
+    { ...saved, production: { ...saved.production, simMs: saved.activities.running!.endsSim } },
+    clock().toISOString(),
+  );
+  assert.equal(finished.mailbox.letters.length, 200, "activity can finish using reserved slot");
+  assert.equal(finished.activities.running, null);
   let calls = 0;
   let connection: string | null | undefined;
   const letters = createResidentLetterService(

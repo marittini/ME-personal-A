@@ -1,3 +1,6 @@
+## 0.6.10 — 2026-10-29
+- Manage memories and view a pair’s shared memories. Corrections preserve the original and its knowledge scope; memories can be disabled and restored. New memory writes refuse at capacity instead of silently discarding records. Previously discarded memories cannot be recovered.
+
 ## 0.6.8 — 2026-10-28
 - Edit the rectangular movement area directly over the home background by dragging its four edges. Save, cancel and reset are available on Home. Home residents move horizontally and vertically within this range. Ground is included in world backups. Schema 8 worlds cannot be opened by older packages. Obstacles, polygon editing and full interaction behavior remain in development.
 

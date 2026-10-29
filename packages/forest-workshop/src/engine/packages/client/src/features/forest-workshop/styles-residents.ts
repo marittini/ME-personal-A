@@ -2,6 +2,12 @@
 // resident figure used everywhere (home scene included). Same tokens and sizing rules as styles.ts, which appends
 // this sheet.
 export const RESIDENT_STYLES = `
+.memory-choices { display: grid; gap: 0.35em; }
+.memory-choices .button { min-height: 44px; justify-content: flex-start; text-align: left; font-size: calc(var(--fs) * 0.85); }
+.memory-choices [aria-pressed="true"] { outline: 2px solid var(--fw-accent); }
+.memory-detail { display: grid; gap: 0.5em; padding: 0.7em; border-radius: 0.8em; background: var(--fw-surface-3); overflow-wrap: anywhere; }
+.memory-detail form { display: grid; gap: 0.5em; }
+
 /* ── Shared: ribbon, figure, avatar, tags ──────────────────────────────── */
 .ribbon {
   justify-self: center;

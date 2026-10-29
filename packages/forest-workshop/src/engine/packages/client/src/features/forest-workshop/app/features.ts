@@ -3,15 +3,7 @@
 // When a phase lands, delete its entries here: every screen asks `isLocked()` and turns the element on by itself.
 
 export type LockedFeature =
-  | "weather"
-  | "mail"
-  | "survey-patrol"
-  | "weather-effects"
-  | "auto-read"
-  | "ai-guidelines"
-  | "memory"
-  | "pair-memory"
-  | "pair-guidelines";
+  "weather" | "mail" | "survey-patrol" | "weather-effects" | "auto-read" | "ai-guidelines" | "pair-guidelines";
 
 const LOCKED: Readonly<Record<LockedFeature, { label: string; phase: "P4b" | "P5" }>> = {
   weather: { label: "현실 날씨", phase: "P5" },
@@ -20,8 +12,6 @@ const LOCKED: Readonly<Record<LockedFeature, { label: string; phase: "P4b" | "P5
   "weather-effects": { label: "날씨 효과", phase: "P5" },
   "auto-read": { label: "자동 읽기", phase: "P4b" },
   "ai-guidelines": { label: "AI 지침 관리", phase: "P4b" },
-  memory: { label: "기억 관리", phase: "P4b" },
-  "pair-memory": { label: "페어 기억 보기", phase: "P4b" },
   "pair-guidelines": { label: "페어 지침 관리", phase: "P4b" },
 };
 

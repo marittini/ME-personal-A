@@ -219,7 +219,12 @@ export function renderStoryReader(state: AppState, controller: Controller) {
       "button",
       {
         className: "chip-button",
-        attrs: { type: "button", "aria-pressed": reader.backlog ? "true" : "false" },
+        attrs: {
+          type: "button",
+          "aria-label": "기록",
+          title: "기록",
+          "aria-pressed": reader.backlog ? "true" : "false",
+        },
         disabled: !story,
         on: { click: () => controller.toggleBacklog() },
       },
@@ -229,7 +234,12 @@ export function renderStoryReader(state: AppState, controller: Controller) {
       "button",
       {
         className: `chip-button${reader.auto ? " active" : ""}`,
-        attrs: { type: "button", "aria-pressed": reader.auto ? "true" : "false" },
+        attrs: {
+          type: "button",
+          "aria-label": reader.auto ? "자동 끄기" : "자동",
+          title: reader.auto ? "자동 끄기" : "자동",
+          "aria-pressed": reader.auto ? "true" : "false",
+        },
         disabled: !story,
         on: { click: () => controller.toggleAuto() },
       },

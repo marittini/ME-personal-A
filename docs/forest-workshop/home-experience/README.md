@@ -1,0 +1,19 @@
+# Home experience checkpoint — 0.6.15
+
+The first implementation batch preserves resident scene identity and CSS animation clocks across home refreshes. Resident travel and facing now share an 18-second cycle; body deformation accompanies travel. Touch pauses travel and shows a musical reaction with an explicit profile action. This is local visual feedback, not generated dialogue. Existing resident pictures remain unchanged.
+
+The package requests fullscreen for its own custom element on pointerdown when supported. Browser user-activation restrictions remain; this does not establish automatic entry from the Engine banner, Android system-bar hiding, installed PWA behavior or fullscreen on unsupported platforms.
+
+Validation: package build, 15 server/domain regression suites, strict server/client type checks, format/lint, catalog lanes, locales, release notes and ZIP hashes passed. The updated Chromium fixture checks five seconds of real-time no-touch motion, body deformation, touch feedback before profile navigation and reduced motion. Original complete mockup files were not found; design fidelity and actual Android motion remain unverified. Repository issues are disabled, so ownership and proof are recorded in this note and the PR.
+
+## Isolated Engine browser proof
+
+Engine 2.5.1 entry checkout `b8bf28382b740cac77f310df442f98c493166f43`, isolated `/tmp/forest-home-ui-engine`, API port 8000 and Vite port 5190. The verified local 0.6.15 ZIP was installed using `installPackageBrowserFixture`; this is not normal catalog download/install. A test world and starter resident were created through the UI. In Chromium's 320×640 touch viewport, resident touch showed the reaction/profile action, and `document.fullscreenElement.tagName` was `MARINARA-CAPABILITY-FOREST-WORKSHOP`. The Engine header was excluded in this fullscreen state. Screenshots `engine-home-320.png` and `engine-reaction-320.png` show a test resident without an uploaded picture; they cannot establish the visual quality of a user's character animation.
+
+A UI notice triggered a store update while the reaction was open. The home scene retained DOM identity, its travel clock remained 2583.286ms before/after that update, and the reaction stayed visible. The first reaction capture placed the panel too high; it was adjusted beside the resident and the final rebuilt ZIP was reinstalled and the Engine restarted before repeating the check. Home and ground browser regressions, format/lint and catalog/hash validation passed again after that CSS change. Actual Android, installed PWA, normal install/update, user's character artwork and full original mockup comparison remain unverified.
+
+## 0.6.16 follow-up
+
+The travel, facing and body cycles start four seconds into the shared cycle, so the first visible movement begins on entry instead of after a 3.6-second wait. The touch reaction uses the package's existing joy artwork, with a text fallback if it cannot load. The greeting animation starts immediately and reduced-motion behavior remains in place.
+
+The updated fixture verified movement without input within one second, body deformation, touch/profile flow and ground editing. The 0.6.16 ZIP was installed in the isolated Engine fixture and tested again at 320×640: touch reaction, fullscreen element, and scene/animation-clock preservation after a notice all passed. The screenshot shows an empty-picture test resident. Actual Android and original user artwork remain unverified; fullscreen still requires a gesture on this browser path.

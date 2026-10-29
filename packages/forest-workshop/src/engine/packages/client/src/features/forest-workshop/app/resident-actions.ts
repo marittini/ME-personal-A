@@ -117,6 +117,29 @@ export function createResidentActions(core: ControllerCore) {
       const response = await core.runCommand(`mail:${id}`, "mail.read", { id });
       if (response) store.set((state) => (state.sheet?.kind === "mailbox" ? { sheet: { ...state.sheet, id } } : {}));
     },
+    async generateResidentLetter(activityId: string) {
+      const world = core.currentWorld();
+      if (!world) return;
+      const response = await core.track(
+        `letter:${activityId}`,
+        () => gameApi.generateResidentLetter(world.worldId, activityId),
+        "편지를 쓰지 못했어요. 활동 결과는 그대로 있으니 다시 시도해 주세요.",
+      );
+      if (!response || core.currentWorld()?.worldId !== world.worldId) return;
+      core.showWorld({
+        worldId: world.worldId,
+        revision: response.revision,
+        updatedAt: new Date().toISOString(),
+        state: response.state,
+      });
+      const id = String(response.result.id);
+      const letter = response.state.mailbox.letters.find((item) => item.id === id);
+      if (letter && !letter.readAt) await core.runCommand(`mail:${id}`, "mail.read", { id });
+      if (core.currentWorld()?.worldId !== world.worldId) return;
+      store.set((state) =>
+        state.sheet?.kind === "mailbox" ? { sheet: { ...state.sheet, archived: Boolean(letter?.archived), id } } : {},
+      );
+    },
     async archiveLetter(id: string, archived: boolean) {
       const response = await core.runCommand(`mail:${id}`, "mail.archive", { id, archived });
       if (response)

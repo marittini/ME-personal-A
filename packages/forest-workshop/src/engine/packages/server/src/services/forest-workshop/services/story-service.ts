@@ -31,15 +31,30 @@ function parseRequest(body: unknown) {
   if (typeof raw.pairId !== "string" || typeof episode !== "number" || ![0, 1, 2].includes(episode)) {
     throw new FwError("invalid_request");
   }
-  return { worldId: assertWorldId(raw.worldId), pairId: raw.pairId, episode };
+  if (
+    raw.connectionId != null &&
+    (typeof raw.connectionId !== "string" || raw.connectionId.length < 1 || raw.connectionId.length > 128)
+  )
+    throw new FwError("invalid_request");
+  return {
+    worldId: assertWorldId(raw.worldId),
+    pairId: raw.pairId,
+    episode,
+    connectionId: (raw.connectionId as string | null | undefined) ?? null,
+  };
 }
 
 export function createStoryService(runtime: HostRuntime, persistence: HostPersistence) {
   const documents = persistence.documents;
   const logger = runtime.logger;
-  const inFlight = new Map<string, Promise<StoryDocument>>();
+  const inFlight = new Map<string, { connectionId: string | null; promise: Promise<StoryDocument> }>();
 
-  async function write(worldId: string, pairId: string, episode: number): Promise<StoryDocument> {
+  async function write(
+    worldId: string,
+    pairId: string,
+    episode: number,
+    connectionId: string | null,
+  ): Promise<StoryDocument> {
     const world = await loadWorld(documents, worldId);
     const state = world.state;
     const view = arcView(state, pairId);
@@ -88,7 +103,7 @@ export function createStoryService(runtime: HostRuntime, persistence: HostPersis
     if (typeof resolve !== "function") throw new FwError("lm_unavailable");
     let model;
     try {
-      model = await resolve.call(runtime.languageModels, null);
+      model = await resolve.call(runtime.languageModels, connectionId);
     } catch {
       throw new FwError("lm_unavailable");
     }
@@ -168,13 +183,19 @@ export function createStoryService(runtime: HostRuntime, persistence: HostPersis
 
   return {
     async generate(body: unknown): Promise<StoryDocument> {
-      const { worldId, pairId, episode } = parseRequest(body);
+      const { worldId, pairId, episode, connectionId } = parseRequest(body);
       // Same world, pair and episode → one model call shared by every waiting request (plan §7.4 중복 키).
       const key = `${worldId}:${pairId}:${episode}:${STORY_PROMPT_VERSION}`;
       const running = inFlight.get(key);
-      if (running) return running;
-      const work = write(worldId, pairId, episode).finally(() => inFlight.delete(key));
-      inFlight.set(key, work);
+      if (running) {
+        if (running.connectionId !== connectionId)
+          throw new FwError("invalid_request", {
+            message: "다른 연결로 이야기를 생성 중이에요. 완료 후 다시 확인해 주세요.",
+          });
+        return running.promise;
+      }
+      const work = write(worldId, pairId, episode, connectionId).finally(() => inFlight.delete(key));
+      inFlight.set(key, { connectionId, promise: work });
       return work;
     },
 

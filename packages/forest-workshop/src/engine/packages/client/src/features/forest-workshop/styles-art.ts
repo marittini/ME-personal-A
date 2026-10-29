@@ -292,4 +292,11 @@ img.emotion-bubble.emotion-art { min-width: 0; width: 2.6em; height: 2.6em; padd
 .resident-pages > span { text-align: center; }
 .starter-list > li:only-child { grid-column: 1 / -1; width: calc(50% - 0.3em); justify-self: center; }
 .resident-grid > .resident-card:only-child { grid-column: 1 / -1; width: calc(50% - 0.3em); justify-self: center; }
+
+@container (max-width: 360px) {
+  .story-layout .top-sub.with-resources .top-row { flex-wrap: nowrap; }
+  .story-layout .top-sub.with-resources .reader-tools { flex: 0 0 auto; margin-left: auto; }
+  .story-layout .reader-tools .chip-button { width: 44px; min-height: 44px; padding: 0; justify-content: center; }
+  .story-layout .reader-tools .chip-button > span { display: none; }
+}
 `;

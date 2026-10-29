@@ -1,3 +1,5 @@
+import { hostApi } from "../../app/host-api";
+import { readModelConnection, writeModelConnection, type GenerationPurpose } from "../../app/preferences";
 // 설정 (board 04-1): 내 공방 (닉네임 + 수정, 현실 날씨 + 변경), 표시 (글자 크기 + 미리보기, 날씨 효과, 자동 읽기),
 // 관리 (주민 그림 관리 · AI 지침 관리 · 기억 관리 · 저장 · 백업), the 72-hour note and the automation footnote.
 // Real now: nickname, text size and 저장 · 백업. The rest keeps its place, locked until its phase.
@@ -243,6 +245,65 @@ function manageRow(icon: keyof typeof MANAGEMENT_ART, label: string, onClick: ()
   ]);
 }
 
+function modelConnections() {
+  const box = h("div", { className: "setting-block" }, [
+    h("strong", { text: "AI 모델 연결" }),
+    h("p", { className: "muted", text: "이 기기의 설정이에요. 기존 이야기는 바뀌지 않아요." }),
+  ]);
+  const status = h("p", { className: "muted", text: "연결 목록을 불러오는 중…", attrs: { role: "status" } });
+  box.append(status);
+  void Promise.resolve()
+    .then(() => hostApi().get<unknown[]>("/connections"))
+    .then((rows) => {
+      if (!Array.isArray(rows)) throw new Error("invalid connections");
+      const connections = rows.flatMap((item) => {
+        if (!item || typeof item !== "object") return [];
+        const row = item as Record<string, unknown>;
+        return typeof row.id === "string" && typeof row.name === "string" && row.id.length <= 128
+          ? [{ id: row.id, name: row.name, model: typeof row.model === "string" ? row.model : "" }]
+          : [];
+      });
+      status.textContent = "선택한 연결을 사용할 수 없으면 해당 생성이 중단돼요.";
+      for (const [purpose, label] of [
+        ["story", "이야기 생성"],
+        ["profile", "주민 설정 제안"],
+        ["letter", "주민 편지"],
+      ] as const) {
+        const current = readModelConnection(purpose);
+        const select = h("select", {
+          className: "input",
+          attrs: { "aria-label": label },
+          on: {
+            change: () => {
+              if (!writeModelConnection(purpose as GenerationPurpose, select.value || null)) {
+                select.value = readModelConnection(purpose) ?? "";
+                status.textContent = "이 기기에 설정을 저장하지 못했어요.";
+              } else status.textContent = "연결 설정을 저장했어요.";
+            },
+          },
+        });
+        select.append(h("option", { text: "엔진 기본 연결", attrs: { value: "" } }));
+        if (current && !connections.some((c) => c.id === current))
+          select.append(h("option", { text: "연결을 찾을 수 없어요 — 다시 선택", attrs: { value: current } }));
+        for (const connection of connections)
+          select.append(
+            h("option", {
+              text: connection.model ? `${connection.name} · ${connection.model}` : connection.name,
+              attrs: { value: connection.id },
+            }),
+          );
+        select.value = current ?? "";
+        box.append(
+          h("label", { className: "setting-row" }, [h("span", { className: "setting-label", text: label }), select]),
+        );
+      }
+    })
+    .catch(() => {
+      status.textContent = "연결 목록을 불러오지 못했어요. 엔진 연결을 확인하고 설정을 다시 열어 주세요.";
+    });
+  return h("details", { className: "setting-block" }, [h("summary", { text: "AI 모델 연결 설정" }), box]);
+}
+
 export function renderSettingsScreen(state: AppState, controller: Controller) {
   const world = state.world?.state === "ready" ? state.world.value : null;
   const section = state.settingsSection ?? "workshop";
@@ -288,6 +349,7 @@ export function renderSettingsScreen(state: AppState, controller: Controller) {
           ? card(
               "관리",
               [
+                modelConnections(),
                 manageRow("portrait", "주민 그림 관리", () => controller.navigate("residents")),
                 manageRow("guidelines", "AI 지침 관리", () => controller.openGuidelines()),
                 manageRow("memory", "기억 관리", () => controller.openMemory()),

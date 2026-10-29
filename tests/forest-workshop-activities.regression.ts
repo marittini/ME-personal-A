@@ -1,4 +1,8 @@
 import assert from "node:assert/strict";
+import { createResidentLetterService } from "../packages/forest-workshop/src/engine/packages/server/src/services/forest-workshop/services/resident-letter-service";
+import { saveResidentLetter } from "../packages/forest-workshop/src/engine/packages/server/src/services/forest-workshop/domain/commands/mailbox";
+import { settleActivities } from "../packages/forest-workshop/src/engine/packages/server/src/services/forest-workshop/domain/activities";
+import { createWorldDocument } from "../packages/forest-workshop/src/engine/packages/server/src/services/forest-workshop/store/world-repository";
 import { FakeHost } from "./support/forest-workshop-fake-host";
 import { createWorldService } from "../packages/forest-workshop/src/engine/packages/server/src/services/forest-workshop/services/world-service";
 import { createCommandService } from "../packages/forest-workshop/src/engine/packages/server/src/services/forest-workshop/services/command-service";
@@ -72,6 +76,131 @@ async function main() {
   await run("activities.cancel", { id: other });
   now += 60 * 60000;
   assert.equal((await settlement.settle(worldId, { active: false })).state.activities.completed.length, 1);
+  const failingLetters = createResidentLetterService(
+    {
+      languageModels: {
+        resolve: async () => ({
+          connectionId: "fail",
+          model: "test",
+          maxContext: 8000,
+          maxOutputTokens: 1000,
+          fitContext: (messages) => ({ messages, estimatedTokensBefore: 10, estimatedTokensAfter: 10, trimmed: false }),
+          chatComplete: async () => {
+            throw new Error("offline");
+          },
+        }),
+      },
+    },
+    host.persistence,
+    commands,
+  );
+  let missingConnection: string | null | undefined;
+  const unavailableLetters = createResidentLetterService(
+    {
+      languageModels: {
+        resolve: async (id) => {
+          missingConnection = id;
+          throw new Error("missing connection");
+        },
+      },
+    },
+    host.persistence,
+    commands,
+  );
+  await assert.rejects(unavailableLetters.generate({ worldId, activityId: id, connectionId: "missing-model" }), {
+    code: "lm_unavailable",
+  });
+  assert.equal(missingConnection, "missing-model");
+  const beforeFailedLetter = (await worlds.get(worldId)).state;
+  await assert.rejects(failingLetters.generate({ worldId, activityId: id }), { code: "generation_failed" });
+  const afterFailedLetter = (await worlds.get(worldId)).state;
+  assert.deepEqual(afterFailedLetter.mailbox, beforeFailedLetter.mailbox);
+  assert.deepEqual(afterFailedLetter.activities, beforeFailedLetter.activities);
+  assert.deepEqual(afterFailedLetter.wallet, beforeFailedLetter.wallet);
+  const filling = Array.from({ length: 197 }, (_, i) => ({
+    ...completed.mailbox.letters[0]!,
+    id: `fill-${i}`,
+    eventId: `fill-${i}`,
+  }));
+  const almostFull = {
+    ...completed,
+    activities: { ...completed.activities, running: started.activities.running },
+    mailbox: { letters: [...completed.mailbox.letters, ...filling] },
+  };
+  assert.equal(almostFull.mailbox.letters.length, 199);
+  const payload = { activityId: id, title: "편지", body: "안녕" };
+  const context = { now: clock().toISOString(), commandId: "capacity-check" };
+  assert.throws(() => saveResidentLetter.apply(almostFull, payload, context), { code: "invalid_payload" });
+  const capacityHost = new FakeHost();
+  await createWorldDocument(capacityHost.persistence.documents, almostFull, clock().toISOString(), "capacity test");
+  let capacityModelCalls = 0;
+  const capacityService = createResidentLetterService(
+    {
+      languageModels: {
+        resolve: async () => {
+          capacityModelCalls++;
+          throw new Error("must not call");
+        },
+      },
+    },
+    capacityHost.persistence,
+    createCommandService(capacityHost.persistence, clock),
+  );
+  await assert.rejects(capacityService.generate({ worldId, activityId: id }), { code: "invalid_payload" });
+  assert.equal(capacityModelCalls, 0, "capacity is checked before a model call");
+  const space = { ...almostFull, mailbox: { letters: almostFull.mailbox.letters.slice(1) } };
+  const saved = saveResidentLetter.apply(space, payload, context).state;
+  assert.equal(saved.mailbox.letters.length, 199);
+  const finished = settleActivities(
+    { ...saved, production: { ...saved.production, simMs: saved.activities.running!.endsSim } },
+    clock().toISOString(),
+  );
+  assert.equal(finished.mailbox.letters.length, 200, "activity can finish using reserved slot");
+  assert.equal(finished.activities.running, null);
+  let calls = 0;
+  let connection: string | null | undefined;
+  const letters = createResidentLetterService(
+    {
+      languageModels: {
+        resolve: async (id) => {
+          connection = id;
+          return {
+            connectionId: id ?? "default",
+            model: "test",
+            maxContext: 8000,
+            maxOutputTokens: 1000,
+            fitContext: (messages) => ({
+              messages,
+              estimatedTokensBefore: 10,
+              estimatedTokensAfter: 10,
+              trimmed: false,
+            }),
+            chatComplete: async () => {
+              calls++;
+              return { content: JSON.stringify({ title: "숲에서 온 편지", body: "공방 주변을 살펴봤어요." }) };
+            },
+          };
+        },
+      },
+    },
+    host.persistence,
+    commands,
+  );
+  const request = { worldId, activityId: id, connectionId: "letter-model" };
+  const [letterOne, letterTwo] = await Promise.all([letters.generate(request), letters.generate(request)]);
+  assert.equal(calls, 1);
+  assert.equal(connection, "letter-model");
+  assert.equal(letterOne.result.id, `resident-${id}`);
+  assert.equal(letterTwo.result.id, letterOne.result.id);
+  assert.equal((await letters.generate(request)).duplicate, true);
+  assert.equal(calls, 1);
+  await assert.rejects(run("mail.saveResidentLetter", { activityId: id, title: "x", body: "x" }), {
+    code: "unknown_command",
+  });
+  assert.equal(
+    (await worlds.get(worldId)).state.mailbox.letters.filter((item) => item.id === `resident-${id}`).length,
+    1,
+  );
   const backups = createBackupService(host.persistence, "test", clock);
   const { backup } = await backups.exportWorld(worldId, async () => {
     throw new Error("no assets");
@@ -86,6 +215,10 @@ async function main() {
     },
   );
   assert.deepEqual(restored.state.activities.completed, again.activities.completed);
+  assert.equal(
+    restored.state.mailbox.letters.find((item) => item.id === `resident-${id}`)?.body,
+    "공방 주변을 살펴봤어요.",
+  );
   console.log("Activity timing, resident conflicts, cancellation, single result/mail and backup: OK");
 }
 void main().catch((error) => {

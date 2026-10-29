@@ -46,6 +46,7 @@ try {
         state: "ready",
         value: {
           state: {
+            activities: { completed: [{ id: "test-activity", mailId: "activity-test-activity" }] },
             mailbox: {
               letters: [
                 {
@@ -80,6 +81,12 @@ try {
         state.sheet.id = undefined;
         render();
       },
+      generateResidentLetter: (id) => {
+        window.requestedActivity = id;
+      },
+      openActivityLetter: (id) => {
+        window.openedLetter = id;
+      },
       closeSheet() {},
     };
     function render() {
@@ -104,6 +111,46 @@ try {
   assert.equal(await page.getByText("보관한 편지가 없어요.").isVisible(), true);
   await page.getByRole("button", { name: "받은 편지", exact: true }).click();
   assert.equal(await page.getByRole("button", { name: /읽음/ }).count(), 1);
+  await page.evaluate(() => {
+    const root = document.querySelector("#host").shadowRoot;
+    const state = {
+      sheet: { kind: "mailbox", id: "activity-test-activity" },
+      world: {
+        state: "ready",
+        value: {
+          state: {
+            activities: { completed: [{ id: "test-activity", mailId: "activity-test-activity" }] },
+            mailbox: {
+              letters: [
+                {
+                  id: "activity-test-activity",
+                  eventId: "activity-test-activity",
+                  sender: "주민",
+                  title: "조사 기록",
+                  body: "활동 결과",
+                  createdAt: "2026-10-29T00:00:00Z",
+                  readAt: null,
+                  archived: false,
+                },
+              ],
+            },
+          },
+        },
+      },
+      busy: {},
+    };
+    const controller = {
+      generateResidentLetter(id) {
+        window.requestedActivity = id;
+      },
+      setMailboxView() {},
+      archiveLetter() {},
+      closeSheet() {},
+    };
+    root.replaceChildren(window.renderMailboxSheet(state, controller));
+  });
+  await page.getByRole("button", { name: "주민 편지 쓰기 · AI 사용" }).click();
+  assert.equal(await page.evaluate(() => window.requestedActivity), "test-activity");
   console.log("Inbox, letter reading, archive and return to inbox: OK");
 } finally {
   await browser?.close();

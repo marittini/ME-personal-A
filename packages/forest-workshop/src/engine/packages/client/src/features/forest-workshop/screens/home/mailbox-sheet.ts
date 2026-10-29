@@ -12,7 +12,13 @@ export function renderMailboxSheet(state: AppState, controller: Controller) {
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt) || a.id.localeCompare(b.id));
   const selected = letters.find((l) => l.id === view.id);
   const page = Math.max(0, Math.min(view.page ?? 0, Math.ceil(letters.length / 4) - 1));
-  const busy = Boolean(state.busy[`mail:${selected?.id}`]);
+  const activity = selected
+    ? world.state.activities?.completed?.find((item) => item.mailId === selected.id)
+    : undefined;
+  const generated = activity
+    ? world.state.mailbox.letters.find((item) => item.id === `resident-${activity.id}`)
+    : undefined;
+  const busy = Boolean(state.busy[`mail:${selected?.id}`] || (activity && state.busy[`letter:${activity.id}`]));
   return sheetDialog("fw-mailbox", "우편함", [
     h(
       "div",
@@ -30,6 +36,16 @@ export function renderMailboxSheet(state: AppState, controller: Controller) {
           h("h3", { text: selected.title }),
           h("p", { className: "muted", text: `${selected.sender} · ${selected.createdAt.slice(0, 10)}` }),
           h("p", { className: "letter-body", text: selected.body }),
+          activity
+            ? button(
+                generated ? "주민 편지 보기" : busy ? "편지를 쓰고 있어요…" : "주민 편지 쓰기 · AI 사용",
+                () =>
+                  generated
+                    ? void controller.openActivityLetter(generated.id)
+                    : void controller.generateResidentLetter(activity.id),
+                { disabled: busy },
+              )
+            : null,
           button(
             selected.archived ? "받은 편지로" : "보관하기",
             () => void controller.archiveLetter(selected.id, !selected.archived),

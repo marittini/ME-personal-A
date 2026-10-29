@@ -106,3 +106,28 @@ export function writeWeatherEffects(value: WeatherEffectsPreference) {
     /* Blocked storage: retain session state. */
   }
 }
+
+export type GenerationPurpose = "story" | "profile" | "letter";
+const MODEL_KEY = "forest-workshop:model-connections";
+export function readModelConnection(purpose: GenerationPurpose): string | null {
+  try {
+    const value: unknown = JSON.parse(localStorage.getItem(MODEL_KEY) ?? "{}")[purpose];
+    return typeof value === "string" && value.length > 0 && value.length <= 128 ? value : null;
+  } catch {
+    return null;
+  }
+}
+export function writeModelConnection(purpose: GenerationPurpose, value: string | null): boolean {
+  try {
+    const current = {
+      story: readModelConnection("story"),
+      profile: readModelConnection("profile"),
+      letter: readModelConnection("letter"),
+    };
+    current[purpose] = value;
+    localStorage.setItem(MODEL_KEY, JSON.stringify(current));
+    return true;
+  } catch {
+    return false;
+  }
+}

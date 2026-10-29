@@ -54,6 +54,7 @@ import type { HostPersistence } from "../host/engine-adapter";
 import type { BackupService } from "../services/backup-service";
 import type { RebuildService } from "../services/rebuild-service";
 import type { SettlementService } from "../services/settlement-service";
+import type { ResidentLetterService } from "../services/resident-letter-service";
 import type { StoryService } from "../services/story-service";
 import type { SourceService } from "../services/source-service";
 import type { StorageService } from "../services/storage-service";
@@ -72,6 +73,7 @@ export interface GameRouteServices {
   rebuild: RebuildService;
   settlement: SettlementService;
   stories: StoryService;
+  residentLetters: ResidentLetterService;
   logger: RouteLogger | undefined;
 }
 
@@ -137,6 +139,10 @@ export function registerGameRoutes(router: FastifyInstance, services: GameRouteS
       ...(await settlement.settle(queryWorldId(request), { active: false })),
       content: CONTENT,
     })),
+  );
+
+  router.post("/mail/generate", async (request: FastifyRequest, reply: FastifyReply) =>
+    respond(reply, logger, "resident letter generate", async () => services.residentLetters.generate(request.body)),
   );
 
   router.post("/stories/generate", async (request: FastifyRequest, reply: FastifyReply) =>

@@ -1,33 +1,17 @@
 ## 0.6.19 — 2026-10-29
 
-- 주민 목록을 두 열의 그림 카드로 복원하고 선택 상세를 같은 화면에 배치했습니다.
-- 홈 등에서 특정 주민을 열면 필터를 해제하고 해당 주민이 있는 페이지로 이동합니다.
-- 관계 카드·주민 등록 단계·그림 관리의 간격과 좁은 화면 정렬을 조정했습니다.
-- 주민 그림·지침·기억·백업 관리 그림 4개를 추가해 설정과 관계·등록 화면에 연결했습니다.
-
-## 0.6.18 — 2026-10-29
-
-- 작업 분야의 아이콘·글자를 가운데 맞추고 카드 여백과 글자 위계를 조정했습니다.
-- 우편 숫자 대신 새 편지가 있을 때만 반짝임 표시를 보여줍니다.
-- 맑음·흐림·비·눈의 홈 배경 연출과 효과 켜기/끄기, 브라우저별 설정 저장을 추가했습니다. 현실 날씨 조회는 아직 제공하지 않습니다.
-- 날씨 그림 4종을 추가하고 동작 줄이기 설정을 반영했습니다.
-
-## 0.6.17 — 2026-10-29
-
-- 사계절 화면 바탕과 홈 배경, 지도·실내·초대 장면 11개를 여백이 넓은 단순한 그림으로 교체했습니다.
-- 간판 글자를 나무판 영역에 고정하고 홈에 현재 계절 문구를 표시합니다.
-- 지면 편집을 44px 아이콘 버튼으로 바꾸고 빈 상태를 중앙 정렬했습니다.
-- 보조 버튼과 선택기에 축소 종이 장식을 반복하던 표현을 정리했습니다.
+- 목업에 맞춰 작업 세부 탭·시설/재고 보호·탐사 지도와 준비를 통합하고 주민 그림 카드와 선택 상세를 같은 화면에 배치했습니다.
+- 사계절 바탕·홈·지도·실내·초대 장면을 단순한 그림으로 교체하고 이야기 삽화·편지지·관리 아이콘을 추가했습니다.
+- 간판 위치, 버튼·입력창·카드의 정렬과 간격, 좁은 화면의 글자 겹침을 보정했습니다.
+- 우편 숫자를 새 편지 반짝임 표시로 바꾸고, 맑음·흐림·비·눈의 수동 배경 연출 및 켜기/끄기를 추가했습니다. 현실 날씨 조회는 아직 제공하지 않습니다.
+- 최신 main의 주민 편지·AI 연결 선택·홈 이동/반응·전체 화면·기록 보관 기능을 유지합니다.
 
 ## 0.6.16 — 2026-10-29
-
-- 공방 작업의 세부 탭을 통합하고 생산 설정·우선순위·적용을 한 화면에 배치했습니다.
-- 홈의 생산물 보고 카드와 이야기 삽화를 복원했습니다.
-- 탐사 지도, 공방 실내, 초대 장면, 이야기 삽화, 편지지 그림을 추가했습니다.
-- 기존 종이 에셋을 보조 버튼·선택기에 활용하고 메뉴 선택 표시를 통일했습니다.
+- Generate one resident letter from a completed activity with a separately selected AI connection. Activity results remain intact when generation fails; a slot is reserved for any activity in progress. Letters count toward the existing 200-mail limit; completed activities retain the 100-record limit. Actual model output and Android use remain unverified.
+- Choose separate Engine connections for story generation and resident-setting suggestions on this browser. Existing stories stay unchanged; unavailable selected connections do not fall back automatically.
+- Home residents begin moving immediately and show a joy mark when touched before opening a profile, with body motion during travel and aligned direction timing. Home refreshes preserve the scene and animation clocks. Supported browsers request game fullscreen from a user gesture. Actual Android fullscreen, motion and final mockup fidelity remain unverified.
 
 ## 0.6.15 — 2026-10-29
-
 - Add illustrated Home, Work, Explore, Residents and Invite navigation icons, with the original accessible labels and fallback icons.
 
 ## 0.6.14 — 2026-10-29

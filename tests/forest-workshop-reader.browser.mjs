@@ -177,6 +177,7 @@ try {
     host.style.width = "320px";
     host.style.height = "640px";
   });
+  await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
   const smallChoiceSize = await fit();
   assert.ok(
     smallChoiceSize.content <= smallChoiceSize.available + 1,

@@ -9,7 +9,7 @@ import { BACKGROUND_ART, SEASONS, UI_ART, cssAssetUrl } from "./app/assets";
 
 const seasonBases = SEASONS.map(
   (season) =>
-    `.season-${season}.art-base:is(.backdrop-forest, .backdrop-wood) .scroll { background: var(--fw-page) ${cssAssetUrl(BACKGROUND_ART[season].base)} center top / cover no-repeat; }`,
+    `.season-${season}.art-base:is(.backdrop-forest, .backdrop-wood) .scroll { background: var(--fw-page) ${cssAssetUrl(BACKGROUND_ART[season].base)} center top / 100% auto no-repeat; }`,
 ).join("\n");
 
 export const ART_STYLES = `
@@ -55,7 +55,7 @@ img.emotion-bubble.emotion-art { min-width: 0; width: 2.6em; height: 2.6em; padd
   width: min(12em, 52vw);
   display: grid;
   place-items: center;
-  padding: 7% 17% 3%;
+  padding: 0;
   border: 0;
   border-radius: 0;
   background: ${cssAssetUrl(UI_ART.titleSign)} center / 100% 100% no-repeat;
@@ -73,13 +73,13 @@ img.emotion-bubble.emotion-art { min-width: 0; width: 2.6em; height: 2.6em; padd
 .art-sign .top-sub .sign { margin-right: 0; }
 .art-sign .top-sub:not(.with-resources) .top-row { justify-content: center; }
 .art-sign .top-sub:not(.with-resources) .back-button { position: absolute; left: 0.75em; }
-.art-sign .top-sub.with-resources .sign { width: min(9.5em, 40vw); font-size: calc(var(--fs) * 1.15); padding-left: 14%; padding-right: 14%; }
+.art-sign .top-sub.with-resources .sign { width: min(9.5em, 40vw); font-size: calc(var(--fs) * 1.15); padding: 0; }
 
 /* Narrow phones: the sign and its title shrink with the bar so the money and the gear keep their row. */
 .art-sign .top { container-type: inline-size; }
 @container (max-width: 380px) {
-  .art-sign .sign-home { width: 40cqi; font-size: 5cqi; padding-left: 13%; padding-right: 13%; }
-  .art-sign .top-sub.with-resources .sign { width: 37cqi; font-size: 4.3cqi; padding-left: 10%; padding-right: 10%; letter-spacing: 0; }
+  .art-sign .sign-home { width: 40cqi; font-size: 5cqi; padding: 0; }
+  .art-sign .top-sub.with-resources .sign { width: 37cqi; font-size: 4.3cqi; padding: 0; letter-spacing: 0; }
 }
 /* Large teal calls to action: primary-button.webp as nine-slice. Small, inline and secondary buttons stay drawn. */
 .art-button .button:not(.secondary):not(.small):not(.is-locked):not(:disabled):not(.pressed):not(.setting-field > .button) {
@@ -147,8 +147,7 @@ img.emotion-bubble.emotion-art { min-width: 0; width: 2.6em; height: 2.6em; padd
 
 /* The original paper and button pictures also dress secondary controls. */
 .art-paper .button.secondary, .art-paper .page-picker-summary {
-  border: 0; border-image: ${cssAssetUrl(UI_ART.paperPanel)} 105 154 fill / 15px 22px / 0 stretch;
-  background: transparent; box-shadow: none; padding: 0.6em 1.1em;
+  border: 1px solid #b49a72; background: var(--fw-surface-3); box-shadow: none; padding: 0.6em 1em;
 }
 .tab.current { background: var(--fw-leaf-soft); box-shadow: inset 0 0 0 1px #769b55; }
 .tab.current .tab-label { border: 0; background: none; color: var(--fw-text); padding: 0; }
@@ -191,4 +190,15 @@ img.emotion-bubble.emotion-art { min-width: 0; width: 2.6em; height: 2.6em; padd
 }
 .letter-detail h3 { margin: 0; font-size: calc(var(--fs) * 1.15); }
 .letter-body { overflow-wrap: anywhere; }
+
+/* Anchor the title to the wooden board, independent of the surrounding row width. */
+.art-sign .sign-title { position: absolute; inset: 36% 18% 22%; display: grid; place-items: center; line-height: 1.1; white-space: nowrap; font-size: min(1em, 4.2cqi); }
+.ground-launch.icon-button { width: 44px; height: 44px; min-height: 44px; min-width: 44px; padding: 0; border-width: 2px; box-shadow: none; bottom: 0.75em; right: 0.75em; }
+.empty, .invite-empty { text-align: center; justify-items: center; }
+.card > .empty, .sheet > .empty { width: 100%; padding: 1em 0; }
+.report-slot.empty { justify-items: center; text-align: center; }
+.report-slot.empty .slot-art { display: none; }
+
+.season-weather { display: flex; align-items: center; gap: 0.4em; }
+.season-badge { display: inline-grid; place-items: center; min-height: 2em; padding: 0.15em 0.65em; border: 1.5px solid var(--ink); border-radius: 999px; background: var(--fw-surface-3); color: var(--fw-text); font-weight: 700; }
 `;

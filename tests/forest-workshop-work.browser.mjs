@@ -134,6 +134,9 @@ try {
       navigate(route) {
         window.destination = route;
       },
+      openGroundEditor() {
+        window.groundOpened = true;
+      },
       openResidents() {},
       changeTarget() {},
       recommendRules() {},
@@ -155,6 +158,20 @@ try {
     };
     window.testRender();
   });
+  const titleBounds = await page.locator(".sign").evaluate((sign) => {
+    const b = sign.getBoundingClientRect(),
+      range = document.createRange();
+    range.selectNodeContents(sign.querySelector(".sign-title"));
+    const t = range.getBoundingClientRect();
+    return {
+      inside:
+        t.left >= b.left + b.width * 0.17 &&
+        t.right <= b.left + b.width * 0.83 &&
+        t.top >= b.top + b.height * 0.33 &&
+        t.bottom <= b.top + b.height * 0.81,
+    };
+  });
+  assert.ok(titleBounds.inside, "title stays within wooden board, clear of ropes and leaves");
   assert.equal(await page.getByText("변경한 설정은 적용 후 사용돼요.", { exact: true }).isVisible(), true);
   await page.getByRole("button", { name: "재고 보호", exact: true }).click();
   assert.equal(await page.evaluate(() => window.facilitiesTab), "protection");
@@ -376,7 +393,10 @@ try {
     root.innerHTML = "";
     const style = document.createElement("style");
     style.textContent = window.fwStyles;
-    root.append(style, window.renderHomeScreen(state, window.testController));
+    window.renderHomePreview = () => {
+      root.replaceChildren(style, window.renderHomeScreen(state, window.testController));
+    };
+    window.renderHomePreview();
   });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.locator("#host").evaluate(async (host) => {
@@ -387,7 +407,30 @@ try {
   await page.screenshot({ path: join(process.env.FW_ART_SCREENSHOTS ?? temp, "home-art-report.png") });
   assert.equal(await page.getByText("+3", { exact: true }).count(), 1);
   await page.getByRole("button", { name: "작업 보고", exact: false }).click();
-  console.log("Unified work, save action, material guidance, 320px large text and home art report: OK");
+  const edit = page.getByRole("button", { name: "지면 편집", exact: true });
+  assert.equal(await edit.innerText(), "");
+  const editBox = await edit.boundingBox();
+  assert.ok(editBox.width >= 44 && editBox.width <= 46 && editBox.height >= 44);
+  await edit.click();
+  assert.equal(await page.evaluate(() => window.groundOpened), true);
+  for (const [season, label] of [
+    ["spring", "봄"],
+    ["summer", "여름"],
+    ["autumn", "가을"],
+    ["winter", "겨울"],
+  ]) {
+    await page.evaluate((season) => {
+      const state = window.testState;
+      state.seasonChoice = season;
+      state.artReady.push(`backgrounds/workshop-base-${season}.webp`);
+      window.renderHomePreview();
+    }, season);
+    await page.locator(".scene img").evaluate((i) => i.decode());
+    assert.equal(await page.getByLabel(`현재 계절 ${label}`, { exact: true }).count(), 1);
+    await page.locator(".scroll").evaluate((n) => (n.scrollTop = 0));
+    await page.screenshot({ path: join(process.env.FW_ART_SCREENSHOTS ?? temp, `home-calm-${season}.png`) });
+  }
+  console.log("Unified work, title bounds, compact ground edit, seasons, large text and home report: OK");
 } finally {
   await browser?.close();
   await rm(temp, { recursive: true, force: true });

@@ -1,30 +1,26 @@
 {
   "schemaVersion": 1,
-  "packVersion": "1.3.0",
+  "packVersion": "1.3.1",
   "packageId": "forest-workshop",
   "referenceCodeCommit": "570a64bc7dfd35436ca97a6c6f081214df970009",
   "notes": [
-    "Existing 87 images preserved; original scene art added for mockup restoration."
+    "92 images; seasonal backgrounds and three scene backgrounds regenerated as simple cartoon art with quiet content areas."
   ],
   "assets": {
     "backgrounds/workshop-base-autumn": {
       "path": "backgrounds/workshop-base-autumn.webp",
-      "width": 1024,
-      "height": 1536,
-      "bytes": 853586,
-      "sha256": "2b5f02f155f932d4d2377d7aecdd093340bc53135c05e7f9c01559f3d421b818",
+      "width": 768,
+      "height": 1152,
+      "bytes": 31680,
+      "sha256": "f66c396937a68e36c13d161bb34d2a8a3e64662343dc850d4c6de8b6f89fab3c",
       "hasTransparency": false,
       "source": {
         "type": "ai-generated",
-        "method": "built-in-imagegen"
+        "method": "built-in-imagegen",
+        "artDirection": "simple-cartoon-low-detail",
+        "original": "exec-a8ab4f9f-cadb-41c0-b56b-0b1d2af7b4d7.png"
       },
       "sourceCanvas": [
-        1024,
-        1536
-      ],
-      "preparedCrop": [
-        0,
-        0,
         1024,
         1536
       ]
@@ -403,24 +399,20 @@
     },
     "backgrounds/workshop-scene-autumn": {
       "path": "backgrounds/workshop-scene-autumn.webp",
-      "width": 1536,
-      "height": 1024,
-      "bytes": 954590,
-      "sha256": "437037f465629b5d2e723d8068b55a8f638026ab200e6b0e3f75359c9c7899d3",
+      "width": 768,
+      "height": 1152,
+      "bytes": 55872,
+      "sha256": "b96e4e79198e1f8ffd3ccbb277530a5634902e4c9eac2d52d3575904c5c04d02",
       "hasTransparency": false,
       "source": {
         "type": "ai-generated",
-        "method": "built-in-imagegen"
+        "method": "built-in-imagegen",
+        "artDirection": "simple-cartoon-low-detail",
+        "original": "exec-0518eea6-208d-46f6-aba5-ed64408a3fa4.png"
       },
       "sourceCanvas": [
-        1536,
-        1024
-      ],
-      "preparedCrop": [
-        0,
-        0,
-        1536,
-        1024
+        1024,
+        1536
       ],
       "residentFeetAnchorsNormalized": [
         {
@@ -832,46 +824,38 @@
     },
     "backgrounds/workshop-base-spring": {
       "path": "backgrounds/workshop-base-spring.webp",
-      "width": 1024,
-      "height": 1536,
-      "bytes": 870034,
-      "sha256": "f66f8251d601a67f59dc8f6a7ec0946b688dcfc06528feca1f8d5a84beaed5b4",
+      "width": 768,
+      "height": 1152,
+      "bytes": 25708,
+      "sha256": "0b17a95d0b2b60db70967d3e9446689060d3949e3a45a50ac8a70af12f6badf4",
       "hasTransparency": false,
       "source": {
         "type": "ai-generated",
-        "method": "built-in-imagegen"
+        "method": "built-in-imagegen",
+        "artDirection": "simple-cartoon-low-detail",
+        "original": "exec-bdcf77c7-fcbb-4c5a-bc23-e24ffe086864.png"
       },
       "sourceCanvas": [
-        1024,
-        1536
-      ],
-      "preparedCrop": [
-        0,
-        0,
         1024,
         1536
       ]
     },
     "backgrounds/workshop-scene-spring": {
       "path": "backgrounds/workshop-scene-spring.webp",
-      "width": 1536,
-      "height": 1024,
-      "bytes": 928250,
-      "sha256": "a5a806ae7275d69f7438c5f2291fcbffbf790e67e4e03f59c62078559b6c501a",
+      "width": 768,
+      "height": 1152,
+      "bytes": 43996,
+      "sha256": "2bcb36b0fb6c1c7352018b63d1ca3e5deea3fbd2623d8b67b206dea3ebef0394",
       "hasTransparency": false,
       "source": {
         "type": "ai-generated",
-        "method": "built-in-imagegen"
+        "method": "built-in-imagegen",
+        "artDirection": "simple-cartoon-low-detail",
+        "original": "exec-c07eb6c4-9995-4348-be7c-8946a737c874.png"
       },
       "sourceCanvas": [
-        1536,
-        1024
-      ],
-      "preparedCrop": [
-        0,
-        0,
-        1536,
-        1024
+        1024,
+        1536
       ],
       "residentFeetAnchorsNormalized": [
         {
@@ -887,46 +871,38 @@
     },
     "backgrounds/workshop-base-summer": {
       "path": "backgrounds/workshop-base-summer.webp",
-      "width": 1024,
-      "height": 1536,
-      "bytes": 839656,
-      "sha256": "78b6db6a45aff499154c937720ae9a8f0a08d5e3c0d3727567d99e664e87d41c",
+      "width": 768,
+      "height": 1152,
+      "bytes": 23330,
+      "sha256": "b105f7be5e22c6cd911eba5f6241fed7c569105caa6eb86dadc982495539bc89",
       "hasTransparency": false,
       "source": {
         "type": "ai-generated",
-        "method": "built-in-imagegen"
+        "method": "built-in-imagegen",
+        "artDirection": "simple-cartoon-low-detail",
+        "original": "exec-dc61afe0-7913-40b7-8520-9e466a8651bd.png"
       },
       "sourceCanvas": [
-        1024,
-        1536
-      ],
-      "preparedCrop": [
-        0,
-        0,
         1024,
         1536
       ]
     },
     "backgrounds/workshop-scene-summer": {
       "path": "backgrounds/workshop-scene-summer.webp",
-      "width": 1536,
-      "height": 1024,
-      "bytes": 953940,
-      "sha256": "2af1c8fb53bd78819a7d75b8207a4cf650c76e99c7e7ec438002105406e4db8e",
+      "width": 768,
+      "height": 1152,
+      "bytes": 47560,
+      "sha256": "c42e68f6b0e201ba05898f4b11dc38ce730e1243189a4ce9d320b1964e2a607d",
       "hasTransparency": false,
       "source": {
         "type": "ai-generated",
-        "method": "built-in-imagegen"
+        "method": "built-in-imagegen",
+        "artDirection": "simple-cartoon-low-detail",
+        "original": "exec-d7a27d77-610b-422d-9711-2fd6ced779be.png"
       },
       "sourceCanvas": [
-        1536,
-        1024
-      ],
-      "preparedCrop": [
-        0,
-        0,
-        1536,
-        1024
+        1024,
+        1536
       ],
       "residentFeetAnchorsNormalized": [
         {
@@ -942,46 +918,38 @@
     },
     "backgrounds/workshop-base-winter": {
       "path": "backgrounds/workshop-base-winter.webp",
-      "width": 1024,
-      "height": 1536,
-      "bytes": 844482,
-      "sha256": "4f7b9a196f26f02983f179468501d510c0289d547f93ffb4d0a85b8ce3b7a114",
+      "width": 768,
+      "height": 1152,
+      "bytes": 23160,
+      "sha256": "5656af88809f2fcdc73c84be046f7ab246f7887308fdca71cedd9c76ac08f74f",
       "hasTransparency": false,
       "source": {
         "type": "ai-generated",
-        "method": "built-in-imagegen"
+        "method": "built-in-imagegen",
+        "artDirection": "simple-cartoon-low-detail",
+        "original": "exec-bcf54520-6ee9-4af5-8df8-23f98c0c8e71.png"
       },
       "sourceCanvas": [
-        1024,
-        1536
-      ],
-      "preparedCrop": [
-        0,
-        0,
         1024,
         1536
       ]
     },
     "backgrounds/workshop-scene-winter": {
       "path": "backgrounds/workshop-scene-winter.webp",
-      "width": 1536,
-      "height": 1024,
-      "bytes": 907100,
-      "sha256": "7b8e9bf24f5c99b743fd5de06502b07958f62910d57c23eabbe1848e37946efe",
+      "width": 768,
+      "height": 1152,
+      "bytes": 48232,
+      "sha256": "8052570e070f3bf3d0877ccef2aaede3b93802f5ee42ba7e9e18581e9f60537a",
       "hasTransparency": false,
       "source": {
         "type": "ai-generated",
-        "method": "built-in-imagegen"
+        "method": "built-in-imagegen",
+        "artDirection": "simple-cartoon-low-detail",
+        "original": "exec-b7e1ceb4-0958-40b1-bb5f-b1ee3d2c39d5.png"
       },
       "sourceCanvas": [
-        1536,
-        1024
-      ],
-      "preparedCrop": [
-        0,
-        0,
-        1536,
-        1024
+        1024,
+        1536
       ],
       "residentFeetAnchorsNormalized": [
         {
@@ -2011,12 +1979,14 @@
       "path": "backgrounds/forest-trail.webp",
       "width": 960,
       "height": 640,
-      "bytes": 261174,
-      "sha256": "528622e76a82e5f83219bee7d0cea769acada33ebda64538cf1d86eb769f32b2",
+      "bytes": 45336,
+      "sha256": "180b95cf16e1f6e8bcd99f0c19a469cb9a38cad7fc35c14d6c3471df87f8aa31",
       "hasTransparency": false,
       "source": {
         "type": "ai-generated",
-        "method": "built-in-imagegen"
+        "method": "built-in-imagegen",
+        "artDirection": "simple-cartoon-low-detail",
+        "original": "exec-ed716c62-0ad6-45b3-b8bd-cfbc351460af.png"
       },
       "sourceCanvas": [
         1536,
@@ -2025,14 +1995,16 @@
     },
     "backgrounds/workshop-interior": {
       "path": "backgrounds/workshop-interior.webp",
-      "width": 1200,
-      "height": 800,
-      "bytes": 234092,
-      "sha256": "7e0b5c3950c489214512c27148e18858b3f3c776eb8a8ac0111d973897e81c63",
+      "width": 960,
+      "height": 640,
+      "bytes": 23776,
+      "sha256": "7d7af619d366430f92b2e90c35381f45c8b289a67327be855563404e266bcdae",
       "hasTransparency": false,
       "source": {
         "type": "ai-generated",
-        "method": "built-in-imagegen"
+        "method": "built-in-imagegen",
+        "artDirection": "simple-cartoon-low-detail",
+        "original": "exec-3954bdc8-1155-4821-a2e4-6b79f3898f82.png"
       },
       "sourceCanvas": [
         1536,
@@ -2043,12 +2015,14 @@
       "path": "ui/invite-scene.webp",
       "width": 960,
       "height": 640,
-      "bytes": 142950,
-      "sha256": "bed381ae7b8d3a0540044b2388776762a161a47f08a086352f5ecd2c9b6a84f8",
+      "bytes": 30244,
+      "sha256": "5cf2cabc28fcdf26526f46b7e2e7ef4934cabfc161b63936f760c68ec491a622",
       "hasTransparency": false,
       "source": {
         "type": "ai-generated",
-        "method": "built-in-imagegen"
+        "method": "built-in-imagegen",
+        "artDirection": "simple-cartoon-low-detail",
+        "original": "exec-3e8aed7c-aea8-43a2-a057-672f82621b9b.png"
       },
       "sourceCanvas": [
         1536,

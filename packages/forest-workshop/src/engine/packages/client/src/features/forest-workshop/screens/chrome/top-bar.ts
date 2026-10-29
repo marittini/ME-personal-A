@@ -3,6 +3,8 @@
 //           and the mail button (board 01-1)
 //   sub   — a back button, the screen's sign, and (on 작업 · 시설과 창고) gold · tickets · gear (boards 01-2/3, 04, 05);
 //           주민 and 관계 add a ribbon under the sign (board 03)
+import { currentSeason } from "../../app/controller";
+import { SEASON_LABELS } from "../../app/season";
 import type { AppState, Controller, Route } from "../../app/controller";
 import { h, type Child } from "../../app/dom";
 import { featureButton } from "./locked";
@@ -67,15 +69,24 @@ export function renderTopBar(state: AppState, controller: Controller, bar: TopBa
   if (bar.kind === "home") {
     return h("header", { className: "top top-home" }, [
       h("div", { className: "top-row" }, [
-        h("h1", { className: "sign sign-home", text: "숲결 공방", attrs: { id: "fw-screen-title" } }),
+        h("h1", { className: "sign sign-home", attrs: { id: "fw-screen-title" } }, [
+          h("span", { className: "sign-title", text: "숲결 공방" }),
+        ]),
         resources(state, controller),
       ]),
       h("div", { className: "top-row second" }, [
-        featureButton(controller, "weather", {
-          className: "chip-button weather",
-          label: "현실 날씨",
-          children: [ICONS.weather(), h("span", { text: "날씨" })],
-        }),
+        h("div", { className: "season-weather" }, [
+          h("span", {
+            className: "season-badge",
+            text: SEASON_LABELS[currentSeason(state)],
+            attrs: { "aria-label": `현재 계절 ${SEASON_LABELS[currentSeason(state)]}` },
+          }),
+          featureButton(controller, "weather", {
+            className: "chip-button weather",
+            label: "현실 날씨",
+            children: [ICONS.weather(), h("span", { text: "날씨" })],
+          }),
+        ]),
         h(
           "button",
           {
@@ -115,7 +126,9 @@ export function renderTopBar(state: AppState, controller: Controller, bar: TopBa
             [ICONS.back()],
           )
         : h("span", { className: "back-spacer", attrs: { "aria-hidden": "true" } }),
-      h("h1", { className: "sign", text: bar.title, attrs: { id: "fw-screen-title" } }),
+      h("h1", { className: "sign", attrs: { id: "fw-screen-title" } }, [
+        h("span", { className: "sign-title", text: bar.title }),
+      ]),
       bar.resources ? resources(state, controller) : (bar.counters ?? null),
     ]),
     bar.subtitle ? h("p", { className: "ribbon", text: bar.subtitle }) : null,

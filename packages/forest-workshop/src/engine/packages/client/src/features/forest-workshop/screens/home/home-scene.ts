@@ -132,12 +132,15 @@ export function renderHomeScene(state: AppState, controller: Controller) {
       editingGround(state)
         ? groundOverlay(state, controller, cast)
         : world
-          ? h("button", {
-              className: "ground-launch outline-button",
-              text: "지면 편집",
-              attrs: { type: "button" },
-              on: { click: () => controller.openGroundEditor() },
-            })
+          ? h(
+              "button",
+              {
+                className: "ground-launch icon-button",
+                attrs: { type: "button", "aria-label": "지면 편집", title: "지면 편집" },
+                on: { click: () => controller.openGroundEditor() },
+              },
+              [ICONS.pencil("icon")],
+            )
           : null,
       // With a resident standing here the empty place speaks for itself; the caption would sit under their name.
       residents.length === 0

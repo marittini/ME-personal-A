@@ -10,7 +10,7 @@
   },
   "id": "forest-workshop",
   "name": "Forest Workshop",
-  "version": "0.6.16",
+  "version": "0.6.17",
   "description": "A portrait cozy workshop game in development. This 0.6 build adds story expeditions: each pair of residents travels through three-episode arcs on the explore screen, and each scene is written by your language model when you first read it, from the plan and only the memories its residents share, with one answer you can give a resident. What residents learn is recorded per resident. On top of the complete workshop: five facilities with 34 materials and goods, rules or counted queues, residents whose field and talent come from their own character text, auto-selling, invitations with tickets from daily deliveries, and backups that carry pictures and scenes; letters, memory management and AI guidelines follow. Install it, restart Marinara Engine when prompted, then open Home → 숲결 공방.",
   "engine": {
     "min": "2.5.1",
@@ -137,23 +137,23 @@
     },
     {
       "path": "server.mjs",
-      "sha256": "ea9e197297c4e92302260aeb17f99a6cf777f7eedec9bfda8a4c3ee7395a436d",
+      "sha256": "257d0effad60482730c0c3f8c8866ddf380e3333e5f71ee460c20aabac16bdee",
       "bytes": 147681
     },
     {
       "path": "client.js",
-      "sha256": "14a3b721c1b42ad72c945de37f24658cfd4644489a02157e8fed024b6bd26ba6",
-      "bytes": 328295
+      "sha256": "926a1d5cf178e78a2cbb97068631a6a70f9ea754d15164a4c9caf05dbd211726",
+      "bytes": 329422
     },
     {
       "path": "assets/asset-manifest.json",
-      "sha256": "c20a0780a26f2c23b8657b0069d6569456758f2fdcf644f715452c927bbcbb77",
-      "bytes": 50478
+      "sha256": "b573a2393e370d5ede4c7e8e0741d903c0756ea2b0b75ca27a94f06e958ce8e2",
+      "bytes": 51185
     },
     {
       "path": "assets/backgrounds/workshop-base-autumn.webp",
-      "sha256": "2b5f02f155f932d4d2377d7aecdd093340bc53135c05e7f9c01559f3d421b818",
-      "bytes": 853586
+      "sha256": "f66c396937a68e36c13d161bb34d2a8a3e64662343dc850d4c6de8b6f89fab3c",
+      "bytes": 31680
     },
     {
       "path": "assets/facilities/gather-yard.webp",
@@ -232,8 +232,8 @@
     },
     {
       "path": "assets/backgrounds/workshop-scene-autumn.webp",
-      "sha256": "437037f465629b5d2e723d8068b55a8f638026ab200e6b0e3f75359c9c7899d3",
-      "bytes": 954590
+      "sha256": "b96e4e79198e1f8ffd3ccbb277530a5634902e4c9eac2d52d3575904c5c04d02",
+      "bytes": 55872
     },
     {
       "path": "assets/items/wild-berry.webp",
@@ -327,33 +327,33 @@
     },
     {
       "path": "assets/backgrounds/workshop-base-spring.webp",
-      "sha256": "f66f8251d601a67f59dc8f6a7ec0946b688dcfc06528feca1f8d5a84beaed5b4",
-      "bytes": 870034
+      "sha256": "0b17a95d0b2b60db70967d3e9446689060d3949e3a45a50ac8a70af12f6badf4",
+      "bytes": 25708
     },
     {
       "path": "assets/backgrounds/workshop-scene-spring.webp",
-      "sha256": "a5a806ae7275d69f7438c5f2291fcbffbf790e67e4e03f59c62078559b6c501a",
-      "bytes": 928250
+      "sha256": "2bcb36b0fb6c1c7352018b63d1ca3e5deea3fbd2623d8b67b206dea3ebef0394",
+      "bytes": 43996
     },
     {
       "path": "assets/backgrounds/workshop-base-summer.webp",
-      "sha256": "78b6db6a45aff499154c937720ae9a8f0a08d5e3c0d3727567d99e664e87d41c",
-      "bytes": 839656
+      "sha256": "b105f7be5e22c6cd911eba5f6241fed7c569105caa6eb86dadc982495539bc89",
+      "bytes": 23330
     },
     {
       "path": "assets/backgrounds/workshop-scene-summer.webp",
-      "sha256": "2af1c8fb53bd78819a7d75b8207a4cf650c76e99c7e7ec438002105406e4db8e",
-      "bytes": 953940
+      "sha256": "c42e68f6b0e201ba05898f4b11dc38ce730e1243189a4ce9d320b1964e2a607d",
+      "bytes": 47560
     },
     {
       "path": "assets/backgrounds/workshop-base-winter.webp",
-      "sha256": "4f7b9a196f26f02983f179468501d510c0289d547f93ffb4d0a85b8ce3b7a114",
-      "bytes": 844482
+      "sha256": "5656af88809f2fcdc73c84be046f7ab246f7887308fdca71cedd9c76ac08f74f",
+      "bytes": 23160
     },
     {
       "path": "assets/backgrounds/workshop-scene-winter.webp",
-      "sha256": "7b8e9bf24f5c99b743fd5de06502b07958f62910d57c23eabbe1848e37946efe",
-      "bytes": 907100
+      "sha256": "8052570e070f3bf3d0877ccef2aaede3b93802f5ee42ba7e9e18581e9f60537a",
+      "bytes": 48232
     },
     {
       "path": "assets/items/herb.webp",
@@ -587,18 +587,18 @@
     },
     {
       "path": "assets/backgrounds/forest-trail.webp",
-      "sha256": "528622e76a82e5f83219bee7d0cea769acada33ebda64538cf1d86eb769f32b2",
-      "bytes": 261174
+      "sha256": "180b95cf16e1f6e8bcd99f0c19a469cb9a38cad7fc35c14d6c3471df87f8aa31",
+      "bytes": 45336
     },
     {
       "path": "assets/backgrounds/workshop-interior.webp",
-      "sha256": "7e0b5c3950c489214512c27148e18858b3f3c776eb8a8ac0111d973897e81c63",
-      "bytes": 234092
+      "sha256": "7d7af619d366430f92b2e90c35381f45c8b289a67327be855563404e266bcdae",
+      "bytes": 23776
     },
     {
       "path": "assets/ui/invite-scene.webp",
-      "sha256": "bed381ae7b8d3a0540044b2388776762a161a47f08a086352f5ecd2c9b6a84f8",
-      "bytes": 142950
+      "sha256": "5cf2cabc28fcdf26526f46b7e2e7ef4934cabfc161b63936f760c68ec491a622",
+      "bytes": 30244
     },
     {
       "path": "assets/ui/story-vignette.webp",

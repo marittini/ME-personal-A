@@ -12,6 +12,10 @@ import { gameApi } from "./api";
 import { previewBackup, type BackupSummary } from "./backup-preview";
 import { lockedMessage, type LockedFeature } from "./features";
 import {
+  readAutoReading,
+  normalizeAutoReading,
+  writeAutoReading,
+  type AutoReadingPreference,
   clampFontSize,
   readFontSize,
   readSeasonChoice,
@@ -81,6 +85,7 @@ export interface AppState {
   restore: RestoreSelection | null;
   /** 설정 → 표시 → 글자 크기, per viewer. */
   fontSize: number;
+  autoReading: AutoReadingPreference;
   /** 설정 → 표시 → 계절: follow today's date, or one season (per viewer, visual only). */
   seasonChoice: StoredSeasonChoice;
   /** Pack files that loaded (app/assets.ts probeAsset); the frame turns their CSS art on. */
@@ -186,6 +191,7 @@ export function createController() {
     notice: null,
     restore: null,
     fontSize: readFontSize(),
+    autoReading: readAutoReading(),
     seasonChoice: readSeasonChoice(),
     artReady: [],
     facilitiesTab: "facilities",
@@ -442,6 +448,12 @@ export function createController() {
       writeSeasonChoice(choice);
       store.set({ seasonChoice: choice });
       loadFrameArt();
+    },
+
+    setAutoReading(value: AutoReadingPreference) {
+      const autoReading = normalizeAutoReading(value);
+      writeAutoReading(autoReading);
+      store.set({ autoReading });
     },
 
     setFontSize(value: number) {

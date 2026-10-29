@@ -24,6 +24,7 @@ import { registerGameRoutes } from "./http/game-routes";
 import { PACKAGE_VERSION } from "./package-info";
 import { createBackupService } from "./services/backup-service";
 import { createCommandService } from "./services/command-service";
+import { createResidentLetterService } from "./services/resident-letter-service";
 import { createStoryService } from "./services/story-service";
 import { findStory } from "./store/story-repository";
 import { createRebuildService } from "./services/rebuild-service";
@@ -55,6 +56,7 @@ export async function activate({ app, api }: ActivationContext) {
     ...sources.host,
     readStory: (worldId: string, storyId: string) => findStory(persistence.documents, worldId, storyId),
   };
+  const commands = createCommandService(persistence, undefined, commandHost);
   const services = {
     app,
     persistence,
@@ -62,7 +64,8 @@ export async function activate({ app, api }: ActivationContext) {
     rebuild: createRebuildService(runtime, sources),
     worlds: createWorldService(persistence),
     settlement: createSettlementService(persistence),
-    commands: createCommandService(persistence, undefined, commandHost),
+    commands,
+    residentLetters: createResidentLetterService(runtime, persistence, commands),
     stories,
     backups: createBackupService(persistence, PACKAGE_VERSION),
     storage: createStorageService(persistence),

@@ -39,3 +39,38 @@ export const archiveMail = defineCommand({
     };
   },
 });
+
+// Only the generation service can submit model output; clients cannot create arbitrary mail.
+export const saveResidentLetter = defineCommand({
+  type: "mail.saveResidentLetter",
+  internal: true,
+  requiresFreshView: true,
+  payloadSchema: z
+    .object({
+      activityId: z.string().uuid(),
+      title: z.string().trim().min(1).max(80),
+      body: z.string().trim().min(1).max(1000),
+    })
+    .strict(),
+  apply(state, payload, context) {
+    const activity = state.activities.completed.find((item) => item.id === payload.activityId);
+    if (!activity) throw new FwError("invalid_payload", { message: "완료된 활동을 찾지 못했어요." });
+    const id = `resident-${activity.id}`;
+    if (state.mailbox.letters.some((letter) => letter.id === id)) return { state, result: { id } };
+    if (state.mailbox.letters.length >= 200)
+      throw new FwError("invalid_payload", { message: "우편 저장 한도에 도달했어요." });
+    const resident = state.residents[activity.residentId];
+    if (!resident) throw new FwError("invalid_payload", { message: "편지를 보낸 주민을 찾지 못했어요." });
+    const letter = {
+      id,
+      eventId: id,
+      sender: resident.displayName,
+      title: payload.title,
+      body: payload.body,
+      createdAt: context.now,
+      readAt: null,
+      archived: false,
+    };
+    return { state: { ...state, mailbox: { letters: [letter, ...state.mailbox.letters] } }, result: { id } };
+  },
+});

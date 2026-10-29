@@ -238,6 +238,7 @@ function modelConnections() {
       for (const [purpose, label] of [
         ["story", "이야기 생성"],
         ["profile", "주민 설정 제안"],
+        ["letter", "주민 편지"],
       ] as const) {
         const current = readModelConnection(purpose);
         const select = h("select", {

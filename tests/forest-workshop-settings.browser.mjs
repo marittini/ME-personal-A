@@ -111,9 +111,11 @@ try {
   await page.getByText("AI 모델 연결 설정", { exact: true }).click();
   await page.getByLabel("이야기 생성").selectOption("story-c");
   await page.getByLabel("주민 설정 제안").selectOption("profile-c");
+  await page.getByLabel("주민 편지").selectOption("story-c");
   assert.deepEqual(await page.evaluate(() => JSON.parse(localStorage.getItem("forest-workshop:model-connections"))), {
     story: "story-c",
     profile: "profile-c",
+    letter: "story-c",
   });
   await page.getByRole("button", { name: "내 공방", exact: true }).click();
   await page.getByLabel("닉네임").fill("새 이름");

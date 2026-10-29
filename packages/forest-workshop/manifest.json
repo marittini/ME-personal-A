@@ -132,13 +132,13 @@
     },
     {
       "path": "server.mjs",
-      "sha256": "6614e2775b499bfb3f9c1ab7a8412f32be5acfd7b24f581f87d6791d014b3e6a",
-      "bytes": 148316
+      "sha256": "33cedc70459c967f63f947eec67b3ce7ec4199be0f09247778af1a6fb7417436",
+      "bytes": 152929
     },
     {
       "path": "client.js",
-      "sha256": "e26733c5c78001bcd21eb8b0ab0603569beb1249c37ac059cc335ea225136117",
-      "bytes": 330795
+      "sha256": "d4ecbfd4ff65db3b550db93cf210cc1b3ebac61f89156b1688c752c626f7cbf6",
+      "bytes": 332141
     },
     {
       "path": "assets/asset-manifest.json",

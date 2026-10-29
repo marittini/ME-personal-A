@@ -46,6 +46,12 @@ export const gameApi = {
       episode,
       connectionId: readModelConnection("story"),
     }),
+  generateResidentLetter: (worldId: string, activityId: string) =>
+    hostApi().post<CommandResponse>(`${ROOT}/mail/generate`, {
+      worldId,
+      activityId,
+      connectionId: readModelConnection("letter"),
+    }),
   getDeliveries: (worldId: string) =>
     hostApi().get<DeliveryList>(`${ROOT}/deliveries?worldId=${encodeURIComponent(worldId)}`),
   heartbeat: (worldId: string) => hostApi().post<WorldView>(`${ROOT}/heartbeat`, { worldId }),

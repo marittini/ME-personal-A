@@ -1,5 +1,6 @@
 ## 0.6.16 — 2026-10-29
-- Choose separate Engine connections for story generation and resident-setting suggestions on this browser. Existing stories stay unchanged; unavailable selected connections do not fall back automatically. Generated resident letters are still in development.
+- Generate one resident letter from a completed activity with a separately selected AI connection. Activity results remain intact when generation fails. Letters count toward the existing 200-mail limit; completed activities retain the 100-record limit. Actual model output and Android use remain unverified.
+- Choose separate Engine connections for story generation and resident-setting suggestions on this browser. Existing stories stay unchanged; unavailable selected connections do not fall back automatically.
 - Home residents begin moving immediately and show a joy mark when touched before opening a profile, with body motion during travel and aligned direction timing. Home refreshes preserve the scene and animation clocks. Supported browsers request game fullscreen from a user gesture. Actual Android fullscreen, motion and final mockup fidelity remain unverified.
 
 ## 0.6.15 — 2026-10-29

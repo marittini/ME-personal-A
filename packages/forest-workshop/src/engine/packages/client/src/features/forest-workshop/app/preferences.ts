@@ -76,7 +76,7 @@ export function writeAutoReading(value: AutoReadingPreference) {
   }
 }
 
-export type GenerationPurpose = "story" | "profile";
+export type GenerationPurpose = "story" | "profile" | "letter";
 const MODEL_KEY = "forest-workshop:model-connections";
 export function readModelConnection(purpose: GenerationPurpose): string | null {
   try {
@@ -88,7 +88,11 @@ export function readModelConnection(purpose: GenerationPurpose): string | null {
 }
 export function writeModelConnection(purpose: GenerationPurpose, value: string | null): boolean {
   try {
-    const current = { story: readModelConnection("story"), profile: readModelConnection("profile") };
+    const current = {
+      story: readModelConnection("story"),
+      profile: readModelConnection("profile"),
+      letter: readModelConnection("letter"),
+    };
     current[purpose] = value;
     localStorage.setItem(MODEL_KEY, JSON.stringify(current));
     return true;

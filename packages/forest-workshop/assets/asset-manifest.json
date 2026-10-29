@@ -1,12 +1,11 @@
 {
   "schemaVersion": 1,
-  "packVersion": "1.1.0",
+  "packVersion": "1.2.0",
   "packageId": "forest-workshop",
   "referenceCodeCommit": "570a64bc7dfd35436ca97a6c6f081214df970009",
   "notes": [
-    "Complete 82-image pack: previous 57 preserved byte-for-byte plus 25 new images.",
-    "All images are individually AI-generated; no free asset packs.",
-    "Art only; gameplay and gift systems still require implementation."
+    "87-image pack: previous 82 preserved byte-for-byte plus five navigation icons.",
+    "All images are individually AI-generated; no free asset packs."
   ],
   "assets": {
     "backgrounds/workshop-base-autumn": {
@@ -1898,6 +1897,116 @@
         1206,
         1188
       ]
+    },
+    "ui/nav-home": {
+      "path": "ui/nav-home.webp",
+      "width": 256,
+      "height": 256,
+      "bytes": 15068,
+      "sha256": "34d3c75dffbfc0b5f022adc8fdc32d0b0b2ca258f39381e2351b934cca29c52c",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        0,
+        0,
+        1254,
+        1254
+      ]
+    },
+    "ui/nav-work": {
+      "path": "ui/nav-work.webp",
+      "width": 256,
+      "height": 256,
+      "bytes": 12958,
+      "sha256": "bc64a2d9992d275fc457b87d1eb6ce7357b7f0224c56f71a28787d875da7d55c",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        0,
+        0,
+        1254,
+        1254
+      ]
+    },
+    "ui/nav-explore": {
+      "path": "ui/nav-explore.webp",
+      "width": 256,
+      "height": 256,
+      "bytes": 19084,
+      "sha256": "a9d5c1d62be7b0b89658d4d3f10b66520d4077a1d76467014692cfaa6ffb5313",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        0,
+        0,
+        1254,
+        1254
+      ]
+    },
+    "ui/nav-residents": {
+      "path": "ui/nav-residents.webp",
+      "width": 256,
+      "height": 256,
+      "bytes": 14356,
+      "sha256": "854e8ddbfa59c8eaff279098fdc7880350c87226806c32d5d7c499e122571da9",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1536,
+        1024
+      ],
+      "preparedCrop": [
+        0,
+        0,
+        1536,
+        1024
+      ]
+    },
+    "ui/nav-invite": {
+      "path": "ui/nav-invite.webp",
+      "width": 256,
+      "height": 256,
+      "bytes": 12700,
+      "sha256": "35ea01dfd960bde4bde8cfc6ba6971f23edadd486f89ed34ec1c4b0f810a4f2f",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ],
+      "preparedCrop": [
+        0,
+        0,
+        1254,
+        1254
+      ]
     }
   },
   "itemMap": {
@@ -1990,6 +2099,11 @@
     "backgrounds/workshop-scene": "backgrounds/workshop-scene-autumn"
   },
   "uiMap": {
-    "gift": "ui/gift"
+    "gift": "ui/gift",
+    "nav-home": "ui/nav-home",
+    "nav-work": "ui/nav-work",
+    "nav-explore": "ui/nav-explore",
+    "nav-residents": "ui/nav-residents",
+    "nav-invite": "ui/nav-invite"
   }
 }

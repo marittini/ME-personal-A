@@ -82,5 +82,10 @@
   "assets/items/wind-chime.webp",
   "assets/items/apple-gift.webp",
   "assets/items/picnic-wrap.webp",
-  "assets/ui/gift.webp"
+  "assets/ui/gift.webp",
+  "assets/ui/nav-home.webp",
+  "assets/ui/nav-work.webp",
+  "assets/ui/nav-explore.webp",
+  "assets/ui/nav-residents.webp",
+  "assets/ui/nav-invite.webp"
 ]

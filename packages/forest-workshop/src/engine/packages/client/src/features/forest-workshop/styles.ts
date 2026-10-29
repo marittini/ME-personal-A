@@ -393,6 +393,7 @@ button.counter { cursor: pointer; }
 .tab + .tab::before { content: ""; position: absolute; left: -1px; top: 18%; bottom: 18%; border-left: var(--line-in) solid #d8bf93; }
 .tab-icon { position: relative; display: inline-flex; color: var(--ink); }
 .tab-glyph { width: 1.95em; height: 1.95em; stroke-width: 2.4; }
+.tab-art { display: block; width: 2.3em; height: 2.3em; object-fit: contain; }
 .tab-icon .lock-tag { position: absolute; top: -0.3em; right: -1.2em; }
 .tab-label { font-size: calc(var(--fs) * 0.85); font-weight: 900; }
 .tab.current .tab-label { padding: 0 0.9em; border-radius: 0.55em; border: var(--line-in) solid var(--ink); background: #5f9a4a; color: #fff; }

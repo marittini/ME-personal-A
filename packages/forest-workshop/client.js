@@ -1570,7 +1570,8 @@ img.emotion-bubble.emotion-art { min-width: 0; width: 2.6em; height: 2.6em; padd
 .resident-spot .figure-body { transform-origin:50% 100%; animation:fw-footsteps 18s linear infinite; }
 .resident-spot.reacting, .resident-spot.reacting .figure { animation-play-state:paused; }
 .resident-spot.reacting .figure-body { animation:fw-greeting 400ms ease-out both; }
-.resident-reaction { position:absolute; z-index:5; bottom:85%; left:50%; transform:translateX(-50%); display:grid; justify-items:center; gap:.25em; padding:.4em; border:2px solid var(--ink); border-radius:1em; background:var(--fw-surface); }
+.resident-reaction { position:absolute; z-index:5; bottom:55%; left:65%; display:grid; justify-items:center; gap:.25em; padding:.4em; border:2px solid var(--ink); border-radius:1em; background:var(--fw-surface); }
+.resident-spot.right .resident-reaction { left:auto; right:65%; }
 .resident-reaction[hidden] { display:none; }
 .resident-greeting { font-size:1.4em; color:var(--fw-accent); }
 .resident-reaction button { min-width:64px; min-height:48px; white-space:nowrap; }

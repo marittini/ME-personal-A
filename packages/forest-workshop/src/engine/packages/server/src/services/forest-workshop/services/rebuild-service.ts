@@ -19,6 +19,12 @@ export function createRebuildService(runtime: HostRuntime, sources: SourceServic
     async suggest(body: unknown) {
       const raw = (body && typeof body === "object" ? body : {}) as Record<string, unknown>;
       const worldId = assertWorldId(raw.worldId);
+      if (
+        raw.connectionId != null &&
+        (typeof raw.connectionId !== "string" || raw.connectionId.length < 1 || raw.connectionId.length > 128)
+      )
+        throw new FwError("invalid_request");
+      const connectionId = (raw.connectionId as string | null | undefined) ?? null;
       const source = (raw.source ?? {}) as Record<string, unknown>;
       const kind = source.kind as ResidentKind;
       const preview = await sources.preview(worldId, kind, source.id);
@@ -27,7 +33,7 @@ export function createRebuildService(runtime: HostRuntime, sources: SourceServic
       if (typeof resolve !== "function") throw new FwError("lm_unavailable");
       let model;
       try {
-        model = await resolve.call(runtime.languageModels, null);
+        model = await resolve.call(runtime.languageModels, connectionId);
       } catch {
         throw new FwError("lm_unavailable");
       }

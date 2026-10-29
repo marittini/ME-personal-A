@@ -27,7 +27,11 @@ try {
         name: "host",
         setup(b) {
           b.onResolve({ filter: /^marinara:host$/ }, () => ({ path: "host", namespace: "test" }));
-          b.onLoad({ filter: /.*/, namespace: "test" }, () => ({ contents: "export const host = {};", loader: "js" }));
+          b.onLoad({ filter: /.*/, namespace: "test" }, () => ({
+            contents:
+              'export const host = { api: { api: { get: async () => [{id: "story-c", name: "글 모델", model: "A"}, {id: "profile-c", name: "설정 모델", model: "B"}] } } };',
+            loader: "js",
+          }));
         },
       },
     ],
@@ -39,9 +43,13 @@ try {
     args: ["--no-sandbox"],
   });
   const page = await browser.newPage({ viewport: { width: 390, height: 740 }, isMobile: true, hasTouch: true });
-  await page.setContent(
-    '<meta name="viewport" content="width=device-width, initial-scale=1"><div id="host" style="height:740px;width:390px"></div>',
+  await page.route("http://forest-test.local/", (route) =>
+    route.fulfill({
+      contentType: "text/html",
+      body: '<meta name="viewport" content="width=device-width, initial-scale=1"><div id="host" style="height:740px;width:390px"></div>',
+    }),
   );
+  await page.goto("http://forest-test.local/");
   await page.addScriptTag({ content: await readFile(bundle, "utf8") });
   await page.evaluate(() => {
     const root = document.querySelector("#host").attachShadow({ mode: "open" });
@@ -99,6 +107,15 @@ try {
     };
     window.testRender();
   });
+  await page.getByRole("button", { name: "관리", exact: true }).click();
+  await page.getByText("AI 모델 연결 설정", { exact: true }).click();
+  await page.getByLabel("이야기 생성").selectOption("story-c");
+  await page.getByLabel("주민 설정 제안").selectOption("profile-c");
+  assert.deepEqual(await page.evaluate(() => JSON.parse(localStorage.getItem("forest-workshop:model-connections"))), {
+    story: "story-c",
+    profile: "profile-c",
+  });
+  await page.getByRole("button", { name: "내 공방", exact: true }).click();
   await page.getByLabel("닉네임").fill("새 이름");
   await page.getByRole("button", { name: "표시", exact: true }).click();
   assert.equal(await page.getByText("글자 크기").isVisible(), true);

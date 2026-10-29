@@ -1,3 +1,6 @@
+## 0.6.15 — 2026-10-29
+- Home residents respond to touch before opening a profile, with body motion during travel and aligned direction timing. Home refreshes preserve the scene and animation clocks. Supported browsers request game fullscreen from a user gesture. Actual Android fullscreen, motion and final mockup fidelity remain unverified.
+
 ## 0.6.14 — 2026-10-29
 - Fit story text to the dialogue area, clarify resident registration and production waiting states, show item pictures in reports and the starter kit, open activity letters directly, and use game-style page selectors.
 

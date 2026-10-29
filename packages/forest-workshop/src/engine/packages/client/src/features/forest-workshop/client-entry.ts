@@ -32,7 +32,7 @@ import { PRODUCTION_STYLES } from "./styles-production";
 import { INVITE_STYLES } from "./styles-invite";
 import { STORY_STYLES } from "./styles-story";
 import { ART_STYLES } from "./styles-art";
-import { RESIDENT_STYLES } from "./styles-residents";
+import { RESIDENT_STYLES, HOME_REACTION_STYLES } from "./styles-residents";
 
 const TAG = "marinara-capability-forest-workshop";
 
@@ -52,6 +52,13 @@ class ForestWorkshopElement extends HTMLElement {
     if (document.hidden) this.controller?.pauseAutoReading();
     void this.controller?.heartbeat();
   };
+  private readonly onFullscreenGesture = () => {
+    // Browsers require a user gesture; fullscreen the game itself to exclude Engine chrome.
+    if (document.fullscreenElement || !document.fullscreenEnabled) return;
+    void this.requestFullscreen?.().catch(() => {
+      /* The platform may deny fullscreen. */
+    });
+  };
   private readonly onBlur = () => this.controller?.pauseAutoReading();
   /** The world the last opening heartbeat was for: opening a world is presence at once, not a minute later. */
   private presentWorld: string | null = null;
@@ -60,7 +67,7 @@ class ForestWorkshopElement extends HTMLElement {
     super();
     this.root = this.attachShadow({ mode: "open" });
     this.styleNode.textContent =
-      STYLES + PRODUCTION_STYLES + RESIDENT_STYLES + INVITE_STYLES + STORY_STYLES + ART_STYLES;
+      STYLES + PRODUCTION_STYLES + RESIDENT_STYLES + INVITE_STYLES + STORY_STYLES + ART_STYLES + HOME_REACTION_STYLES;
   }
 
   connectedCallback() {
@@ -74,6 +81,7 @@ class ForestWorkshopElement extends HTMLElement {
     this.render(this.controller.store.get());
     // Presence (plan §7.6): a heartbeat every minute while this screen is visible and focused, and at once when it
     // becomes so again.
+    this.addEventListener("pointerdown", this.onFullscreenGesture);
     this.resizeObserver.observe(this);
     this.controller.startHeartbeat();
     document.addEventListener("visibilitychange", this.onPresence);
@@ -84,6 +92,7 @@ class ForestWorkshopElement extends HTMLElement {
   }
 
   disconnectedCallback() {
+    this.removeEventListener("pointerdown", this.onFullscreenGesture);
     this.resizeObserver.disconnect();
     this.unsubscribe?.();
     this.unsubscribe = null;
@@ -187,7 +196,27 @@ class ForestWorkshopElement extends HTMLElement {
       state.route === this.renderedRoute && page === this.renderedPage
         ? (this.root.querySelector(".scroll")?.scrollTop ?? 0)
         : 0;
+    // Keep the living scene, animation clocks and open reaction across production/UI refreshes.
+    const previousScene = this.root.querySelector<HTMLElement>(".scene[data-home-scene]");
+    const nextScene = screen.querySelector<HTMLElement>(".scene[data-home-scene]");
+    const clocks: { node: Element; name: string; time: number }[] = [];
+    if (previousScene && nextScene && previousScene.dataset.homeScene === nextScene.dataset.homeScene) {
+      for (const node of previousScene.querySelectorAll(".resident-spot, .figure, .figure-body")) {
+        for (const animation of node.getAnimations()) {
+          if (animation instanceof CSSAnimation && typeof animation.currentTime === "number") {
+            clocks.push({ node, name: animation.animationName, time: animation.currentTime });
+          }
+        }
+      }
+      nextScene.replaceWith(previousScene);
+    }
     this.root.replaceChildren(this.styleNode, screen);
+    for (const clock of clocks) {
+      for (const animation of clock.node.getAnimations()) {
+        if (animation instanceof CSSAnimation && animation.animationName === clock.name)
+          animation.currentTime = clock.time;
+      }
+    }
     this.renderedRoute = state.route;
     this.renderedPage = page;
     const scroller = this.root.querySelector(".scroll");

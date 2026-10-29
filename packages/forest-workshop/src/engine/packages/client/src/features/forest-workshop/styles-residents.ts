@@ -12,6 +12,11 @@ export const RESIDENT_STYLES = `
 .guidelines-form { display: grid; gap: 0.5em; }
 .guidelines-toggle { display: flex; align-items: center; gap: 0.5em; min-height: 44px; }
 .guidelines-toggle input { width: 24px; height: 24px; }
+.memory-choices { display: grid; gap: 0.35em; }
+.memory-choices .button { min-height: 44px; justify-content: flex-start; text-align: left; font-size: calc(var(--fs) * 0.85); }
+.memory-choices [aria-pressed="true"] { outline: 2px solid var(--fw-accent); }
+.memory-detail { display: grid; gap: 0.5em; padding: 0.7em; border-radius: 0.8em; background: var(--fw-surface-3); overflow-wrap: anywhere; }
+.memory-detail form { display: grid; gap: 0.5em; }
 
 /* ── Shared: ribbon, figure, avatar, tags ──────────────────────────────── */
 .ribbon {

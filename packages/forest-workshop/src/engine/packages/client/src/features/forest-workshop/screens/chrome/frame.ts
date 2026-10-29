@@ -6,6 +6,7 @@ import { artClasses, currentSeason, type AppState, type Controller } from "../..
 import { h, type Child } from "../../app/dom";
 import { renderMailboxSheet } from "../home/mailbox-sheet";
 import { renderGuidelinesSheet } from "../residents/guidelines-sheet";
+import { renderMemorySheet } from "../residents/memory-sheet";
 import { renderDeliveriesSheet } from "../invite/deliveries-sheet";
 import { renderBottomNav } from "./bottom-nav";
 import { renderTopBar, type TopBar } from "./top-bar";
@@ -64,9 +65,11 @@ export function renderFrame(state: AppState, controller: Controller, frame: Fram
           ? renderMailboxSheet(state, controller)
           : state.sheet?.kind === "guidelines"
             ? renderGuidelinesSheet(state, controller)
-            : state.sheet?.kind === "deliveries"
-              ? renderDeliveriesSheet(state, controller)
-              : null),
+            : state.sheet?.kind === "memory"
+              ? renderMemorySheet(state, controller)
+              : state.sheet?.kind === "deliveries"
+                ? renderDeliveriesSheet(state, controller)
+                : null),
     ],
   );
 }

@@ -31,6 +31,7 @@ import { cancelExpedition, chooseAnswer, departExpedition, markStoryRead } from 
 import { updateSettings } from "./settings";
 
 import { updateGuidelines } from "./guidelines";
+import { correctMemory, setMemoryStatus } from "./memory";
 
 import { readMail, archiveMail } from "./mailbox";
 
@@ -38,6 +39,8 @@ const DEFINITIONS = [
   readMail,
   archiveMail,
   updateGuidelines,
+  correctMemory,
+  setMemoryStatus,
   updateSettings,
   claimStarterKit,
   registerResident,

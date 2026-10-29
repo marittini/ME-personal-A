@@ -38,12 +38,20 @@ try {
       : {}),
     args: ["--no-sandbox"],
   });
-  const page = await browser.newPage({ viewport: { width: 390, height: 740 }, isMobile: true, hasTouch: true });
+  const page = await browser.newPage({ viewport: { width: 390, height: 740 }, isMobile: false, hasTouch: true });
+  await page.route("http://forest.test/api/capability-packages/forest-workshop/assets/assets/**", async (route) => {
+    const path = new URL(route.request().url()).pathname.split("/assets/assets/")[1];
+    await route.fulfill({
+      contentType: "image/webp",
+      body: await readFile(resolve("packages/forest-workshop/assets", path)),
+    });
+  });
   await page.setContent(
-    '<meta name="viewport" content="width=device-width, initial-scale=1"><div id="host" style="height:740px;width:390px"></div>',
+    '<base href="http://forest.test/"><meta name="viewport" content="width=device-width, initial-scale=1"><div id="host" style="height:740px;width:390px"></div>',
   );
   await page.addScriptTag({ content: await readFile(bundle, "utf8") });
   await page.evaluate(() => {
+    document.body.style.margin = "0";
     const root = document.querySelector("#host").attachShadow({ mode: "open" });
     window.testState = {
       route: "settings",
@@ -91,7 +99,15 @@ try {
       setFontSize() {},
       setSeasonChoice() {},
       notifyLocked() {},
-      navigate() {},
+      navigate(route) {
+        window.destination = route;
+      },
+      openGuidelines() {
+        window.guidelinesOpened = true;
+      },
+      openMemory() {
+        window.memoryOpened = true;
+      },
       openResidents() {},
       openDeliveries() {},
     };
@@ -126,6 +142,15 @@ try {
   assert.deepEqual(await page.evaluate(() => window.saved), { worldId: "world", value: "새 이름" });
   await page.getByRole("button", { name: "관리", exact: true }).click();
   assert.equal(await page.getByText("저장 · 백업").isVisible(), true);
+  await page.locator(".manage-art").evaluateAll((nodes) => Promise.all(nodes.map((i) => i.decode())));
+  assert.equal(await page.locator(".manage-art").count(), 4);
+  await page.getByRole("button", { name: "AI 지침 관리", exact: true }).click();
+  assert.equal(await page.evaluate(() => window.guidelinesOpened), true);
+  await page.getByRole("button", { name: "기억 관리", exact: true }).click();
+  assert.equal(await page.evaluate(() => window.memoryOpened), true);
+  await page.getByRole("button", { name: "저장 · 백업", exact: true }).click();
+  assert.equal(await page.evaluate(() => window.destination), "backup");
+  await page.screenshot({ path: join(process.env.FW_ART_SCREENSHOTS ?? temp, "management-art.png") });
   await page.getByRole("button", { name: "내 공방", exact: true }).click();
   await page.getByRole("button", { name: "홈에서 영역 편집", exact: true }).click();
   assert.equal(await page.evaluate(() => window.groundOpened), true);

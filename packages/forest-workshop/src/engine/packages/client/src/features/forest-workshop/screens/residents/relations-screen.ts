@@ -3,6 +3,7 @@
 // 페어 추가 and 변경 · 보관.
 // Real now: the rows, 현재 관계 (from the pair's familiarity), 최근 사건 (none until stories, P4), 페어 추가 and
 // 변경 · 보관 (archive and restore). 기억 보기 and 지침 관리 open with memory and guidelines (P4), locked in place.
+import { MANAGEMENT_ART, assetImage } from "../../app/assets";
 import type { AppState, Controller } from "../../app/controller";
 import { button, h, statusLine } from "../../app/dom";
 import type { GameContent, Pair, Resident, WorldView } from "../../app/types";
@@ -44,6 +45,13 @@ function hero(resident: Resident, pairs: Pair[]) {
     ],
     { className: "hero-card" },
   );
+}
+
+function managementAction(kind: "memory" | "guidelines", label: string, onClick: () => void) {
+  return h("button", { className: "button secondary", attrs: { type: "button" }, on: { click: onClick } }, [
+    assetImage(MANAGEMENT_ART[kind], { className: "action-art", fallback: () => ICONS.book("icon") }),
+    h("span", { text: label }),
+  ]);
 }
 
 function pairRow(
@@ -88,8 +96,8 @@ function pairRow(
             }),
           ])
         : h("div", { className: "pair-actions" }, [
-            button("기억 보기", () => controller.openMemory(pair.pairId), { variant: "secondary" }),
-            button("지침 관리", () => controller.openGuidelines(pair.pairId), { variant: "secondary" }),
+            managementAction("memory", "기억 보기", () => controller.openMemory(pair.pairId)),
+            managementAction("guidelines", "지침 관리", () => controller.openGuidelines(pair.pairId)),
           ]),
     ]),
   ]);

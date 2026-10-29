@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "packVersion": "1.4.0",
+  "packVersion": "1.4.1",
   "packageId": "forest-workshop",
   "referenceCodeCommit": "570a64bc7dfd35436ca97a6c6f081214df970009",
   "notes": [
-    "96 images, including four weather sprites. Weather effects are visual and user selected."
+    "100 images, including four management icons. Resident portraits remain user supplied."
   ],
   "assets": {
     "backgrounds/workshop-base-autumn": {
@@ -2128,6 +2128,74 @@
         1254,
         1254
       ]
+    },
+    "ui/manage-portrait": {
+      "path": "ui/manage-portrait.webp",
+      "width": 128,
+      "height": 128,
+      "bytes": 4048,
+      "sha256": "272e0b41c01165334d4de35fcdd7a50ddee0d150cd30ae84834b1c840fb35880",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen",
+        "original": "exec-b456c037-b4c3-490e-8c56-18df4705c8fc.png"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ]
+    },
+    "ui/manage-guidelines": {
+      "path": "ui/manage-guidelines.webp",
+      "width": 128,
+      "height": 128,
+      "bytes": 6490,
+      "sha256": "4d5475c7960e7c44e70d61e7fb02af1559b34d88864fc40293904f7daa330b0b",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen",
+        "original": "exec-5c7c9e83-3b91-4b78-872a-6f7187e0a0a8.png"
+      },
+      "sourceCanvas": [
+        1262,
+        1246
+      ]
+    },
+    "ui/manage-memory": {
+      "path": "ui/manage-memory.webp",
+      "width": 128,
+      "height": 128,
+      "bytes": 5928,
+      "sha256": "4dfd864abdca071a6c325ab81afbadf3b3d9aee1747204345950b545c7b64dc4",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen",
+        "original": "exec-36e99aee-3f6e-4929-9f93-dd3993d8b90b.png"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ]
+    },
+    "ui/manage-backup": {
+      "path": "ui/manage-backup.webp",
+      "width": 128,
+      "height": 128,
+      "bytes": 4080,
+      "sha256": "2810137dae560c6abc938f2991a79798c0f376e8c1ec4df0d9b0ea19e1a472a2",
+      "hasTransparency": true,
+      "source": {
+        "type": "ai-generated",
+        "method": "built-in-imagegen",
+        "original": "exec-c8563f32-74bc-4035-9123-ffc2e04bdce7.png"
+      },
+      "sourceCanvas": [
+        1254,
+        1254
+      ]
     }
   },
   "itemMap": {
@@ -2234,6 +2302,10 @@
     "weather-sun": "ui/weather-sun",
     "weather-cloud": "ui/weather-cloud",
     "weather-rain": "ui/weather-rain",
-    "weather-snow": "ui/weather-snow"
+    "weather-snow": "ui/weather-snow",
+    "manage-portrait": "ui/manage-portrait",
+    "manage-guidelines": "ui/manage-guidelines",
+    "manage-memory": "ui/manage-memory",
+    "manage-backup": "ui/manage-backup"
   }
 }

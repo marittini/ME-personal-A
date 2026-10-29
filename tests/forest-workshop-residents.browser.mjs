@@ -14,7 +14,7 @@ try {
   const bundle = join(temp, "bundle.js");
   await writeFile(
     entry,
-    `import { renderResidentsScreen } from ${JSON.stringify(join(client, "screens/residents/residents-screen.ts"))};\nimport { STYLES } from ${JSON.stringify(join(client, "styles.ts"))};\nimport { RESIDENT_STYLES } from ${JSON.stringify(join(client, "styles-residents.ts"))};\nimport { PRODUCTION_STYLES } from ${JSON.stringify(join(client, "styles-production.ts"))};\nimport { INVITE_STYLES } from ${JSON.stringify(join(client, "styles-invite.ts"))};\nimport { STORY_STYLES } from ${JSON.stringify(join(client, "styles-story.ts"))};\nimport { ART_STYLES } from ${JSON.stringify(join(client, "styles-art.ts"))};\nwindow.renderResidentsScreen = renderResidentsScreen; window.fwStyles = STYLES + RESIDENT_STYLES + PRODUCTION_STYLES + INVITE_STYLES + STORY_STYLES + ART_STYLES;`,
+    `import { renderResidentsScreen } from ${JSON.stringify(join(client, "screens/residents/residents-screen.ts"))};\nimport { STYLES } from ${JSON.stringify(join(client, "styles.ts"))};\nimport { RESIDENT_STYLES } from ${JSON.stringify(join(client, "styles-residents.ts"))};\nimport { PRODUCTION_STYLES } from ${JSON.stringify(join(client, "styles-production.ts"))};\nimport { INVITE_STYLES } from ${JSON.stringify(join(client, "styles-invite.ts"))};\nimport { STORY_STYLES } from ${JSON.stringify(join(client, "styles-story.ts"))};\nimport { ART_STYLES } from ${JSON.stringify(join(client, "styles-art.ts"))};\nimport { renderRelationsScreen } from ${JSON.stringify(join(client, "screens/residents/relations-screen.ts"))};\nimport { createResidentActions } from ${JSON.stringify(join(client, "app/resident-actions.ts"))};\nwindow.createResidentActions = createResidentActions; window.renderRelationsScreen = renderRelationsScreen; window.renderResidentsScreen = renderResidentsScreen; window.fwStyles = STYLES + RESIDENT_STYLES + PRODUCTION_STYLES + INVITE_STYLES + STORY_STYLES + ART_STYLES;`,
   );
   await build({
     entryPoints: [entry],
@@ -42,12 +42,20 @@ try {
       : {}),
     args: ["--no-sandbox"],
   });
-  const page = await browser.newPage({ viewport: { width: 390, height: 740 }, isMobile: true, hasTouch: true });
+  const page = await browser.newPage({ viewport: { width: 390, height: 740 }, isMobile: false, hasTouch: true });
+  await page.route("http://forest.test/api/capability-packages/forest-workshop/assets/assets/**", async (route) => {
+    const path = new URL(route.request().url()).pathname.split("/assets/assets/")[1];
+    await route.fulfill({
+      contentType: "image/webp",
+      body: await readFile(resolve("packages/forest-workshop/assets", path)),
+    });
+  });
   await page.setContent(
-    '<meta name="viewport" content="width=device-width, initial-scale=1"><div id="host" style="height:740px;width:390px"></div>',
+    '<base href="http://forest.test/"><meta name="viewport" content="width=device-width, initial-scale=1"><div id="host" style="height:740px;width:390px"></div>',
   );
   await page.addScriptTag({ content: await readFile(bundle, "utf8") });
   await page.evaluate(() => {
+    document.body.style.margin = "0";
     const root = document.querySelector("#host").attachShadow({ mode: "open" });
     const residents = Object.fromEntries(
       Array.from({ length: 7 }, (_, i) => {
@@ -111,9 +119,15 @@ try {
       openRegister() {},
       navigate() {},
       openResidents() {},
-      openSheet() {},
-      openResidentImage() {},
-      openRelations() {},
+      openSheet(sheet) {
+        window.openedSheet = sheet;
+      },
+      openResidentImage(id) {
+        window.imageResident = id;
+      },
+      openRelations(id) {
+        window.relationResident = id;
+      },
     };
     window.testRender = () => {
       root.innerHTML = "";
@@ -125,39 +139,78 @@ try {
   });
   assert.equal(await page.getByRole("button", { name: "주민 0 자세히 보기" }).count(), 1);
   assert.equal(await page.getByRole("button", { name: "주민 2 자세히 보기" }).count(), 0);
-  const listFits = await page.locator("#host").evaluate((host) => {
-    const scroller = host.shadowRoot.querySelector(".scroll");
-    return { content: scroller.scrollHeight, available: scroller.clientHeight };
-  });
-  assert.ok(listFits.content <= listFits.available + 1, `resident list should fit: ${JSON.stringify(listFits)}`);
   await page.getByLabel("주민 목록 고르기", { exact: true }).click();
   await page.getByLabel("주민 목록 고르기", { exact: true }).locator("..").locator("button").nth(1).click();
   assert.equal(await page.getByRole("button", { name: "주민 2 자세히 보기" }).count(), 1);
   await page.getByRole("button", { name: "주민 2 자세히 보기" }).click();
   assert.equal(await page.getByRole("button", { name: "프로필", exact: true }).isVisible(), true);
-  const detailFits = await page.locator("#host").evaluate((host) => {
-    const scroller = host.shadowRoot.querySelector(".scroll");
-    return { content: scroller.scrollHeight, available: scroller.clientHeight };
+  assert.equal(await page.getByRole("button", { name: "주민 2 자세히 보기" }).getAttribute("aria-pressed"), "true");
+  assert.equal(await page.getByLabel("주민 종류").count(), 1, "list remains alongside selected details");
+  await page.getByRole("button", { name: "주민 그림", exact: true }).click();
+  assert.equal(await page.evaluate(() => window.imageResident), "2");
+  await page.getByRole("button", { name: "프로필", exact: true }).click();
+  assert.deepEqual(await page.evaluate(() => window.openedSheet), { kind: "profile", residentId: "2" });
+  await page.getByRole("button", { name: "관계", exact: true }).click();
+  assert.equal(await page.evaluate(() => window.relationResident), "2");
+  for (const [width, font] of [
+    [390, 16],
+    [320, 22],
+  ]) {
+    await page.setViewportSize({ width, height: 844 });
+    await page.locator("#host").evaluate(
+      (host, values) => {
+        host.style.width = values.width + "px";
+        host.style.height = "844px";
+        host.style.setProperty("--fw-font-size", values.font + "px");
+      },
+      { width, font },
+    );
+    const size = await page.locator(".scroll").evaluate((n) => [n.scrollWidth, n.clientWidth]);
+    assert.ok(size[0] <= size[1] + 1, JSON.stringify(size));
+    await page.getByRole("button", { name: "주민 불러오기", exact: true }).scrollIntoViewIfNeeded();
+    await page.locator(".scroll").evaluate((n) => (n.scrollTop = 0));
+    await page.waitForLoadState("networkidle");
+    await page.screenshot({ path: join(process.env.FW_ART_SCREENSHOTS ?? temp, `residents-art-${width}.png`) });
+  }
+  await page.evaluate(() => {
+    const state = window.testState;
+    state.residentsView.query = "없는 이름";
+    const actions = window.createResidentActions({
+      store: {
+        get: () => state,
+        set: (patch) => Object.assign(state, typeof patch === "function" ? patch(state) : patch),
+      },
+      currentWorld: () => state.world.value,
+      navigate: (route) => (state.route = route),
+    });
+    actions.openResidents("6");
+    window.testRender();
   });
-  assert.ok(
-    detailFits.content <= detailFits.available + 1,
-    `resident detail should fit: ${JSON.stringify(detailFits)}`,
-  );
-  await page.getByRole("button", { name: "← 주민 목록" }).click();
-  assert.equal(await page.getByRole("button", { name: "주민 2 자세히 보기" }).count(), 1);
-  await page.setViewportSize({ width: 320, height: 640 });
-  await page.locator("#host").evaluate((host) => {
-    host.style.width = "320px";
-    host.style.height = "640px";
+  assert.equal(await page.evaluate(() => window.testState.residentsView.page), 3);
+  assert.equal(await page.getByRole("button", { name: "주민 6 자세히 보기" }).getAttribute("aria-pressed"), "true");
+  await page.evaluate(() => {
+    const state = window.testState;
+    state.route = "relations";
+    state.focusResidentId = "2";
+    state.world.value.state.pairs = {
+      p: { pairId: "p", residentIds: ["2", "1"], archived: false, familiarity: 0, createdAt: "2026-10-29" },
+    };
+    window.testController.openMemory = (id) => (window.memoryPair = id);
+    window.testController.openGuidelines = (id) => (window.guidelinesPair = id);
+    const root = document.querySelector("#host").shadowRoot;
+    root.replaceChildren();
+    const style = document.createElement("style");
+    style.textContent = window.fwStyles;
+    root.append(style, window.renderRelationsScreen(state, window.testController));
   });
-  const compactListFits = await page.locator("#host").evaluate((host) => {
-    const scroller = host.shadowRoot.querySelector(".scroll");
-    return { content: scroller.scrollHeight, available: scroller.clientHeight };
-  });
-  assert.ok(
-    compactListFits.content <= compactListFits.available + 1,
-    `compact resident list should fit: ${JSON.stringify(compactListFits)}`,
-  );
+  await page.getByRole("button", { name: "기억 보기", exact: true }).click();
+  assert.equal(await page.evaluate(() => window.memoryPair), "p");
+  await page.getByRole("button", { name: "지침 관리", exact: true }).click();
+  assert.equal(await page.evaluate(() => window.guidelinesPair), "p");
+  const relationSize = await page.locator(".scroll").evaluate((n) => [n.scrollWidth, n.clientWidth]);
+  assert.ok(relationSize[0] <= relationSize[1] + 1, JSON.stringify(relationSize));
+  await page.locator(".scroll").evaluate((n) => (n.scrollTop = 0));
+  await page.screenshot({ path: join(process.env.FW_ART_SCREENSHOTS ?? temp, "relations-art-320.png") });
   console.log("Resident pagination and detail navigation: OK");
 } finally {
   await browser?.close();

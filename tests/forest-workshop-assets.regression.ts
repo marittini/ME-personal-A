@@ -7,6 +7,7 @@ import { createHash } from "node:crypto";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import {
+  MANAGEMENT_ART,
   WEATHER_ART,
   BACKGROUND_ART,
   EMOTION_ART,
@@ -46,8 +47,8 @@ const keyPath = (key: string) => manifest.assets[key]?.path;
 
 // 1. Every file on disk is in the manifest and matches it byte for byte.
 const files = readdirSync(ROOT, { recursive: true, encoding: "utf8" }).filter((file) => file.endsWith(".webp"));
-assert.equal(files.length, 96, "96 WebP pictures");
-assert.equal(byPath.size, 96, "the manifest lists 96 pictures");
+assert.equal(files.length, 100, "100 WebP pictures");
+assert.equal(byPath.size, 100, "the manifest lists 100 pictures");
 for (const file of files) {
   const entry = byPath.get(file);
   assert.ok(entry, `${file} is in the manifest`);
@@ -79,6 +80,7 @@ for (const path of [
   ...Object.values(EMOTION_ART),
   ...Object.values(NAV_ART),
   ...Object.values(WEATHER_ART),
+  ...Object.values(MANAGEMENT_ART),
 ])
   assert.ok(byPath.has(path), path);
 for (const [name, path] of Object.entries(NAV_ART)) {

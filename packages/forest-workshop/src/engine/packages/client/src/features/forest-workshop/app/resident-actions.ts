@@ -156,10 +156,24 @@ export function createResidentActions(core: ControllerCore) {
     setResidentsFilter: (filter: ResidentsView["filter"]) => patchView({ filter, page: 0 }),
     setResidentsPage: (page: number) => patchView({ page: Math.max(0, page) }),
     showResidentsList: () => patchView({ detailOpen: false }),
-    selectResident: (residentId: string) => patchView({ selectedId: residentId, detailOpen: true }),
+    selectResident: (residentId: string) => patchView({ selectedId: residentId }),
 
     openResidents(residentId?: string) {
-      patchView(residentId ? { selectedId: residentId, detailOpen: true } : { detailOpen: false });
+      if (residentId) {
+        const view: ResidentsView = {
+          ...store.get().residentsView,
+          tab: "all",
+          query: "",
+          filter: "all",
+          selectedId: residentId,
+          detailOpen: false,
+        };
+        const world = core.currentWorld();
+        const index = world
+          ? visibleResidents(world.state, view).findIndex((resident) => resident.residentId === residentId)
+          : 0;
+        patchView({ ...view, page: Math.max(0, Math.floor(index / 2)) });
+      } else patchView({ detailOpen: false });
       core.navigate("residents");
     },
 

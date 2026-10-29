@@ -109,6 +109,13 @@ export const NAV_ART = {
   invite: "ui/nav-invite.webp",
 } as const;
 
+export const MANAGEMENT_ART = {
+  portrait: "ui/manage-portrait.webp",
+  guidelines: "ui/manage-guidelines.webp",
+  memory: "ui/manage-memory.webp",
+  backup: "ui/manage-backup.webp",
+} as const;
+
 export const WEATHER_ART = {
   sun: "ui/weather-sun.webp",
   cloud: "ui/weather-cloud.webp",

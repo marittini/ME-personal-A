@@ -96,5 +96,9 @@
   "assets/ui/weather-sun.webp",
   "assets/ui/weather-cloud.webp",
   "assets/ui/weather-rain.webp",
-  "assets/ui/weather-snow.webp"
+  "assets/ui/weather-snow.webp",
+  "assets/ui/manage-portrait.webp",
+  "assets/ui/manage-guidelines.webp",
+  "assets/ui/manage-memory.webp",
+  "assets/ui/manage-backup.webp"
 ]

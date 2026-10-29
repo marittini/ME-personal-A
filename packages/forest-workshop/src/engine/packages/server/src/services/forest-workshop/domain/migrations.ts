@@ -10,10 +10,13 @@ import { assignTalent, type SourceText } from "./residents/talent-assign";
 import type { FieldId } from "../content/production";
 import { CURRENT_SCHEMA_VERSION, worldStateSchema, type WorldState } from "./world-model";
 
+import { initialMailbox } from "./model/mailbox";
+
 type RawWorld = Record<string, unknown>;
 
 /** `MIGRATIONS[n]` turns a version-n document into version n+1. Add one entry per schema bump; never edit old ones. */
 const MIGRATIONS: Readonly<Record<number, (world: RawWorld) => RawWorld>> = {
+  9: (world) => ({ ...world, schemaVersion: 10, mailbox: initialMailbox(String(world.createdAt)) }),
   8: (world) => ({ ...world, schemaVersion: 9 }),
   7: (world) => ({ ...world, schemaVersion: 8 }),
   // v1 → v2 (P2): residents and pairs arrive, empty; no starting resident chosen yet.

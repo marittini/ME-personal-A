@@ -1,3 +1,13 @@
+export interface Letter {
+  id: string;
+  eventId: string;
+  sender: string;
+  title: string;
+  body: string;
+  createdAt: string;
+  readAt: string | null;
+  archived: boolean;
+}
 export interface WritingGuideline {
   enabled: boolean;
   text: string;
@@ -9,6 +19,7 @@ export interface WritingGuideline {
 
 export interface WorldState {
   guidelines: { world: WritingGuideline; pairs: Record<string, WritingGuideline> };
+  mailbox: { letters: Letter[] };
   schemaVersion: number;
   worldId: string;
   createdAt: string;

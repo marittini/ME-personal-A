@@ -16,6 +16,7 @@ export interface ResidentsView {
 }
 
 export type ResidentSheet =
+  | { kind: "mailbox"; archived?: boolean; page?: number; id?: string }
   | { kind: "guidelines"; pairId?: string; draft?: { enabled: boolean; text: string } }
   | {
       kind: "memory";
@@ -94,6 +95,21 @@ export function createResidentActions(core: ControllerCore) {
           : {},
       );
       core.notify("AI 지침을 저장했어요. 다음에 새로 쓰는 이야기부터 적용돼요.");
+    },
+    openMailbox() {
+      store.set({ sheet: { kind: "mailbox" } });
+    },
+    setMailboxView(patch: { archived?: boolean; page?: number; id?: string }) {
+      store.set((state) => (state.sheet?.kind === "mailbox" ? { sheet: { ...state.sheet, ...patch } } : {}));
+    },
+    async openLetter(id: string) {
+      const response = await core.runCommand(`mail:${id}`, "mail.read", { id });
+      if (response) store.set((state) => (state.sheet?.kind === "mailbox" ? { sheet: { ...state.sheet, id } } : {}));
+    },
+    async archiveLetter(id: string, archived: boolean) {
+      const response = await core.runCommand(`mail:${id}`, "mail.archive", { id, archived });
+      if (response)
+        store.set((state) => (state.sheet?.kind === "mailbox" ? { sheet: { ...state.sheet, id: undefined } } : {}));
     },
     openMemory(pairId?: string) {
       store.set({ sheet: { kind: "memory", pairId, page: 0 } });

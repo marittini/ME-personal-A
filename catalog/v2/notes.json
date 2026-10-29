@@ -4,6 +4,12 @@
     "forest-workshop": {
       "versions": [
         {
+          "version": "0.6.12",
+          "date": "2026-10-29",
+          "notes": "- Inbox and archive for a fixed workshop welcome letter, with unread count and persistent read/archive state. No rewards, expiry or automatic model calls. Letters are included in world backups. Schema 10 worlds cannot be opened by older packages. Resident-generated letters remain in development.",
+          "highlight": false
+        },
+        {
           "version": "0.6.11",
           "date": "2026-10-29",
           "notes": "- Configure world and pair writing preferences for newly generated stories. Existing stories and memory visibility remain unchanged. Generation records store applied guideline revisions. Schema 9 worlds cannot be opened by older packages.",

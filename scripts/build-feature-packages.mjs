@@ -600,7 +600,7 @@ const features = [
   },
   {
     id: "forest-workshop",
-    version: "0.6.12",
+    version: "0.6.13",
     assetPaths: forestWorkshopAssetPaths,
     // Built and proven against ME-personal (the owner's Engine fork), which reports 2.5.1.
     minEngineVersion: "2.5.1",

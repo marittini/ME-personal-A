@@ -69,9 +69,11 @@ try {
           worldId: "world",
           state: {
             pairs: { a: { residentIds: ["r"], archived: false }, b: { residentIds: ["r"], archived: false } },
-            residents: { r: { displayName: "주민" } },
+            residents: { r: { residentId: "r", displayName: "주민", recruited: true } },
             inventory: {},
-            production: { protectedStock: {}, facilities: {} },
+            production: { simMs: 0, protectedStock: {}, facilities: {} },
+            activities: { running: null, completed: [] },
+            mailbox: { letters: [] },
             stories: {
               expedition: null,
               pairs: { a: { current: { episodes: [{ state: "read", storyId: "current-0" }] } } },
@@ -97,6 +99,21 @@ try {
       window.testRender();
     };
     window.testController = {
+      setExploreTab(tab) {
+        update({ tab });
+      },
+      selectActivityResident(activityResidentId) {
+        update({ activityResidentId });
+      },
+      startActivity(kind, residentId) {
+        window.activityStarted = { kind, residentId };
+      },
+      cancelActivity(id) {
+        window.activityCancelled = id;
+      },
+      openMailbox() {
+        window.mailboxOpened = true;
+      },
       setExploreSection(section) {
         update({ section });
       },
@@ -145,6 +162,25 @@ try {
   assert.deepEqual(await page.evaluate(() => window.openedStory), { pairId: "a", episode: 0, storyId: "s0" });
   await page.getByLabel("페어 고르기").selectOption("b");
   assert.equal(await page.getByText("기록 2", { exact: true }).isVisible(), true);
+  await page.getByRole("tab", { name: "조사", exact: true }).click();
+  await page.getByRole("button", { name: "조사 출발", exact: true }).click();
+  assert.deepEqual(await page.evaluate(() => window.activityStarted), { kind: "survey", residentId: "r" });
+  await page.getByRole("tab", { name: "순찰", exact: true }).click();
+  await page.getByRole("button", { name: "순찰 출발", exact: true }).click();
+  assert.deepEqual(await page.evaluate(() => window.activityStarted), { kind: "patrol", residentId: "r" });
+  await page.evaluate(() => {
+    window.testState.world.value.state.activities.running = {
+      id: "activity-1",
+      kind: "patrol",
+      residentId: "r",
+      endsSim: 900000,
+    };
+    window.testRender();
+  });
+  await page.getByRole("button", { name: "활동 취소", exact: true }).click();
+  assert.equal(await page.evaluate(() => window.activityCancelled), "activity-1");
+  await page.getByRole("button", { name: "결과 편지 보기", exact: true }).click();
+  assert.equal(await page.evaluate(() => window.mailboxOpened), true);
   console.log("Explore sections, history and actions: OK");
 } finally {
   await browser?.close();

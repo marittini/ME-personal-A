@@ -1,3 +1,6 @@
+## 0.6.13 — 2026-10-29
+- Survey and patrol around the workshop with one recruited resident. Activities use workshop time, detach facility assignments, can be cancelled, and save one fixed result letter on completion. No resource rewards or model calls. Schema 11 worlds cannot be opened by older packages.
+
 ## 0.6.12 — 2026-10-29
 - Inbox and archive for a fixed workshop welcome letter, with unread count and persistent read/archive state. No rewards, expiry or automatic model calls. Letters are included in world backups. Schema 10 worlds cannot be opened by older packages. Resident-generated letters remain in development.
 

@@ -5,13 +5,14 @@ import { gameApi } from "./api";
 import { storyTextPages } from "./story-pages";
 import type { ControllerCore, Route } from "./controller";
 import type { Loadable } from "./dom";
-import { errorCode, errorMessage } from "./host-api";
+import { errorCode, errorMessage, newWorldId } from "./host-api";
 import type { StoryDocument, StoryOverview } from "./types";
 
 export type ExploreTab = "survey" | "patrol" | "story";
 
 export interface ExploreView {
   tab: ExploreTab;
+  activityResidentId?: string;
   pairId: string | null;
   overview: Loadable<StoryOverview> | null;
   section?: "journey" | "episode" | "history";
@@ -150,6 +151,27 @@ export function createStoryActions(core: ControllerCore) {
 
   return {
     loadStoryOverview: loadOverview,
+    selectActivityResident(activityResidentId: string) {
+      patchExplore({ activityResidentId });
+    },
+    async startActivity(kind: "survey" | "patrol", residentId: string) {
+      const world = core.currentWorld();
+      if (!world) return;
+      const id = core.requestIdFor("activity-id", JSON.stringify([world.worldId, kind, residentId]), newWorldId);
+      const response = await core.runCommand("activity-start", "activities.start", {
+        id,
+        kind,
+        placeId: "workshop-edge",
+        residentId,
+      });
+      if (response) {
+        core.forgetRequest("activity-id");
+        core.notify("공방 주변으로 출발했어요.");
+      }
+    },
+    async cancelActivity(id: string) {
+      await core.runCommand(`activity-cancel:${id}`, "activities.cancel", { id });
+    },
 
     openExplore() {
       core.navigate("explore");

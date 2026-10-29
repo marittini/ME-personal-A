@@ -6,6 +6,7 @@ import type { WorldState } from "../world-model";
 import { creditTime } from "./activity";
 import { crewBonuses } from "./crew";
 import { settleExpedition } from "../stories/expedition";
+import { settleActivities } from "../activities";
 import { advanceProduction } from "./simulation";
 
 export function settleWorld(state: WorldState, now: string, options: { active: boolean }): WorldState {
@@ -45,5 +46,5 @@ export function settleWorld(state: WorldState, now: string, options: { active: b
   }
   const wallet = summary.gold > 0 ? { ...state.wallet, gold: state.wallet.gold + summary.gold } : state.wallet;
   // The expedition timer runs on the same workshop time, after production (it does not touch materials).
-  return settleExpedition({ ...state, production, inventory, wallet }, now);
+  return settleActivities(settleExpedition({ ...state, production, inventory, wallet }, now), now);
 }

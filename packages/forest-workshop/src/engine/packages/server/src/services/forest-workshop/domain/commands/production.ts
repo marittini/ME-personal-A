@@ -208,6 +208,7 @@ export const assignResident = defineCommand({
       const resident = state.residents[payload.residentId];
       if (!resident) throw new FwError("resident_not_found");
       if (!resident.recruited) throw new FwError("resident_not_recruited");
+      if (state.activities.running?.residentId === resident.residentId) throw new FwError("resident_busy");
       if (state.stories.expedition?.participants.includes(resident.residentId)) throw new FwError("resident_busy");
     }
     // Placing a resident here takes them out of any other facility (one place at a time, plan §7.2-A).

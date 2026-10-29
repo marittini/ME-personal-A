@@ -34,7 +34,11 @@ import { updateGuidelines } from "./guidelines";
 
 import { readMail, archiveMail } from "./mailbox";
 
+import { startActivity, cancelActivity } from "./activities";
+
 const DEFINITIONS = [
+  startActivity,
+  cancelActivity,
   readMail,
   archiveMail,
   updateGuidelines,

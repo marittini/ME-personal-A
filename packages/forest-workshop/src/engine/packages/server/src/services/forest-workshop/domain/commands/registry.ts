@@ -33,13 +33,14 @@ import { updateSettings } from "./settings";
 import { updateGuidelines } from "./guidelines";
 import { correctMemory, setMemoryStatus } from "./memory";
 
-import { readMail, archiveMail } from "./mailbox";
+import { readMail, archiveMail, saveResidentLetter } from "./mailbox";
 
 import { startActivity, cancelActivity } from "./activities";
 
 const DEFINITIONS = [
   startActivity,
   cancelActivity,
+  saveResidentLetter,
   readMail,
   archiveMail,
   updateGuidelines,

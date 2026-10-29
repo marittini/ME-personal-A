@@ -1,3 +1,4 @@
+import { readModelConnection } from "./preferences";
 // One function per package route. Paths are relative to the Engine API root (`/api`).
 import { hostApi } from "./host-api";
 import type {
@@ -39,7 +40,18 @@ export const gameApi = {
     ),
   /** Writes the episode's scene once (or returns it); may take a while — a language model call. */
   generateStory: (worldId: string, pairId: string, episode: number) =>
-    hostApi().post<StoryDocument>(`${ROOT}/stories/generate`, { worldId, pairId, episode }),
+    hostApi().post<StoryDocument>(`${ROOT}/stories/generate`, {
+      worldId,
+      pairId,
+      episode,
+      connectionId: readModelConnection("story"),
+    }),
+  generateResidentLetter: (worldId: string, activityId: string) =>
+    hostApi().post<CommandResponse>(`${ROOT}/mail/generate`, {
+      worldId,
+      activityId,
+      connectionId: readModelConnection("letter"),
+    }),
   getDeliveries: (worldId: string) =>
     hostApi().get<DeliveryList>(`${ROOT}/deliveries?worldId=${encodeURIComponent(worldId)}`),
   heartbeat: (worldId: string) => hostApi().post<WorldView>(`${ROOT}/heartbeat`, { worldId }),
@@ -57,7 +69,11 @@ export const gameApi = {
       `${ROOT}/sources/preview?worldId=${encodeURIComponent(worldId)}&kind=${kind}&id=${encodeURIComponent(id)}`,
     ),
   rebuildSuggestion: (worldId: string, source: { kind: ResidentKind; id: string }) =>
-    hostApi().post<{ suggestion: string }>(`${ROOT}/rebuild-suggestion`, { worldId, source }),
+    hostApi().post<{ suggestion: string }>(`${ROOT}/rebuild-suggestion`, {
+      worldId,
+      source,
+      connectionId: readModelConnection("profile"),
+    }),
   /** Multipart: worldId, residentId, uploadKey and the file. The upload key makes a retry safe. */
   uploadResidentImage: (input: { worldId: string; residentId: string; uploadKey: string; file: File }) => {
     const form = new FormData();

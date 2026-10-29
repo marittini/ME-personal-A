@@ -641,8 +641,10 @@ async function main() {
       "no model",
     );
     let seen: unknown;
+    let chosenConnection: string | null | undefined;
     const withModel = setup({
-      async resolve() {
+      async resolve(connectionId) {
+        chosenConnection = connectionId;
         return {
           connectionId: "c1",
           model: "m",
@@ -658,9 +660,11 @@ async function main() {
     });
     await withModel.worlds.create({ worldId: WORLD, worldName: "숲", playerNickname: "공방지기" });
     const suggestion = await withModel.rebuild.suggest({
+      connectionId: "profile-test",
       worldId: WORLD,
       source: { kind: "character", id: "char-lion" },
     });
+    assert.equal(chosenConnection, "profile-test");
     assert.ok(suggestion.suggestion.length <= 200 && suggestion.suggestion.length > 0);
     assert.ok(JSON.stringify(seen).includes("금빛 귀의 기사"));
     assert.equal(withModel.host.count("fw-world"), 1);

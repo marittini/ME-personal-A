@@ -65,26 +65,29 @@ async function rejects(promise: Promise<unknown>, code: string, label: string) {
 /** A scripted language model: answers from `next`, records every prompt, counts calls. */
 function scriptedModel(options: { trimmed?: boolean } = {}) {
   const prompts: HostLanguageModelMessage[][] = [];
-  const state = { calls: 0, next: (_prompt: string) => "{}" };
+  const state = { calls: 0, connectionId: null as string | null, next: (_prompt: string) => "{}" };
   const languageModels: HostRuntime["languageModels"] = {
-    resolve: async () => ({
-      connectionId: "conn-test",
-      model: "scripted",
-      maxContext: 32000,
-      maxOutputTokens: 4000,
-      async chatComplete(messages) {
-        state.calls += 1;
-        prompts.push(messages);
-        await new Promise((resolve) => setTimeout(resolve, 5));
-        return { content: state.next(messages.map((m) => m.content).join("\n")) };
-      },
-      fitContext: (messages) => ({
-        messages,
-        estimatedTokensBefore: 900,
-        estimatedTokensAfter: 900,
-        trimmed: Boolean(options.trimmed),
-      }),
-    }),
+    resolve: async (connectionId) => {
+      state.connectionId = connectionId ?? null;
+      return {
+        connectionId: "conn-test",
+        model: "scripted",
+        maxContext: 32000,
+        maxOutputTokens: 4000,
+        async chatComplete(messages) {
+          state.calls += 1;
+          prompts.push(messages);
+          await new Promise((resolve) => setTimeout(resolve, 5));
+          return { content: state.next(messages.map((m) => m.content).join("\n")) };
+        },
+        fitContext: (messages) => ({
+          messages,
+          estimatedTokensBefore: 900,
+          estimatedTokensAfter: 900,
+          trimmed: Boolean(options.trimmed),
+        }),
+      };
+    },
   };
   return { languageModels, prompts, state };
 }
@@ -323,10 +326,11 @@ async function main() {
     model.state.next = () => sceneJson([a!], { choice: true });
     model.state.calls = 0;
     const [one, two] = await Promise.all([
-      env.stories.generate({ worldId: WORLD, pairId: env.pairAB, episode: 0 }),
-      env.stories.generate({ worldId: WORLD, pairId: env.pairAB, episode: 0 }),
+      env.stories.generate({ worldId: WORLD, pairId: env.pairAB, episode: 0, connectionId: "story-test" }),
+      env.stories.generate({ worldId: WORLD, pairId: env.pairAB, episode: 0, connectionId: "story-test" }),
     ]);
     assert.equal(model.state.calls, 1, "one model call for concurrent requests");
+    assert.equal(model.state.connectionId, "story-test", "selected story connection reaches the host");
     assert.deepEqual(one, two);
     assert.equal(one.storyId, storyId, "the plan's scene ID");
     assert.deepEqual(one.manifest.guidelineRevisions, { world: 1, pair: 1 });

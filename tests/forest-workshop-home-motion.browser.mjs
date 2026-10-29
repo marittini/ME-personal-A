@@ -13,7 +13,7 @@ try {
     bundle = join(temp, "bundle.js");
   await writeFile(
     entry,
-    `import { renderHomeScene } from ${JSON.stringify(join(client, "screens/home/home-scene.ts"))};\nimport { compactWorkReport } from ${JSON.stringify(join(client, "screens/home/work-report.ts"))};\nimport { STYLES } from ${JSON.stringify(join(client, "styles.ts"))};\nimport { RESIDENT_STYLES } from ${JSON.stringify(join(client, "styles-residents.ts"))};\nwindow.renderHomeScene=renderHomeScene;window.compactWorkReport=compactWorkReport;window.fwStyles=STYLES+RESIDENT_STYLES;`,
+    `import { renderHomeScene } from ${JSON.stringify(join(client, "screens/home/home-scene.ts"))};\nimport { compactWorkReport } from ${JSON.stringify(join(client, "screens/home/work-report.ts"))};\nimport { STYLES } from ${JSON.stringify(join(client, "styles.ts"))};\nimport { RESIDENT_STYLES, HOME_REACTION_STYLES } from ${JSON.stringify(join(client, "styles-residents.ts"))};\nwindow.renderHomeScene=renderHomeScene;window.compactWorkReport=compactWorkReport;window.fwStyles=STYLES+RESIDENT_STYLES+HOME_REACTION_STYLES;`,
   );
   await build({
     entryPoints: [entry],
@@ -46,7 +46,15 @@ try {
       displayName: "숲 주민",
       recruited: true,
       registeredAt: "2026-01-01",
-      image: { current: null, placement: { scale: 100, offsetX: 0, markerHeight: 0 } },
+      image: {
+        current: {
+          url: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Ccircle cx='50' cy='50' r='40' fill='gold'/%3E%3C/svg%3E",
+          reference: "fixture",
+          width: 100,
+          height: 100,
+        },
+        placement: { scale: 100, offsetX: 0, markerHeight: 0 },
+      },
     };
     const state = {
       world: {
@@ -100,8 +108,22 @@ try {
   });
   if (process.env.FW_HOME_SCREENSHOT) await page.screenshot({ path: process.env.FW_HOME_SCREENSHOT });
   assert.equal(await page.locator(".spot-name").count(), 0);
-  const resident = page.getByRole("button", { name: "숲 주민 프로필 보기" });
-  const feet = await resident.evaluate((node) => {
+  const resident = page.getByRole("button", { name: "숲 주민에게 인사하기" });
+  const before = await resident.evaluate((node) => node.getBoundingClientRect().x);
+  await page.waitForTimeout(1000);
+  assert.notEqual(await resident.evaluate((node) => node.getBoundingClientRect().x), before, "moves without touch");
+  const bodies = await resident.locator(".figure-body").evaluate((node) => {
+    const animation = node.getAnimations()[0];
+    animation.pause();
+    animation.currentTime = 100;
+    const moving = getComputedStyle(node).transform;
+    animation.currentTime = 460;
+    const compressed = getComputedStyle(node).transform;
+    animation.cancel();
+    return moving !== compressed;
+  });
+  assert.equal(bodies, true, "walking changes body shape");
+  const feet = await resident.locator("..").evaluate((node) => {
     const animation = node.getAnimations()[0];
     animation.pause();
     animation.currentTime = 0;
@@ -122,7 +144,10 @@ try {
   });
   assert.deepEqual(feet, { xMoved: true, yMoved: true, inside: true });
 
-  await resident.click();
+  await resident.click({ force: true });
+  assert.equal(await page.evaluate(() => window.selected), undefined);
+  assert.equal(await page.locator(".resident-reaction").isVisible(), true);
+  await page.getByRole("button", { name: "프로필", exact: true }).click();
   assert.equal(await page.evaluate(() => window.selected), "r");
   assert.deepEqual(await page.evaluate(() => window.sheet), { kind: "profile", residentId: "r" });
   assert.equal(
@@ -143,7 +168,7 @@ try {
   assert.equal(await page.getByRole("button", { name: /새 보고 1개/ }).count(), 1);
   await page.emulateMedia({ reducedMotion: "reduce" });
   assert.equal(await resident.locator(".figure").evaluate((node) => getComputedStyle(node).animationName), "none");
-  assert.equal(await resident.evaluate((node) => getComputedStyle(node).animationName), "none");
+  assert.equal(await resident.locator("..").evaluate((node) => getComputedStyle(node).animationName), "none");
   console.log("Home motion, reduced motion and resident target: OK");
 } finally {
   await browser?.close();

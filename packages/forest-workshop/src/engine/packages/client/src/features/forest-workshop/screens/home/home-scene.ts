@@ -7,7 +7,7 @@
 import type { AppState, Controller } from "../../app/controller";
 import { h } from "../../app/dom";
 import type { Resident, WorldState } from "../../app/types";
-import { BACKGROUND_ART, assetImage } from "../../app/assets";
+import { BACKGROUND_ART, EMOTION_ART, assetImage } from "../../app/assets";
 import { currentSeason } from "../../app/controller";
 import { ICONS } from "../chrome/icons";
 import { residentFigure } from "../residents/resident-figure";
@@ -68,20 +68,41 @@ function sceneResidents(world: WorldState): Resident[] {
 
 function spot(side: "left" | "right", resident: Resident | null, world: WorldState, controller: Controller) {
   if (resident) {
-    return h(
+    const reaction = h("div", { className: "resident-reaction", attrs: { hidden: "" } });
+    const figure = h(
       "button",
       {
-        className: `resident-spot filled ${side}`,
-        attrs: { type: "button", "aria-label": `${resident.displayName} 프로필 보기` },
+        className: "resident-touch",
+        attrs: { type: "button", "aria-label": `${resident.displayName}에게 인사하기` },
+        on: {
+          click: () => {
+            reaction.hidden = !reaction.hidden;
+            container.classList.toggle("reacting", !reaction.hidden);
+          },
+        },
+      },
+      [residentFigure(resident)],
+    );
+    reaction.append(
+      assetImage(EMOTION_ART.joy, {
+        className: "resident-greeting",
+        alt: "반가움",
+        fallback: () => h("span", { className: "resident-greeting", text: "♪", attrs: { "aria-label": "반가움" } }),
+      }),
+      h("button", {
+        className: "outline-button",
+        text: "프로필",
+        attrs: { type: "button" },
         on: {
           click: () => {
             controller.openResidents(resident.residentId);
             controller.openSheet({ kind: "profile", residentId: resident.residentId });
           },
         },
-      },
-      [residentFigure(resident)],
+      }),
     );
+    const container = h("div", { className: `resident-spot filled ${side}` }, [figure, reaction]);
+    return container;
   }
   if (world.progress.starterResidentId === null && side === "left") {
     const registered = Object.keys(world.residents).length > 0;
@@ -122,7 +143,7 @@ export function renderHomeScene(state: AppState, controller: Controller) {
     : null;
   if (cast)
     cast.style.cssText = `left:${ground.left}%;top:${ground.top}%;width:${ground.right - ground.left}%;height:${ground.bottom - ground.top}%;right:auto;bottom:auto;padding:0;`;
-  return h(
+  const scene = h(
     "section",
     { className: `scene${editingGround(state) ? " editing-ground" : ""}`, attrs: { "aria-label": "공방 장면" } },
     [
@@ -145,4 +166,12 @@ export function renderHomeScene(state: AppState, controller: Controller) {
         : null,
     ],
   );
+  scene.dataset.homeScene = JSON.stringify([
+    state.world?.state === "ready" ? state.world.value.worldId : null,
+    currentSeason(state),
+    residents,
+    ground,
+    editingGround(state),
+  ]);
+  return scene;
 }

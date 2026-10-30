@@ -9,7 +9,6 @@ import { draftRules, isDraftDirty } from "../../app/production-actions";
 import type { FacilityState, GameContent, Rule, WorldView } from "../../app/types";
 import { card, renderFrame } from "../chrome/frame";
 import { assetImage } from "../../app/assets";
-import { pagePicker } from "../chrome/page-picker";
 import { ICONS, type IconFactory } from "../chrome/icons";
 import { residentAvatar } from "../residents/resident-figure";
 import { renderAssignSheet } from "./assign-sheet";
@@ -535,17 +534,30 @@ function body(state: AppState, content: GameContent, world: WorldView, controlle
   const applying = Boolean(state.busy[`rules:${facilityId}`]);
   const auto = facility.mode === "auto";
   const crew = crewBonus(content, world.state, facilityId);
-  const ruleSelect = pagePicker(
-    "생산 물품 고르기",
-    Math.max(
-      0,
-      rules.findIndex((rule) => rule.policyId === selected?.policyId),
-    ),
-    rules.map((rule) => `${recipeOf(content, rule.recipeId)?.name ?? rule.recipeId}${rule.enabled ? "" : " (꺼짐)"}`),
-    (index) => {
-      const rule = rules[index];
-      if (rule) controller.selectRule(facilityId, rule.policyId);
-    },
+  const ruleSelect = h(
+    "div",
+    { className: "recipe-choices", attrs: { role: "group", "aria-label": "생산 물품 고르기" } },
+    rules.map((rule) => {
+      const recipe = recipeOf(content, rule.recipeId);
+      const output = recipe ? Object.keys(recipe.outputs)[0] : undefined;
+      return h(
+        "button",
+        {
+          className: "recipe-choice",
+          attrs: {
+            type: "button",
+            "aria-pressed": String(rule.policyId === selected?.policyId),
+            "aria-label": `${recipe?.name ?? rule.recipeId} 생산 설정${rule.enabled ? "" : " (꺼짐)"}`,
+          },
+          on: { click: () => controller.selectRule(facilityId, rule.policyId) },
+        },
+        [
+          output ? itemTile(output) : ICONS.jar("icon"),
+          h("span", { text: recipe?.name ?? rule.recipeId }),
+          rule.enabled ? null : h("small", { text: "꺼짐" }),
+        ],
+      );
+    }),
   );
   return [
     fieldTabs(content, world, facilityId, controller),
@@ -553,9 +565,33 @@ function body(state: AppState, content: GameContent, world: WorldView, controlle
       null,
       [
         modeToggle(state, facilityId, facility, controller),
+        h("section", { className: "production-summary", attrs: { "aria-label": "현재 생산 상태" } }, [
+          currentWork(state, content, world, facility),
+          waitingGuide(content, world, facilityId, controller),
+          h("div", { className: "production-order" }, [
+            h("span", { className: "muted", text: auto ? "적용된 우선순위" : "지정 횟수 대기열" }),
+            h(
+              "ol",
+              { className: "production-slots" },
+              (auto
+                ? facility.rules.filter((rule) => rule.enabled).sort((a, b) => a.priority - b.priority)
+                : facility.queue
+              ).map((entry) => {
+                const recipe = recipeOf(content, entry.recipeId);
+                const output = recipe ? Object.keys(recipe.outputs)[0] : undefined;
+                return h("li", {}, [
+                  output ? itemTile(output) : null,
+                  h("span", { text: recipe?.name ?? "제작법 확인 필요" }),
+                ]);
+              }),
+            ),
+            h("small", {
+              className: "muted",
+              text: auto ? "목표 재고와 재료에 따라 작업해요." : "등록한 순서로 작업해요.",
+            }),
+          ]),
+        ]),
         facilityCard(state, content, world, facilityId, facility, controller),
-        currentWork(state, content, world, facility),
-        waitingGuide(content, world, facilityId, controller),
         ...(auto
           ? [
               h("h2", { className: "section-title", text: "생산 설정" }),

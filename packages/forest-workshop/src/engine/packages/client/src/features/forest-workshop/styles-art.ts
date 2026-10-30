@@ -334,4 +334,35 @@ img.emotion-bubble.emotion-art { min-width: 0; width: 2.6em; height: 2.6em; padd
 .image-card .slider-row { grid-template-columns: auto minmax(0, 1fr) auto; gap: 8px; }
 .image-card .slider-row .slider { grid-column: 1 / -1; grid-row: 2; width: 100%; min-height: 44px; }
 .image-card .rule-actions.even { grid-template-columns: 1fr; }
+
+/* Composition pass: prioritize production state, pictures and a single reading surface. */
+.production-summary { display: grid; gap: 8px; padding: 12px; background: var(--fw-leaf-soft); border-radius: 12px; }
+.production-summary .plan-row { padding: 0; border: 0; background: transparent; }
+.production-summary .waiting-guide { margin: 0; }
+.production-order { display: grid; gap: 6px; }
+.production-slots { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.production-slots li { display: flex; align-items: center; gap: 6px; padding: 4px 8px; border: 1px solid #b9cda8; border-radius: 8px; background: var(--fw-surface-3); font-size: calc(var(--fs) * .85); }
+.production-slots:empty::after { content: "등록된 작업 없음"; color: var(--fw-muted); }
+.recipe-choices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.recipe-choice { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px; min-width: 0; min-height: 52px; padding: 8px; font: inherit; color: var(--fw-text); background: var(--fw-surface-3); border: 1px solid #b49a72; border-radius: 10px; cursor: pointer; }
+.recipe-choice span { overflow-wrap: anywhere; }
+.recipe-choice[aria-pressed="true"] { border: 2px solid var(--fw-accent); background: #e6f1dc; }
+.resident-card .card-stage { aspect-ratio: 4 / 3; }
+.resident-card .tag-row { gap: 0; }
+.resident-card .status-pill { width: auto; min-height: 0; padding: 2px 6px; border: 0; background: transparent; color: var(--fw-muted); }
+.resident-card .status-pill.done::before { content: "✓ "; color: var(--fw-accent); }
+.home-layout .strip.story, .home-layout .strip.offline { border-width: 1px; border-color: #bda881; box-shadow: none; }
+.home-layout .strip.story .round-arrow { background: transparent; border: 0; }
+.profile-panel .compare-box.source { border: 0; background: transparent; padding: 8px 0; }
+.story-layout .reader-tools .chip-button { width: 44px; min-height: 44px; padding: 0; justify-content: center; }
+.story-layout .reader-tools .chip-button > span { display: none; }
+.story-layout .story-stage { border-width: 1px; box-shadow: none; }
+.story-layout .ribbon { padding: 0; border: 0; background: transparent; }
+.story-layout .conversation-panel { flex: none; display: grid; gap: 8px; min-height: 0; padding: 16px 18px; border-radius: 12px; background: var(--fw-surface-3); }
+.art-paper .conversation-panel { border-image: ${cssAssetUrl(UI_ART.paperPanel)} 105 154 fill / 20px 28px / 0 stretch; }
+.story-layout .conversation-panel .dialogue-box { border: 0; border-image: none; box-shadow: none; border-radius: 0; background: transparent; padding: 0; margin: 0; }
+.story-layout .conversation-panel .dialogue-box .line, .story-layout .conversation-panel .dialogue-box .narration { overflow-wrap: anywhere; align-self: start; }
+.story-layout .conversation-panel .reader-foot { margin: 0; gap: 8px; }
+.story-layout .conversation-panel .reader-foot .count-pill { background: transparent; color: var(--fw-muted); white-space: nowrap; }
+.story-layout .conversation-panel .reader-foot .button { min-height: 44px; }
 `;

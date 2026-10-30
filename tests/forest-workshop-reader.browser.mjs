@@ -13,7 +13,7 @@ try {
     bundle = join(temp, "bundle.js");
   await writeFile(
     entry,
-    `import { renderStoryReader } from ${JSON.stringify(join(client, "screens/explore/story-reader.ts"))};\nimport { STYLES } from ${JSON.stringify(join(client, "styles.ts"))};\nimport { RESIDENT_STYLES } from ${JSON.stringify(join(client, "styles-residents.ts"))};\nimport { STORY_STYLES } from ${JSON.stringify(join(client, "styles-story.ts"))};\nimport { ART_STYLES } from ${JSON.stringify(join(client, "styles-art.ts"))};\nwindow.renderStoryReader = renderStoryReader; window.fwStyles = STYLES + RESIDENT_STYLES + STORY_STYLES + ART_STYLES;`,
+    `import { renderStoryReader } from ${JSON.stringify(join(client, "screens/explore/story-reader.ts"))};\nimport { STYLES } from ${JSON.stringify(join(client, "styles.ts"))};\nimport { RESIDENT_STYLES } from ${JSON.stringify(join(client, "styles-residents.ts"))};\nimport { STORY_STYLES } from ${JSON.stringify(join(client, "styles-story.ts"))};\nimport { ART_STYLES } from ${JSON.stringify(join(client, "styles-art.ts"))};\nimport { measureStoryPages } from ${JSON.stringify(join(client, "app/story-pages.ts"))};\nwindow.measureStoryPages = measureStoryPages; window.renderStoryReader = renderStoryReader; window.fwStyles = STYLES + RESIDENT_STYLES + STORY_STYLES + ART_STYLES;`,
   );
   await build({
     entryPoints: [entry],
@@ -53,7 +53,12 @@ try {
   await page.evaluate(() => {
     const root = document.querySelector("#host").attachShadow({ mode: "open" });
     const segments = [
-      { kind: "line", speakerId: "r", text: "가나다라마바사아자차카타파하".repeat(8), emotion: "joy" },
+      {
+        kind: "line",
+        speakerId: "r",
+        text: "숲길에서 산딸기를 조금 따 왔어요. 잼이 완성되면 함께 차를 마실까요? ".repeat(4),
+        emotion: "joy",
+      },
       {
         kind: "choice",
         askerId: "r",
@@ -109,11 +114,12 @@ try {
       advanceStory() {
         const reader = window.testState.reader;
         const segment = reader.story.value.segments[reader.index];
-        const count = segment.kind === "choice" ? 0 : Math.ceil(Array.from(segment.text).length / 52);
+        const count = segment.kind === "choice" ? 0 : (reader.textPages?.length ?? 1);
         if ((reader.textPage ?? 0) + 1 < count) reader.textPage = (reader.textPage ?? 0) + 1;
         else {
           reader.index++;
           reader.textPage = 0;
+          reader.textPages = undefined;
         }
         window.testRender();
       },
@@ -135,6 +141,16 @@ try {
       const style = document.createElement("style");
       style.textContent = window.fwStyles;
       root.append(style, window.renderStoryReader(window.testState, window.testController));
+      const reader = window.testState.reader;
+      const segment = reader.story.value.segments[reader.index];
+      const box = root.querySelector(".dialogue-box");
+      if (segment && segment.kind !== "choice") {
+        const pages = window.measureStoryPages(box, segment.text);
+        if (pages) {
+          reader.textPages = pages;
+          box.querySelector(".line, .narration").textContent = pages[reader.textPage ?? 0];
+        }
+      }
     };
     window.testRender();
   });
@@ -148,6 +164,44 @@ try {
     });
   const lineSize = await fit();
   assert.ok(lineSize.content <= lineSize.available + 1, `story line should fit: ${JSON.stringify(lineSize)}`);
+  for (const [width, font] of [
+    [390, 16],
+    [320, 22],
+  ]) {
+    await page.setViewportSize({ width, height: 740 });
+    await page.locator("#host").evaluate(
+      (host, config) => {
+        host.style.width = config.width + "px";
+        host.style.setProperty("--fw-font-size", config.font + "px");
+      },
+      { width, font },
+    );
+    await page.evaluate(() => window.testRender());
+    const measured = await page.locator("#host").evaluate((host) => {
+      const box = host.shadowRoot.querySelector(".dialogue-box");
+      const line = box.querySelector(".line");
+      const pages = window.testState.reader.textPages;
+      const bounds = box.getBoundingClientRect();
+      const range = document.createRange();
+      range.selectNodeContents(line);
+      return {
+        preserved: pages.join("") === window.testState.reader.story.value.segments[0].text,
+        fits: [...range.getClientRects()].every(
+          (rect) => rect.bottom <= bounds.bottom + 1 && rect.right <= bounds.right + 1,
+        ),
+        samePanel: host.shadowRoot
+          .querySelector(".conversation-panel")
+          .contains(host.shadowRoot.querySelector(".reader-foot")),
+      };
+    });
+    assert.deepEqual(measured, { preserved: true, fits: true, samePanel: true });
+  }
+  await page.setViewportSize({ width: 390, height: 740 });
+  await page.locator("#host").evaluate((host) => {
+    host.style.width = "390px";
+    host.style.setProperty("--fw-font-size", "16px");
+  });
+  await page.evaluate(() => window.testRender());
   const firstBox = await page.locator("#host").evaluate((host) => {
     const rect = host.shadowRoot.querySelector(".dialogue-box").getBoundingClientRect();
     return { top: rect.top, height: rect.height };
@@ -158,8 +212,9 @@ try {
     return { top: rect.top, height: rect.height };
   });
   assert.deepEqual(secondBox, firstBox);
-  await page.getByRole("button", { name: "계속" }).click();
-  await page.getByRole("button", { name: "계속" }).click();
+  while (await page.evaluate(() => window.testState.reader.index === 0)) {
+    await page.getByRole("button", { name: "계속" }).click();
+  }
   assert.equal(await page.getByRole("button", { name: "다 읽고 보관" }).isDisabled(), true);
   const choiceSize = await fit();
   assert.ok(choiceSize.content <= choiceSize.available + 1, `story choice should fit: ${JSON.stringify(choiceSize)}`);
@@ -190,7 +245,12 @@ try {
     true,
   );
   await backlog.getByRole("button", { name: "이전", exact: true }).click();
-  assert.equal(await backlog.getByText("가나다라마바사아자차카타파하".repeat(8), { exact: true }).isVisible(), true);
+  assert.equal(
+    await backlog
+      .getByText("숲길에서 산딸기를 조금 따 왔어요. 잼이 완성되면 함께 차를 마실까요? ".repeat(4), { exact: true })
+      .isVisible(),
+    true,
+  );
   await page.getByRole("button", { name: "닫기", exact: true }).click();
   await page.evaluate(() => {
     const reader = window.testState.reader;

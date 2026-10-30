@@ -297,6 +297,47 @@ try {
     window.testRender();
   });
   assert.equal(await page.getByRole("button", { name: /제작 2 목표 5/ }).count(), 0);
+  assert.equal(await page.locator(".recipe-choices .recipe-choice").count(), 3);
+  await page.getByRole("button", { name: "제작 1 생산 설정", exact: true }).click();
+  assert.equal(
+    await page.getByRole("button", { name: "제작 1 생산 설정", exact: true }).getAttribute("aria-pressed"),
+    "true",
+  );
+  assert.equal(
+    await page.locator(".production-slots li").count(),
+    1,
+    "state summary must retain applied rules, not unsaved draft choices",
+  );
+  await page.evaluate(() => {
+    const state = window.testState;
+    const facility = state.world.value.state.production.facilities["gather-yard"];
+    facility.rules = [
+      { policyId: "second", recipeId: "r2", enabled: true, priority: 2, targetStock: 5 },
+      { policyId: "disabled", recipeId: "r1", enabled: false, priority: 0, targetStock: 5 },
+      { policyId: "first", recipeId: "r0", enabled: true, priority: 1, targetStock: 5 },
+    ];
+    window.testRender();
+  });
+  assert.deepEqual(await page.locator(".production-slots li").allTextContents(), ["제작 0", "제작 2"]);
+  await page.evaluate(() => {
+    const state = window.testState;
+    state.worldReceivedAt = Date.now();
+    state.world.value.state.production.simMs = 0;
+    state.world.value.state.production.facilities["gather-yard"].job = {
+      recipeId: "r0",
+      startedSim: 0,
+      endsSim: 60000,
+      outputs: { "wild-berry": 1 },
+    };
+    window.testRender();
+  });
+  assert.match(await page.locator(".production-summary .current-work").innerText(), /제작 0 만드는 중/);
+  assert.ok(await page.locator(".production-summary [data-countdown-end]").count());
+  await page.screenshot({ path: join(process.env.FW_ART_SCREENSHOTS ?? temp, "work-active-320.png") });
+  await page.evaluate(() => {
+    window.testState.world.value.state.production.facilities["gather-yard"].job = null;
+    window.testRender();
+  });
   await page.getByLabel("순서와 켜짐을 바꿀 생산 물품").selectOption("p2");
   assert.equal(await page.getByRole("button", { name: /제작 2 목표 5/ }).count(), 1);
   await page.getByLabel("추가할 제작법").selectOption("r3");

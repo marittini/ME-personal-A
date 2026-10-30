@@ -258,23 +258,25 @@ export function renderStoryReader(state: AppState, controller: Controller) {
     storyLayout: true,
     body: [
       stage(currentSeason(state), world, story, current),
-      dialogue(state, world, reader, controller),
-      story && reader.index < total
-        ? h("div", { className: "reader-foot" }, [
-            h("span", { className: "count-pill", text: `${reader.index + 1} / ${total}` }),
-            button(
-              reader.index === total - 1 && lastTextPage ? "다 읽고 보관" : "계속",
-              () => {
-                if (reader.index === total - 1 && lastTextPage) void controller.finishStory();
-                else controller.advanceStory();
-              },
-              {
-                disabled: waitingAnswer || Boolean(state.busy[`read:${reader.storyId}`]),
-                attrs: { "data-wide": "" },
-              },
-            ),
-          ])
-        : null,
+      h("section", { className: "conversation-panel", attrs: { "aria-label": "이야기 대화" } }, [
+        dialogue(state, world, reader, controller),
+        story && reader.index < total
+          ? h("div", { className: "reader-foot" }, [
+              h("span", { className: "count-pill", text: `${reader.index + 1} / ${total}` }),
+              button(
+                reader.index === total - 1 && lastTextPage ? "다 읽고 보관" : "계속",
+                () => {
+                  if (reader.index === total - 1 && lastTextPage) void controller.finishStory();
+                  else controller.advanceStory();
+                },
+                {
+                  disabled: waitingAnswer || Boolean(state.busy[`read:${reader.storyId}`]),
+                  attrs: { "data-wide": "" },
+                },
+              ),
+            ])
+          : null,
+      ]),
     ],
     nav: false,
     sheet: reader.backlog ? backlogSheet(world, reader, controller) : null,

@@ -1,3 +1,4 @@
+import { sheetDialog } from "../chrome/sheet";
 // 저장·백업 (board 05-2): 저장 완료 with the last save time, 저장 공간 사용량 (주민 그림 · 배경 · 기록), 백업 내보내기 ·
 // 백업 불러오기 with the restore preview, and 그림 이력 정리. Below the mockup's content, two rows the mockup does not
 // draw but restore needs: 다른 세계 (restore always creates one) and 연결 점검.
@@ -150,29 +151,19 @@ function historyCleanupSheet(world: WorldState, state: AppState, controller: Con
     .flatMap((resident) => resident.image.history)
     .reduce((total, image) => total + image.bytes, 0);
   const busy = Boolean(state.busy["image-history-clear"]);
-  return h("div", { className: "sheet-backdrop" }, [
-    h(
-      "section",
-      {
-        className: "sheet card",
-        attrs: { role: "dialog", "aria-modal": "true", "aria-labelledby": "fw-history-cleanup" },
-      },
-      [
-        h("h2", { className: "section-title", text: "그림 이력 정리", attrs: { id: "fw-history-cleanup" } }),
-        count
-          ? h("p", {
-              text: `주민들의 이전 그림 ${count}장(${formatSize(bytes)})을 정리해요. 지금 쓰는 그림은 그대로이고, 정리한 그림은 '이전 그림'에서 되돌릴 수 없어요.`,
-            })
-          : h("p", { className: "empty", text: "정리할 이전 그림이 없어요." }),
-        h("p", { className: "hint", text: "다른 곳에서 쓰는 그림 파일은 갤러리에 그대로 남아요." }),
-        count
-          ? button(busy ? "정리하는 중…" : `${count}장 정리하기`, () => void controller.clearImageHistory(), {
-              disabled: busy,
-              attrs: { "data-wide": "" },
-            })
-          : null,
-        button("닫기", () => controller.closeSheet(), { variant: "secondary", attrs: { "data-wide": "" } }),
-      ],
-    ),
+  return sheetDialog("fw-history-cleanup", "그림 이력 정리", [
+    count
+      ? h("p", {
+          text: `주민들의 이전 그림 ${count}장(${formatSize(bytes)})을 정리해요. 지금 쓰는 그림은 그대로이고, 정리한 그림은 '이전 그림'에서 되돌릴 수 없어요.`,
+        })
+      : h("p", { className: "empty", text: "정리할 이전 그림이 없어요." }),
+    h("p", { className: "hint", text: "다른 곳에서 쓰는 그림 파일은 갤러리에 그대로 남아요." }),
+    count
+      ? button(busy ? "정리하는 중…" : `${count}장 정리하기`, () => void controller.clearImageHistory(), {
+          disabled: busy,
+          attrs: { "data-wide": "" },
+        })
+      : null,
+    button("닫기", () => controller.closeSheet(), { variant: "secondary", attrs: { "data-wide": "" } }),
   ]);
 }

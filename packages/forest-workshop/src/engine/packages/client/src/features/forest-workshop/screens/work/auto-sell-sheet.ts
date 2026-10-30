@@ -85,14 +85,35 @@ export function renderAutoSellSheet(state: AppState, world: WorldView, content: 
       ]),
     ]);
   });
+  let page = Math.max(0, Math.min(items.length - 1, state.sheet?.kind === "auto-sell" ? (state.sheet.page ?? 0) : 0));
+  const selector = h(
+    "select",
+    {
+      className: "input",
+      attrs: { "aria-label": "자동 판매할 품목" },
+      on: { change: () => showPage(Number(selector.value)) },
+    },
+    items.map((item, index) => h("option", { text: item.name, attrs: { value: String(index) } })),
+  );
+  function showPage(next: number) {
+    page = next;
+    rows.forEach((row, index) => (row.hidden = index !== page));
+    selector.value = String(page);
+    controller.rememberAutoSellPage(page);
+  }
+  showPage(page);
   return sheetDialog("fw-auto-sell", "자동 판매", [
-    h("p", {
-      className: "muted",
-      text: "켠 품목을 하루(UTC 기준) 판매 한도까지 팔아요. 계속 생산을 선택하면 남길 수량과 보호 재고를 지키며 판매할 만큼 만들어요.",
-    }),
+    rows.length ? selector : null,
     rows.length
       ? h("ul", { className: "protect-list" }, rows)
       : h("p", { className: "empty", text: "창고가 비어 있어요." }),
+    h("details", { className: "detail-help" }, [
+      h("summary", { text: "자동 판매 규칙 · 하루 한도 안내" }),
+      h("p", {
+        className: "muted",
+        text: "켠 품목을 하루(UTC 기준) 판매 한도까지 팔아요. 계속 생산을 선택하면 남길 수량과 보호 재고를 지키며 판매할 만큼 만들어요.",
+      }),
+    ]),
     button("닫기", () => controller.closeSheet(), { variant: "secondary", attrs: { "data-wide": "" } }),
   ]);
 }

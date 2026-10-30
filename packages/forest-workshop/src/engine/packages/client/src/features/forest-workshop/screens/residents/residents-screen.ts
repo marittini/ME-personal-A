@@ -96,8 +96,10 @@ function residentCard(resident: Resident, controller: Controller, selected: bool
         h("span", { className: "card-stage" }, [residentFigure(resident)]),
         h("strong", { className: "resident-name", text: resident.displayName }),
         h("span", { className: "tag-row" }, [
-          kindTag(resident),
-          h("span", { className: "resident-field-label", text: FIELD_LABELS[resident.field] }),
+          h("span", {
+            className: "resident-field-label",
+            text: `${resident.kind === "character" ? "캐릭터" : "페르소나"} · ${FIELD_LABELS[resident.field]}`,
+          }),
         ]),
         h("span", {
           className: `status-pill ${resident.recruited ? "done" : "waiting"}`,

@@ -151,7 +151,7 @@ function autoSellRow(world: WorldView, controller: Controller) {
       h("span", { className: "toggle-icon" }, [ICONS.gear("icon")]),
       h("span", { className: "toggle-text" }, [
         h("strong", { text: on ? `자동 판매 · ${on}개 품목` : "자동 판매" }),
-        h("span", { text: "보호 · 예약 재고는 사용하지 않아요." }),
+        h("span", { text: "보호 재고와 남길 수량을 지켜요." }),
       ]),
       h("span", { className: `switch ${on ? "on" : "off"}` }, [
         h("span", { className: "knob" }),
@@ -169,10 +169,46 @@ function inventoryPages(page: number, rows: Array<{ name: string }>, controller:
   return pagePicker("재고 목록 고르기", page, groups, (value) => controller.setInventoryPage(value));
 }
 
+/** Keep item identity and stock quantities readable at the player's chosen text size. */
+function stockCards(
+  rows: ReturnType<typeof holdings>,
+  page: number,
+  world: WorldView,
+  controller: Controller,
+  selling = false,
+) {
+  return h(
+    "ul",
+    { className: "stock-cards" },
+    rows.slice(page * 3, page * 3 + 3).map((row) => {
+      const protectedAmount = world.state.production.protectedStock[row.itemId] ?? 0;
+      return h("li", { className: "stock-card" }, [
+        h("div", { className: "stock-card-head" }, [itemTile(row.itemId), h("strong", { text: row.name })]),
+        h(
+          "dl",
+          { className: "stock-values" },
+          [
+            ["보유", row.amount],
+            ["보호", protectedAmount],
+            ["사용 가능", Math.max(0, row.amount - protectedAmount)],
+          ].map(([label, amount]) =>
+            h("div", {}, [h("dt", { text: String(label) }), h("dd", { text: Number(amount).toLocaleString("ko-KR") })]),
+          ),
+        ),
+        selling
+          ? button("팔기", () => controller.openSheet({ kind: "sell", itemId: row.itemId }), {
+              variant: "secondary",
+              attrs: { "aria-label": `${row.name} 팔기` },
+            })
+          : null,
+      ]);
+    }),
+  );
+}
+
 function protectionCard(state: AppState, world: WorldView, content: GameContent, controller: Controller) {
   const rows = holdings(world, content);
   const page = Math.min(state.work.inventoryPage ?? 0, Math.max(0, Math.ceil(rows.length / 3) - 1));
-  const guarded = world.state.production.protectedStock;
   return card(
     null,
     [
@@ -193,37 +229,7 @@ function protectionCard(state: AppState, world: WorldView, content: GameContent,
       ]),
       rows.length === 0
         ? h("p", { className: "empty", text: "창고가 비어 있어요." })
-        : h("table", { className: "stock" }, [
-            h("thead", {}, [
-              h(
-                "tr",
-                {},
-                ["아이템", "보유 수량", "보호 재고", "예약 재고", "사용 가능"].map((label) =>
-                  h("th", { text: label, attrs: { scope: "col" } }),
-                ),
-              ),
-            ]),
-            h(
-              "tbody",
-              {},
-              rows.slice(page * 3, page * 3 + 3).map((row) => {
-                const protectedAmount = guarded[row.itemId] ?? 0;
-                return h("tr", {}, [
-                  h("th", { attrs: { scope: "row" } }, [itemTile(row.itemId), row.name]),
-                  h("td", { className: "num", text: row.amount.toLocaleString("ko-KR") }),
-                  h("td", {
-                    className: `num${protectedAmount ? " protected" : ""}`,
-                    text: protectedAmount ? String(protectedAmount) : "–",
-                  }),
-                  h("td", { className: "num", text: "–" }),
-                  h("td", {
-                    className: "num available",
-                    text: Math.max(0, row.amount - protectedAmount).toLocaleString("ko-KR"),
-                  }),
-                ]);
-              }),
-            ),
-          ]),
+        : stockCards(rows, page, world, controller),
       inventoryPages(page, rows, controller),
       autoSellRow(world, controller),
     ],
@@ -239,26 +245,7 @@ function storageCard(state: AppState, world: WorldView, content: GameContent, co
     [
       rows.length === 0
         ? h("p", { className: "empty", text: "창고가 비어 있어요." })
-        : h(
-            "ul",
-            { className: "storage-grid" },
-            rows.slice(page * 3, page * 3 + 3).map((row) =>
-              h("li", { className: "storage-item" }, [
-                itemTile(row.itemId),
-                h("span", { className: "storage-name", text: row.name }),
-                h("strong", { text: row.amount.toLocaleString("ko-KR") }),
-                h(
-                  "button",
-                  {
-                    className: "outline-button small",
-                    attrs: { type: "button", "aria-label": `${row.name} 팔기` },
-                    on: { click: () => controller.openSheet({ kind: "sell", itemId: row.itemId }) },
-                  },
-                  [h("span", { text: "팔기" })],
-                ),
-              ]),
-            ),
-          ),
+        : stockCards(rows, page, world, controller, true),
       inventoryPages(page, rows, controller),
     ],
     { id: "fw-storage" },
@@ -321,26 +308,19 @@ function sellSheet(state: AppState, world: WorldView, content: GameContent, cont
   const usable = Math.max(0, held - (world.state.production.protectedStock[itemId] ?? 0));
   const picker = amountPicker("fw-sell-amount", Math.min(usable, 1), usable ? 1 : 0, usable);
   const busy = Boolean(state.busy[`sell:${itemId}`]);
-  return h("div", { className: "sheet-backdrop" }, [
-    h(
-      "section",
-      { className: "sheet card", attrs: { role: "dialog", "aria-modal": "true", "aria-labelledby": "fw-sell" } },
-      [
-        h("h2", { className: "section-title", text: `${item?.name ?? itemId} 팔기`, attrs: { id: "fw-sell" } }),
-        h("p", {
-          className: "muted",
-          text: `1개 ${item?.sellPrice ?? 0} G · 팔 수 있는 양 ${usable}개 (보유 ${held}개, 보호분 제외)`,
-        }),
-        usable ? picker.node : h("p", { className: "empty", text: "보호분을 빼면 팔 수 있는 양이 없어요." }),
-        usable
-          ? button(busy ? "파는 중…" : "팔기", () => void controller.sell(itemId, picker.read()), {
-              disabled: busy,
-              attrs: { "data-wide": "" },
-            })
-          : null,
-        button("닫기", () => controller.closeSheet(), { variant: "secondary", attrs: { "data-wide": "" } }),
-      ],
-    ),
+  return sheetDialog("fw-sell", `${item?.name ?? itemId} 팔기`, [
+    h("p", {
+      className: "muted",
+      text: `1개 ${item?.sellPrice ?? 0} G · 팔 수 있는 양 ${usable}개 (보유 ${held}개, 보호분 제외)`,
+    }),
+    usable ? picker.node : h("p", { className: "empty", text: "보호분을 빼면 팔 수 있는 양이 없어요." }),
+    usable
+      ? button(busy ? "파는 중…" : "팔기", () => void controller.sell(itemId, picker.read()), {
+          disabled: busy,
+          attrs: { "data-wide": "" },
+        })
+      : null,
+    button("닫기", () => controller.closeSheet(), { variant: "secondary", attrs: { "data-wide": "" } }),
   ]);
 }
 

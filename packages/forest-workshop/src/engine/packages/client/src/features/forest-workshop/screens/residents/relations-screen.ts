@@ -1,3 +1,4 @@
+import { sheetDialog } from "../chrome/sheet";
 // 관계 (board 03-2): sign + ribbon, the shared resident with "A–B · A–C" and "두 관계는 같은 세계에서 이어져요", one
 // row per pair (both faces, 현재 관계, 최근 사건, 기억 보기, 지침 관리), the note "페어 지정은 연인 선언이 아니에요.",
 // 페어 추가 and 변경 · 보관.
@@ -137,58 +138,51 @@ function pairAddSheet(resident: Resident, world: WorldView, state: AppState, con
       .map((pair) => [partnerOf(pair, resident.residentId), pair.archived] as const),
   );
   const candidates = Object.values(world.state.residents).filter((other) => other.residentId !== resident.residentId);
-  return h("div", { className: "sheet-backdrop" }, [
-    h(
-      "section",
-      { className: "sheet card", attrs: { role: "dialog", "aria-modal": "true", "aria-labelledby": "fw-pair-add" } },
-      [
-        h("h2", { className: "section-title", text: "페어 추가", attrs: { id: "fw-pair-add" } }),
-        h("p", {
-          className: "muted",
-          text: `${resident.displayName}와(과) 이어질 주민을 골라 주세요. 캐릭터든 페르소나든 괜찮아요. 지난 기억이 새로 생기지는 않아요.`,
-        }),
-        candidates.length === 0
-          ? h("p", {
-              className: "empty",
-              text: "함께할 다른 주민이 아직 없어요. 주민 불러오기에서 먼저 등록해 주세요.",
-            })
-          : h(
-              "ul",
-              { className: "candidate-list" },
-              candidates.map((other) => {
-                const already = linked.has(other.residentId);
-                const key = pairAddKey(resident.residentId, other.residentId);
-                return h("li", {}, [
-                  h(
-                    "button",
-                    {
-                      className: "candidate",
-                      attrs: { type: "button" },
-                      disabled: already || Boolean(state.busy[key]),
-                      on: { click: () => void controller.addPair(resident.residentId, other.residentId) },
-                    },
-                    [
-                      residentAvatar(other),
-                      h("span", { className: "candidate-name", text: other.displayName }),
-                      kindTag(other),
-                      h("span", {
-                        className: "candidate-state",
-                        text: already
-                          ? linked.get(other.residentId)
-                            ? "보관함에 있어요"
-                            : "이미 페어"
-                          : state.busy[key]
-                            ? "만드는 중…"
-                            : "고르기",
-                      }),
-                    ],
-                  ),
-                ]);
-              }),
-            ),
-        button("닫기", () => controller.closeSheet(), { variant: "secondary", attrs: { "data-wide": "" } }),
-      ],
-    ),
+  return sheetDialog("fw-pair-add", "페어 추가", [
+    h("p", {
+      className: "muted",
+      text: `${resident.displayName}와(과) 이어질 주민을 골라 주세요. 캐릭터든 페르소나든 괜찮아요. 지난 기억이 새로 생기지는 않아요.`,
+    }),
+    candidates.length === 0
+      ? h("p", {
+          className: "empty",
+          text: "함께할 다른 주민이 아직 없어요. 주민 불러오기에서 먼저 등록해 주세요.",
+        })
+      : h(
+          "ul",
+          { className: "candidate-list" },
+          candidates.map((other) => {
+            const already = linked.has(other.residentId);
+            const key = pairAddKey(resident.residentId, other.residentId);
+            return h("li", {}, [
+              h(
+                "button",
+                {
+                  className: "candidate",
+                  attrs: { type: "button" },
+                  disabled: already || Boolean(state.busy[key]),
+                  on: { click: () => void controller.addPair(resident.residentId, other.residentId) },
+                },
+                [
+                  residentAvatar(other),
+                  h("span", { className: "candidate-name", text: other.displayName }),
+                  kindTag(other),
+                  h("span", {
+                    className: "candidate-state",
+                    text: already
+                      ? linked.get(other.residentId)
+                        ? "보관함에 있어요"
+                        : "이미 페어"
+                      : state.busy[key]
+                        ? "만드는 중…"
+                        : "고르기",
+                  }),
+                ],
+              ),
+            ]);
+          }),
+        ),
+    button("닫기", () => controller.closeSheet(), { variant: "secondary", attrs: { "data-wide": "" } }),
   ]);
 }
 

@@ -55,7 +55,7 @@ try {
         value: {
           state: {
             inventory: Object.fromEntries(items.map((item) => [item.id, 3])),
-            production: { protectedStock: {}, autoSell: {}, facilities: {} },
+            production: { protectedStock: {}, autoSell: {}, facilities: {}, sales: { day: "2026-10-30", sold: {} } },
             wallet: { gold: 0, tickets: 0 },
           },
         },
@@ -84,7 +84,7 @@ try {
       },
       openSheet(sheet) {
         window.openedSheet = sheet;
-        if (sheet.kind === "protect-edit") {
+        if (sheet.kind === "protect-edit" || sheet.kind === "auto-sell") {
           window.testState.sheet = sheet;
           window.testRender();
         }
@@ -97,6 +97,12 @@ try {
       },
       setProtected(itemId, amount) {
         window.protectedSave = { itemId, amount };
+      },
+      rememberAutoSellPage(page) {
+        window.testState.sheet.page = page;
+      },
+      setAutoSell(itemId, setting) {
+        window.autoSaleSave = { itemId, setting };
       },
       closeSheet() {},
       navigate() {},
@@ -114,9 +120,9 @@ try {
   assert.equal(await page.getByText("물건 0", { exact: true }).count(), 1);
   const size = await page.locator("#host").evaluate((host) => {
     const scroller = host.shadowRoot.querySelector(".scroll");
-    return { content: scroller.scrollHeight, available: scroller.clientHeight };
+    return { content: scroller.scrollWidth, available: scroller.clientWidth };
   });
-  assert.ok(size.content <= size.available + 1, `storage should fit: ${JSON.stringify(size)}`);
+  assert.ok(size.content <= size.available + 1, `storage must not scroll horizontally: ${JSON.stringify(size)}`);
   assert.equal(await page.getByText("물건 3", { exact: true }).count(), 0);
   await page.getByLabel("재고 목록 고르기", { exact: true }).click();
   await page.getByLabel("재고 목록 고르기", { exact: true }).locator("..").locator("button").nth(2).click();
@@ -131,9 +137,12 @@ try {
   });
   const smallSize = await page.locator("#host").evaluate((host) => {
     const scroller = host.shadowRoot.querySelector(".scroll");
-    return { content: scroller.scrollHeight, available: scroller.clientHeight };
+    return { content: scroller.scrollWidth, available: scroller.clientWidth };
   });
-  assert.ok(smallSize.content <= smallSize.available + 1, `small storage should fit: ${JSON.stringify(smallSize)}`);
+  assert.ok(
+    smallSize.content <= smallSize.available + 1,
+    `small storage must not scroll horizontally: ${JSON.stringify(smallSize)}`,
+  );
   await page.getByRole("button", { name: "물건 3 팔기" }).click();
   assert.deepEqual(await page.evaluate(() => window.openedSheet), { kind: "sell", itemId: "item-3" });
   await page.getByRole("tab", { name: "시설", exact: true }).click();
@@ -167,6 +176,22 @@ try {
   await page.getByRole("button", { name: "늘리기 10", exact: true }).click();
   await page.getByRole("button", { name: "물건 0 보호 수량 저장" }).click();
   assert.deepEqual(await page.evaluate(() => window.protectedSave), { itemId: "item-0", amount: 11 });
+  await page.evaluate(() => {
+    window.testState.sheet = { kind: "auto-sell" };
+    window.testRender();
+  });
+  assert.equal(await page.locator(".auto-sell-row:visible").count(), 1);
+  await page.getByRole("button", { name: "물건 0 남길 수량 늘리기 1", exact: true }).click();
+  await page.getByLabel("자동 판매할 품목").selectOption("3");
+  await page.getByLabel("자동 판매할 품목").selectOption("0");
+  await page.getByRole("button", { name: "켜기", exact: true }).click();
+  assert.deepEqual(await page.evaluate(() => window.autoSaleSave), {
+    itemId: "item-0",
+    setting: { enabled: true, keep: 1, dailyMax: 10, continuous: false },
+  });
+  await page.getByLabel("자동 판매할 품목").selectOption("3");
+  await page.evaluate(() => window.testRender());
+  assert.equal(await page.getByLabel("자동 판매할 품목").inputValue(), "3", "selected item survives a render");
   console.log("Inventory paging and actions: OK");
 } finally {
   await browser?.close();

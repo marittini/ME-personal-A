@@ -1,3 +1,4 @@
+import { sheetDialog } from "../chrome/sheet";
 // 주민 그림 (board 04-2): back + sign, 대상 ribbon, the checkerboard preview, file name · size · bytes, 파일 선택 · 교체,
 // the rules box, 그림 크기 · 좌우 위치 · 기호 높이 sliders, 적용, 기본 배치 and 이전 그림.
 // The sliders move the preview at once; 적용 saves them as placement (never baked into the file). 기본 배치 resets
@@ -65,22 +66,12 @@ function historySheet(resident: Resident, state: AppState, controller: Controlle
         { disabled: busy },
       ),
     ]);
-  return h("div", { className: "sheet-backdrop" }, [
-    h(
-      "section",
-      {
-        className: "sheet card",
-        attrs: { role: "dialog", "aria-modal": "true", "aria-labelledby": "fw-image-history" },
-      },
-      [
-        h("h2", { className: "section-title", text: "이전 그림", attrs: { id: "fw-image-history" } }),
-        resident.image.history.length
-          ? h("ul", { className: "history-list" }, resident.image.history.map(item))
-          : h("p", { className: "empty", text: "되돌릴 이전 그림이 없어요." }),
-        h("p", { className: "hint", text: "최근 3장까지 보관해요. 지난 이야기 다시보기에도 지금 그림이 쓰여요." }),
-        button("닫기", () => controller.closeSheet(), { variant: "secondary", attrs: { "data-wide": "" } }),
-      ],
-    ),
+  return sheetDialog("fw-image-history", "이전 그림", [
+    resident.image.history.length
+      ? h("ul", { className: "history-list" }, resident.image.history.map(item))
+      : h("p", { className: "empty", text: "되돌릴 이전 그림이 없어요." }),
+    h("p", { className: "hint", text: "최근 3장까지 보관해요. 지난 이야기 다시보기에도 지금 그림이 쓰여요." }),
+    button("닫기", () => controller.closeSheet(), { variant: "secondary", attrs: { "data-wide": "" } }),
   ]);
 }
 

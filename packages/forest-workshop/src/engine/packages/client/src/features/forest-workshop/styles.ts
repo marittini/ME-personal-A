@@ -45,6 +45,7 @@ export const STYLES = `
   --fw-unavailable: #8a6a12;
   --fw-track: #e4d6b6;
   display: block;
+  box-sizing: border-box;
   height: 100%;
   overflow: hidden;
   color: var(--fw-text);
@@ -54,7 +55,7 @@ export const STYLES = `
   word-break: keep-all;
   overflow-wrap: anywhere;
 }
-:host(:fullscreen) { width: 100%; height: 100%; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); background: var(--fw-page); }
+:host(:fullscreen) { width: 100vw; height: 100dvh; max-width: none; max-height: none; padding: env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left); background: var(--fw-page); }
 * { box-sizing: border-box; }
 p { margin: 0; }
 .icon { width: 1.35em; height: 1.35em; flex: none; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }

@@ -28,7 +28,7 @@ export type ProductionSheet =
   | { kind: "protect-edit"; page?: number; drafts?: Record<string, number> }
   | { kind: "sell"; itemId: string }
   | { kind: "assign"; facilityId: string }
-  | { kind: "auto-sell" };
+  | { kind: "auto-sell"; page?: number };
 
 const HEARTBEAT_MS = 60_000;
 
@@ -162,6 +162,10 @@ export function createProductionActions(core: ControllerCore) {
       store.remember((state) => ({
         work: { ...state.work, queueCounts: { ...state.work.queueCounts, [facilityId]: count } },
       }));
+    },
+
+    rememberAutoSellPage(page: number) {
+      store.remember((state) => (state.sheet?.kind === "auto-sell" ? { sheet: { ...state.sheet, page } } : {}));
     },
 
     rememberProtection(patch: { page?: number; itemId?: string; amount?: number }) {

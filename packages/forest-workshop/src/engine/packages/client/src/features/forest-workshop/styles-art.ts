@@ -9,13 +9,13 @@ import { BACKGROUND_ART, SEASONS, UI_ART, cssAssetUrl } from "./app/assets";
 
 const seasonBases = SEASONS.map(
   (season) =>
-    `.season-${season}.art-base:is(.backdrop-forest, .backdrop-wood) .scroll { background: var(--fw-page) ${cssAssetUrl(BACKGROUND_ART[season].base)} center top / 100% auto no-repeat; }`,
+    `.season-${season}.art-base:is(.backdrop-forest, .backdrop-wood) { background: var(--fw-page) ${cssAssetUrl(BACKGROUND_ART[season].base)} center top / cover no-repeat; }`,
 ).join("\n");
 
 export const ART_STYLES = `
-/* Season backdrop (portrait). It scrolls with the page so the column keeps its full width on tall phones. */
+/* Keep the season picture on the viewport, covering tall and wide hosts independently of content length. */
 ${seasonBases}
-.art-base.backdrop-forest .scroll:has(.scene img.scene-art) { background: var(--fw-page); }
+.art-base:is(.backdrop-forest, .backdrop-wood) .scroll { background: transparent; }
 
 /* Item, facility and emotion pictures: drawn straight on the panel like the mockups, no tile frame around them. */
 .item-tile { width: 2em; height: 2em; }
@@ -154,8 +154,8 @@ img.emotion-bubble.emotion-art { min-width: 0; width: 2.6em; height: 2.6em; padd
 
 /* Restore the report illustration and story banner; content may scroll instead of shrinking. */
 .home-layout .scroll { overflow-y: auto; }
-.home-layout .column { height: auto; min-height: 100%; }
-.home-layout .scene { flex: none; height: clamp(18em, 48vh, 30em); }
+.home-layout .column { height: 100%; min-height: 100%; }
+.home-layout .scene { flex: 1 0 18em; min-height: 18em; height: auto; }
 .home-layout .page { grid-template-columns: minmax(0, 1fr); gap: 0.6em; }
 .home-layout .report-card { padding: 1em 1.15em; }
 .home-layout .report-title { font-size: calc(var(--fs) * 1.2); }
@@ -365,4 +365,89 @@ img.emotion-bubble.emotion-art { min-width: 0; width: 2.6em; height: 2.6em; padd
 .story-layout .conversation-panel .reader-foot { margin: 0; gap: 8px; }
 .story-layout .conversation-panel .reader-foot .count-pill { background: transparent; color: var(--fw-muted); white-space: nowrap; }
 .story-layout .conversation-panel .reader-foot .button { min-height: 44px; }
+
+/* Shared narrow layouts: labels and quantities get rows rather than single-character columns. */
+.big-tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-bottom: 0; }
+.big-tab { flex-direction: column; gap: 4px; padding: 10px 6px; min-height: 76px; font-size: var(--fs); border-radius: 12px; border: 1px solid #b49a72; }
+.big-tab > .icon { width: 28px; height: 28px; }
+.big-tab > span { white-space: nowrap; }
+.stock-cards { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.stock-card { display: grid; gap: 10px; padding: 10px; border: 1px solid #c9b18a; border-radius: 12px; background: var(--fw-surface-3); min-width: 0; }
+.stock-card-head { display: grid; grid-template-columns: 40px minmax(0, 1fr); align-items: center; gap: 8px; }
+.stock-card-head strong { overflow-wrap: anywhere; }
+.stock-card-head > .item-tile { width: 40px; height: 40px; margin: 0; }
+.stock-values { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin: 0; }
+.stock-values > div { display: grid; align-content: start; gap: 4px; min-width: 0; text-align: center; }
+.stock-values dt { font-size: calc(var(--fs) * .8); color: var(--fw-muted); }
+.stock-values dd { margin: 0; font-weight: 700; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.stock-card > .outline-button { min-height: 44px; width: 100%; white-space: nowrap; }
+.auto-sell-head { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 8px; align-items: center; }
+.auto-sell-head .switch { grid-column: 2; justify-self: start; }
+.auto-sell-head .protect-name { min-width: 0; }
+.auto-sell-row .auto-sell-settings { grid-template-columns: minmax(0, 1fr); }
+.sheet .row-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.sheet .row-actions > .button { flex: 1 1 140px; min-height: 44px; }
+.usage-row { grid-template-columns: auto minmax(0, 1fr) auto; gap: 8px; }
+.usage-bar { grid-column: 1 / -1; grid-row: 2; }
+.usage-size { white-space: nowrap; }
+.facility-card .facility { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+.facility-card .facility-picture { width: min(100%, 180px); justify-self: center; }
+.facility-card .facility-info { min-width: 0; }
+.work-card .facility-open { display: flex; flex-wrap: wrap; gap: 8px; }
+.work-card .facility-text { flex: 1 1 120px; min-width: 0; }
+.home-layout .top-home .top-row:first-child { flex-wrap: wrap; }
+.home-layout .top-home .top-row:first-child .resources { flex: 1 0 100%; justify-content: flex-end; }
+.home-layout .top-home .resources .chip-button { padding-inline: 8px; min-width: 0; }
+.invite-action { min-width: 0; }
+@container (min-width: 480px) {
+  .home-layout .top-home .top-row:first-child { flex-wrap: nowrap; }
+  .home-layout .top-home .top-row:first-child .resources { flex: 0 1 auto; }
+}
+
+.stock-values { grid-template-columns: minmax(0, 1fr); }
+.stock-values > div { grid-template-columns: minmax(0, 1fr) auto; text-align: left; align-items: center; }
+.stock-values dd { white-space: nowrap; text-align: right; }
+.auto-sell-head > .item-tile { grid-column: 1; grid-row: 1 / 3; margin: 0; }
+.auto-sell-head .protect-name { grid-area: auto; grid-column: 2; grid-row: 1; }
+.auto-sell-head .switch { grid-column: 2; grid-row: 2; }
+.auto-sell-row .auto-sell-fields { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+.draw-short { position: static; transform: none; max-width: 100%; white-space: normal; text-align: center; justify-content: center; }
+.draw-button { min-width: 0; }
+.setting-row .is-locked { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.setting-row .is-locked > .lock-tag { position: static; }
+.top-home .resources .counter { flex: none; }
+
+.home-layout .scene { overflow: hidden; }
+.home-layout .page { min-width: 0; }
+.auto-sell-row[hidden] { display: none; }
+
+/* Readable management rows and storage figures at 22px text, without nested padding consuming the label. */
+.menu-row { display: grid; grid-template-columns: 40px minmax(0, 1fr) 20px; align-items: center; gap: 8px; padding: 12px; min-height: 56px; }
+.menu-row .menu-icon, .menu-row > .manage-art { width: 40px; height: 40px; }
+.menu-row .menu-chevron, .menu-row > .icon:last-child { max-width: 20px; }
+.art-paper .selected-source { padding: 12px; }
+.selected-source .menu-row { padding: 8px; }
+.usage-row { grid-template-columns: auto minmax(0, 1fr); }
+.usage-label { grid-column: 2; }
+.usage-size { grid-column: 2; grid-row: 2; justify-self: end; }
+.usage-bar { grid-column: 1 / -1; grid-row: 3; }
+
+.priority-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 8px; }
+.priority-main { grid-column: 2 / -1; display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 8px; }
+.priority-main .priority-name { min-width: 0; }
+.priority-main .muted { grid-column: 2; margin-left: 0; }
+.priority-row > .chip-toggle { grid-column: 2; justify-self: start; }
+.toggle-row { display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: 8px; }
+.toggle-row .toggle-icon { grid-column: 1; grid-row: 1; }
+.toggle-row .toggle-text { grid-column: 2; grid-row: 1; }
+.toggle-row .switch { grid-column: 2; grid-row: 2; }
+.candidate { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 8px; min-width: 0; }
+.candidate .avatar { width: 56px; height: 56px; grid-column: 1; grid-row: 1 / 4; }
+.candidate-name { grid-column: 2; grid-row: 1; min-width: 0; }
+.candidate > .tag { grid-column: 2; grid-row: 2; justify-self: start; }
+.candidate-state { grid-column: 2; grid-row: 3; }
+
+.restore-details > summary { cursor: pointer; }
+.restore-details > summary::after { content: "▾"; margin-left: auto; color: var(--fw-accent); }
+.restore-details[open] > summary::after { content: "▴"; }
 `;
